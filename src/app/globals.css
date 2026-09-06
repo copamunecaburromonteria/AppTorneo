@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --muneca-purple: #7B1FA2;
+  --muneca-purple-dark: #4A0B6B;
+  --muneca-yellow: #FFD900;
+  --muneca-black: #151515;
+  --muneca-white: #FFFFFF;
+  --donkey-gray: #AAA69F;
+  --donkey-shadow: #5C5A57;
+
+  --background: var(--muneca-white);
+  --foreground: var(--muneca-black);
 }
 
 @theme inline {
+  --color-muneca-purple: var(--muneca-purple);
+  --color-muneca-purple-dark: var(--muneca-purple-dark);
+  --color-muneca-yellow: var(--muneca-yellow);
+  --color-muneca-black: var(--muneca-black);
+  --color-muneca-white: var(--muneca-white);
+  --color-donkey-gray: var(--donkey-gray);
+  --color-donkey-shadow: var(--donkey-shadow);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-bebas), sans-serif;
+  --font-sans: var(--font-montserrat), sans-serif;
+  --font-accent: var(--font-accent-script), cursive;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
 }
