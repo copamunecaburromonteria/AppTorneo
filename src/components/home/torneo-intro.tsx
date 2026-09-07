@@ -1,5 +1,26 @@
 import Image from "next/image";
+import {
+  MapPin,
+  Flag,
+  TShirt,
+  Drop,
+  DeviceMobile,
+  ChartBar,
+  Camera,
+  Trophy,
+} from "@phosphor-icons/react/dist/ssr";
 import { inclusiones } from "@/lib/mock-data";
+
+const ICONS: Record<string, typeof MapPin> = {
+  Canchas: MapPin,
+  Arbitraje: Flag,
+  Uniformes: TShirt,
+  Hidratación: Drop,
+  "Plataforma digital": DeviceMobile,
+  Estadísticas: ChartBar,
+  Cobertura: Camera,
+  Premiación: Trophy,
+};
 
 export function TorneoIntro() {
   return (
@@ -39,19 +60,20 @@ export function TorneoIntro() {
         </div>
 
         <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {inclusiones.map((item) => (
-            <div
-              key={item}
-              className="flex flex-col items-center gap-2 rounded-lg border border-black/10 bg-black/[0.02] px-2 py-4 text-center"
-            >
-              <span className="text-2xl" aria-hidden>
-                ⚽
-              </span>
-              <span className="text-xs font-semibold text-muneca-black/70">
-                {item}
-              </span>
-            </div>
-          ))}
+          {inclusiones.map((item) => {
+            const Icon = ICONS[item] ?? Trophy;
+            return (
+              <div
+                key={item}
+                className="flex flex-col items-center gap-2 rounded-lg border border-black/10 bg-black/[0.02] px-2 py-4 text-center"
+              >
+                <Icon size={24} weight="regular" className="text-muneca-purple" />
+                <span className="text-xs font-semibold text-muneca-black/70">
+                  {item}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
