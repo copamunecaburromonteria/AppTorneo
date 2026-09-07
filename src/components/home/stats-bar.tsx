@@ -12,12 +12,12 @@ const ITEMS = [
 export function StatsBar() {
   return (
     <div className="border-y border-white/10 bg-muneca-black text-muneca-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-y-5 px-4 py-5 text-center sm:grid-cols-5 sm:px-6">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-8 text-center sm:grid-cols-5 sm:gap-y-0 sm:divide-x sm:divide-white/10 sm:px-6 sm:py-10">
         {ITEMS.map(({ Icon, valor, label }) => (
-          <div key={label} className="flex flex-col items-center gap-1">
-            <Icon size={22} weight="regular" className="text-muneca-yellow" aria-hidden="true" />
-            <span className="font-display text-2xl sm:text-3xl">{valor}</span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-donkey-gray">
+          <div key={label} className="flex flex-col items-center gap-2 sm:px-4">
+            <Icon size={32} weight="regular" className="text-muneca-yellow" aria-hidden="true" />
+            <span className="font-display text-4xl sm:text-5xl">{valor}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-donkey-gray sm:text-sm">
               {label}
             </span>
           </div>
