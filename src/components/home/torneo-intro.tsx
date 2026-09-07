@@ -50,11 +50,11 @@ export function TorneoIntro() {
 
           <div className="flex flex-1 justify-center">
             <Image
-              src="/brand/mascota-02.png"
-              alt="Mascota Copa Muñeca e'Burro"
-              width={360}
-              height={360}
-              className="h-auto w-56 object-contain sm:w-72"
+              src="/brand/mascota-torneo.png"
+              alt="Fútbol, gente buena — mascota Copa Muñeca e'Burro"
+              width={1442}
+              height={1046}
+              className="h-auto w-full max-w-sm object-contain sm:max-w-md lg:max-w-lg"
             />
           </div>
         </div>

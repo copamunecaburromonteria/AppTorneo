@@ -74,28 +74,28 @@ export function SiteHeader() {
         </Link>
 
         <nav
-          className={`hidden items-center gap-6 text-sm font-semibold uppercase tracking-wide lg:flex ${
+          className={`font-display hidden items-center gap-6 text-base uppercase tracking-wider lg:flex ${
             tone === "light" ? "text-white/90" : "text-muneca-black/70"
           }`}
         >
           <a
             href="#inicio"
             aria-current="page"
-            className={`relative pb-1 after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-yellow ${
+            className={`relative pb-1 uppercase after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-yellow ${
               tone === "light" ? "text-white" : "text-muneca-black"
             }`}
           >
             Inicio
           </a>
           <NavDropdown label="Torneo" items={TORNEO_LINKS} tone={tone} />
-          <a href="#equipos" className="pb-1 transition-colors hover:text-muneca-yellow">
+          <a href="#equipos" className="pb-1 uppercase transition-colors hover:text-muneca-yellow">
             Equipos
           </a>
           <NavDropdown label="Partidos" items={PARTIDOS_LINKS} tone={tone} />
           <NavDropdown label="Contenido" items={CONTENIDO_LINKS} tone={tone} />
           <a
             href="#patrocinadores"
-            className="pb-1 transition-colors hover:text-muneca-yellow"
+            className="pb-1 uppercase transition-colors hover:text-muneca-yellow"
           >
             Patrocinadores
           </a>

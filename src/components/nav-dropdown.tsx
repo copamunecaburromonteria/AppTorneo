@@ -40,18 +40,20 @@ export function NavDropdown({
 
   return (
     <div ref={rootRef} className="relative">
+      {/* Los <button> resetean text-transform vía Tailwind preflight, por eso
+          "uppercase" se declara explícito aquí (no basta con heredarlo del <nav>). */}
       <button
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 pb-1 transition-colors hover:text-muneca-yellow ${
+        className={`font-display flex items-center gap-1 pb-1 uppercase tracking-wider transition-colors hover:text-muneca-yellow ${
           tone === "light" ? "text-white/90" : "text-muneca-black/70"
         }`}
       >
         {label}
         <CaretDown
-          size={12}
+          size={13}
           weight="bold"
           className={`transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden="true"
@@ -61,7 +63,7 @@ export function NavDropdown({
       {open && (
         <div
           role="menu"
-          className="absolute left-1/2 top-full z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-black/10 bg-muneca-white py-2 text-left shadow-lg"
+          className="font-sans absolute left-1/2 top-full z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-black/10 bg-muneca-white py-2 text-left normal-case shadow-lg"
         >
           {items.map((item) => (
             <a
@@ -69,7 +71,7 @@ export function NavDropdown({
               href={item.href}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm normal-case tracking-normal text-muneca-black/80 hover:bg-muneca-purple/10 hover:text-muneca-purple"
+              className="block px-4 py-2 text-sm font-medium tracking-normal text-muneca-black/80 hover:bg-muneca-purple/10 hover:text-muneca-purple"
             >
               {item.label}
             </a>
