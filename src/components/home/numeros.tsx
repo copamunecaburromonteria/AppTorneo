@@ -5,7 +5,7 @@ const ITEMS = [
   { valor: `${torneoEnNumeros.jugadores}`, label: "Jugadores" },
   { valor: `${torneoEnNumeros.partidos}`, label: "Partidos" },
   { valor: `${torneoEnNumeros.partidosMaxPorEquipo}`, label: "Partidos máximo por equipo" },
-  { valor: torneoEnNumeros.premioCampeon, label: "Premio al campeón" },
+  { valor: torneoEnNumeros.premioCampeon, label: "En premios" },
 ];
 
 export function Numeros() {
