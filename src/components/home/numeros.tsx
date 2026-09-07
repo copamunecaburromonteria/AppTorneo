@@ -10,8 +10,10 @@ const ITEMS = [
 
 export function Numeros() {
   return (
-    <section className="bg-gradient-to-b from-muneca-purple-dark to-muneca-black text-muneca-white">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+    <section
+      className="relative bg-[url('/brand/numeros-bg-mobile.jpg')] bg-cover bg-center text-muneca-white sm:bg-[url('/brand/numeros-bg-desktop.jpg')]"
+    >
+      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6">
         <p className="text-center text-sm font-bold uppercase tracking-widest text-muneca-yellow">
           — El torneo
         </p>
