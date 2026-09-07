@@ -36,6 +36,13 @@ body {
   font-family: var(--font-sans);
 }
 
+/* El header es "fixed" (transparente sobre el hero, sólido al hacer scroll),
+   así que las secciones ancladas necesitan este espacio para no quedar
+   tapadas al navegar con el menú. */
+[id] {
+  scroll-margin-top: 5rem;
+}
+
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
   letter-spacing: 0.01em;

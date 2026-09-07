@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -5,7 +8,7 @@ import {
   FacebookLogo,
   TiktokLogo,
   YoutubeLogo,
-} from "@phosphor-icons/react/dist/ssr";
+} from "@phosphor-icons/react";
 import { NavDropdown } from "@/components/nav-dropdown";
 
 // TODO: reemplazar por los handles/URLs reales de cada red social.
@@ -16,57 +19,84 @@ const SOCIAL_LINKS = [
   { href: "#", label: "YouTube", Icon: YoutubeLogo },
 ];
 
+// TODO: "Cómo funciona", "Reglamento" y "Premios" aún no tienen página/sección propia.
 const TORNEO_LINKS = [
-  { href: "#torneo", label: "Formato del torneo" },
-  { href: "#partidos", label: "Calendario completo" },
+  { href: "#", label: "Cómo funciona" },
   { href: "#", label: "Reglamento" },
+  { href: "#", label: "Premios" },
 ];
 
-const ESTADISTICAS_LINKS = [
-  { href: "#estadisticas", label: "Goleadores" },
-  { href: "#estadisticas", label: "Mejores arqueros" },
-  { href: "#estadisticas", label: "Ranking MVP" },
-  { href: "#", label: "Ranking de árbitros" },
+const PARTIDOS_LINKS = [
+  { href: "#partidos", label: "Resultados" },
+  { href: "#posiciones", label: "Posiciones" },
+  { href: "#estadisticas", label: "Estadísticas" },
+];
+
+// TODO: "Noticias" aún no tiene sección propia; Fotos/Videos apuntan a Galería por ahora.
+const CONTENIDO_LINKS = [
+  { href: "#", label: "Noticias" },
+  { href: "#galeria", label: "Fotos" },
+  { href: "#galeria", label: "Videos" },
 ];
 
 export function SiteHeader() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 24);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const tone = scrolled ? "dark" : "light";
+
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-muneca-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-        <Link href="#inicio" className="flex items-center shrink-0">
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        scrolled
+          ? "border-b border-black/10 bg-muneca-white/95 backdrop-blur"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6">
+        <Link href="#inicio" className="flex shrink-0 items-center">
           <Image
-            src="/brand/logo-full.png"
-            alt="Copa Muñeca e'Burro"
-            width={1983}
-            height={793}
+            src="/brand/logo-horizontal.png"
+            alt="Copa Muñeca e'Burro Montería"
+            width={1841}
+            height={707}
             priority
-            className="h-12 w-auto object-contain sm:h-14"
+            className="h-14 w-auto object-contain sm:h-20 lg:h-[100px]"
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold uppercase tracking-wide">
+        <nav
+          className={`hidden items-center gap-6 text-sm font-semibold uppercase tracking-wide lg:flex ${
+            tone === "light" ? "text-white/90" : "text-muneca-black/70"
+          }`}
+        >
           <a
             href="#inicio"
             aria-current="page"
-            className="relative pb-1 text-muneca-black after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-purple"
+            className={`relative pb-1 after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-yellow ${
+              tone === "light" ? "text-white" : "text-muneca-black"
+            }`}
           >
             Inicio
           </a>
-          <NavDropdown label="Torneo" items={TORNEO_LINKS} />
-          <a href="#equipos" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+          <NavDropdown label="Torneo" items={TORNEO_LINKS} tone={tone} />
+          <a href="#equipos" className="pb-1 transition-colors hover:text-muneca-yellow">
             Equipos
           </a>
-          <a href="#partidos" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
-            Resultados
-          </a>
-          <a href="#posiciones" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
-            Posiciones
-          </a>
-          <NavDropdown label="Estadísticas" items={ESTADISTICAS_LINKS} />
-          <a href="#galeria" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
-            Galería
-          </a>
-          <a href="#patrocinadores" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+          <NavDropdown label="Partidos" items={PARTIDOS_LINKS} tone={tone} />
+          <NavDropdown label="Contenido" items={CONTENIDO_LINKS} tone={tone} />
+          <a
+            href="#patrocinadores"
+            className="pb-1 transition-colors hover:text-muneca-yellow"
+          >
             Patrocinadores
           </a>
         </nav>
@@ -77,7 +107,11 @@ export function SiteHeader() {
               key={label}
               href={href}
               aria-label={label}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-muneca-black/5 text-muneca-black/60 transition-colors hover:bg-muneca-purple hover:text-white"
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muneca-yellow hover:text-muneca-black ${
+                tone === "light"
+                  ? "bg-white/10 text-white/85"
+                  : "bg-muneca-black/5 text-muneca-black/60"
+              }`}
             >
               <Icon size={16} weight="regular" aria-hidden="true" />
             </a>

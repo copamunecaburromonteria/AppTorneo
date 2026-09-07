@@ -4,13 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { CaretDown } from "@phosphor-icons/react";
 
 type SubLink = { href: string; label: string };
+type Tone = "light" | "dark";
 
 export function NavDropdown({
   label,
   items,
+  tone = "dark",
 }: {
   label: string;
   items: SubLink[];
+  tone?: Tone;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -42,7 +45,9 @@ export function NavDropdown({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple"
+        className={`flex items-center gap-1 pb-1 transition-colors hover:text-muneca-yellow ${
+          tone === "light" ? "text-white/90" : "text-muneca-black/70"
+        }`}
       >
         {label}
         <CaretDown

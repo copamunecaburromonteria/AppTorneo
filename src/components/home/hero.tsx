@@ -21,11 +21,11 @@ export function Hero() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-muneca-black/95 via-muneca-black/55 to-transparent lg:via-muneca-black/35"
+        className="absolute inset-0 bg-gradient-to-r from-muneca-black/95 via-muneca-black/55 to-transparent sm:via-muneca-black/40"
       />
 
-      <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 lg:items-start lg:py-28 lg:text-left">
-        <h1 className="flex flex-col items-center lg:items-start">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-16 pt-32 text-center sm:items-start sm:px-6 sm:pt-28 sm:text-left lg:pt-24">
+        <h1 className="flex flex-col items-center sm:items-start">
           <span className="sr-only">Copa Muñeca e&apos;Burro Montería</span>
           <Image
             src="/brand/logo-full.png"
@@ -34,19 +34,19 @@ export function Hero() {
             width={1983}
             height={793}
             priority
-            className="h-auto w-72 object-contain sm:w-96 lg:w-[28rem]"
+            className="h-auto w-64 object-contain sm:w-72 lg:w-80"
           />
         </h1>
 
-        <p className="font-display mt-6 max-w-xl text-3xl leading-[1.05] text-muneca-yellow sm:text-4xl lg:text-5xl">
+        <p className="font-display mt-6 max-w-sm text-3xl leading-[1.05] text-muneca-yellow sm:max-w-md sm:text-4xl">
           AQUÍ TAMBIÉN SE JUEGA GRANDE
         </p>
 
-        <p className="mt-4 max-w-lg text-base text-muneca-white/85 sm:text-lg">
+        <p className="mt-4 max-w-sm text-base text-muneca-white/85 sm:max-w-md">
           El torneo donde vienes a competir, no a jugar tres partidos y empacar.
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
           <a
             href="#inscripcion"
             className="rounded-md bg-muneca-yellow px-6 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
