@@ -6,17 +6,7 @@ import {
   TiktokLogo,
   YoutubeLogo,
 } from "@phosphor-icons/react/dist/ssr";
-
-const NAV_LINKS = [
-  { href: "#inicio", label: "Inicio", active: true },
-  { href: "#torneo", label: "Torneo" },
-  { href: "#equipos", label: "Equipos" },
-  { href: "#partidos", label: "Resultados" },
-  { href: "#posiciones", label: "Posiciones" },
-  { href: "#estadisticas", label: "Estadísticas" },
-  { href: "#galeria", label: "Galería" },
-  { href: "#patrocinadores", label: "Patrocinadores" },
-];
+import { NavDropdown } from "@/components/nav-dropdown";
 
 // TODO: reemplazar por los handles/URLs reales de cada red social.
 const SOCIAL_LINKS = [
@@ -26,36 +16,59 @@ const SOCIAL_LINKS = [
   { href: "#", label: "YouTube", Icon: YoutubeLogo },
 ];
 
+const TORNEO_LINKS = [
+  { href: "#torneo", label: "Formato del torneo" },
+  { href: "#partidos", label: "Calendario completo" },
+  { href: "#", label: "Reglamento" },
+];
+
+const ESTADISTICAS_LINKS = [
+  { href: "#estadisticas", label: "Goleadores" },
+  { href: "#estadisticas", label: "Mejores arqueros" },
+  { href: "#estadisticas", label: "Ranking MVP" },
+  { href: "#", label: "Ranking de árbitros" },
+];
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-black/10 bg-muneca-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <Link href="#inicio" className="flex items-center gap-2 shrink-0">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
+        <Link href="#inicio" className="flex items-center shrink-0">
           <Image
-            src="/brand/logo-horizontal.png"
+            src="/brand/logo-full.png"
             alt="Copa Muñeca e'Burro"
-            width={180}
-            height={48}
+            width={1983}
+            height={793}
             priority
-            className="h-10 w-auto object-contain sm:h-11"
+            className="h-12 w-auto object-contain sm:h-14"
           />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold uppercase tracking-wide">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              aria-current={link.active ? "page" : undefined}
-              className={`relative pb-1 transition-colors hover:text-muneca-purple ${
-                link.active
-                  ? "text-muneca-black after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-purple"
-                  : "text-muneca-black/70"
-              }`}
-            >
-              {link.label}
-            </a>
-          ))}
+          <a
+            href="#inicio"
+            aria-current="page"
+            className="relative pb-1 text-muneca-black after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-purple"
+          >
+            Inicio
+          </a>
+          <NavDropdown label="Torneo" items={TORNEO_LINKS} />
+          <a href="#equipos" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+            Equipos
+          </a>
+          <a href="#partidos" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+            Resultados
+          </a>
+          <a href="#posiciones" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+            Posiciones
+          </a>
+          <NavDropdown label="Estadísticas" items={ESTADISTICAS_LINKS} />
+          <a href="#galeria" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+            Galería
+          </a>
+          <a href="#patrocinadores" className="pb-1 text-muneca-black/70 transition-colors hover:text-muneca-purple">
+            Patrocinadores
+          </a>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
