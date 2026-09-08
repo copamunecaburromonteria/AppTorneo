@@ -15,7 +15,9 @@ const PRICING_FALLBACK = {
   montoInscripcion: 800000,
   precioUniforme: 50000,
   maxJugadoresPorEquipo: 15,
-  porcentajeAbonoMinimo: 50,
+  numeroCuotasSinUniforme: 2,
+  numeroCuotasConUniforme: 3,
+  diasPlazoSaldo: 7,
 };
 
 async function getPricing() {
@@ -24,7 +26,7 @@ async function getPricing() {
     const { data } = await supabase
       .from("torneo_config")
       .select(
-        "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, porcentaje_abono_minimo"
+        "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo"
       )
       .eq("id", 1)
       .single();
@@ -35,7 +37,9 @@ async function getPricing() {
       montoInscripcion: Number(data.monto_inscripcion),
       precioUniforme: Number(data.precio_uniforme),
       maxJugadoresPorEquipo: data.max_jugadores_por_equipo as number,
-      porcentajeAbonoMinimo: Number(data.porcentaje_abono_minimo),
+      numeroCuotasSinUniforme: data.numero_cuotas_sin_uniforme as number,
+      numeroCuotasConUniforme: data.numero_cuotas_con_uniforme as number,
+      diasPlazoSaldo: data.dias_plazo_saldo as number,
     };
   } catch {
     // Si Supabase todavía no está conectado (faltan variables de entorno),
@@ -79,7 +83,9 @@ export default async function InscripcionPage() {
                 <p className="font-display mt-1 text-3xl text-muneca-yellow">
                   ${pricing.montoInscripcion.toLocaleString("es-CO")}
                 </p>
-                <p className="mt-1 text-xs text-white/60">Por equipo</p>
+                <p className="mt-1 text-xs text-white/60">
+                  Por equipo · en {pricing.numeroCuotasSinUniforme} partidas
+                </p>
               </div>
               <div className="min-w-[220px] rounded-xl border border-white/10 bg-white/5 px-6 py-4">
                 <p className="text-xs uppercase tracking-wide text-donkey-gray">
@@ -89,7 +95,8 @@ export default async function InscripcionPage() {
                   ${pricing.precioUniforme.toLocaleString("es-CO")}
                 </p>
                 <p className="mt-1 text-xs text-white/60">
-                  Por jugador · kit completo de {pricing.maxJugadoresPorEquipo}
+                  Por jugador · kit de {pricing.maxJugadoresPorEquipo} · con uniforme, en{" "}
+                  {pricing.numeroCuotasConUniforme} partidas
                 </p>
               </div>
             </div>

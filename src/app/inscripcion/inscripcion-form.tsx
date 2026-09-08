@@ -7,7 +7,9 @@ type Pricing = {
   montoInscripcion: number;
   precioUniforme: number;
   maxJugadoresPorEquipo: number;
-  porcentajeAbonoMinimo: number;
+  numeroCuotasSinUniforme: number;
+  numeroCuotasConUniforme: number;
+  diasPlazoSaldo: number;
 };
 
 const initialState: RegistroEquipoInput = {
@@ -34,6 +36,31 @@ const inputClass =
   "mt-1.5 w-full rounded-md border border-black/15 bg-white px-3.5 py-2.5 text-sm text-muneca-black placeholder:text-black/35 focus:border-muneca-purple focus:outline-none focus:ring-2 focus:ring-muneca-purple/20";
 
 const labelClass = "block text-sm font-semibold text-muneca-black";
+
+/**
+ * Reparte `total` en `partes` montos enteros que suman exactamente `total`.
+ * Espejo de la misma función en actions.ts, solo para previsualizar en el
+ * navegador antes de enviar — el servidor vuelve a calcular el plan real.
+ */
+function repartirEnPartesIguales(total: number, partes: number): number[] {
+  if (partes <= 0) return [total];
+  const base = Math.floor(total / partes);
+  const montos = Array.from({ length: partes }, () => base);
+  montos[partes - 1] = total - base * (partes - 1);
+  return montos;
+}
+
+function formatCOP(valor: number): string {
+  return `$${valor.toLocaleString("es-CO")}`;
+}
+
+function formatFecha(iso: string): string {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 function Field({
   label,
@@ -99,10 +126,14 @@ export function InscripcionForm({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  const montoTotal =
-    form.tieneUniformePropio === false && form.compraUniformeCopa
-      ? pricing.montoInscripcion + montoUniformeKit
-      : pricing.montoInscripcion;
+  const compraUniformeActiva = form.tieneUniformePropio === false && form.compraUniformeCopa;
+  const montoTotal = compraUniformeActiva
+    ? pricing.montoInscripcion + montoUniformeKit
+    : pricing.montoInscripcion;
+  const numeroCuotas = compraUniformeActiva
+    ? pricing.numeroCuotasConUniforme
+    : pricing.numeroCuotasSinUniforme;
+  const cuotasPreview = repartirEnPartesIguales(montoTotal, numeroCuotas);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -140,24 +171,36 @@ export function InscripcionForm({
         <div className="mt-8 rounded-2xl border border-black/10 bg-muneca-white p-6 text-left shadow-sm">
           <p className="text-sm uppercase tracking-wide text-black/50">Total a pagar</p>
           <p className="font-display mt-1 text-4xl text-muneca-black">
-            ${result.montoTotal.toLocaleString("es-CO")}
+            {formatCOP(result.montoTotal)}
           </p>
           <ul className="mt-3 space-y-1 text-sm text-black/60">
-            <li>Inscripción: ${result.montoInscripcion.toLocaleString("es-CO")}</li>
+            <li>Inscripción: {formatCOP(result.montoInscripcion)}</li>
             {result.cantidadUniformes > 0 && (
               <li>
-                Uniformes ({result.cantidadUniformes} × $
-                {pricing.precioUniforme.toLocaleString("es-CO")}): $
-                {result.montoUniformes.toLocaleString("es-CO")}
+                Uniformes ({result.cantidadUniformes} × {formatCOP(pricing.precioUniforme)}):{" "}
+                {formatCOP(result.montoUniformes)}
               </li>
             )}
+          </ul>
+
+          <p className="mt-5 text-sm uppercase tracking-wide text-black/50">
+            Plan de pagos — {result.cuotas.length} partidas
+          </p>
+          <ul className="mt-2 divide-y divide-black/10">
+            {result.cuotas.map((cuota) => (
+              <li key={cuota.numeroCuota} className="flex items-center justify-between py-2 text-sm">
+                <span className="text-black/70">
+                  Partida {cuota.numeroCuota} · vence {formatFecha(cuota.fechaLimite)}
+                </span>
+                <span className="font-semibold text-muneca-black">{formatCOP(cuota.monto)}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
         <p className="mt-6 text-sm text-black/60">
           El pago en línea con Wompi se habilita muy pronto — te avisaremos por correo y WhatsApp
-          apenas esté listo para completar el pago (completo o abono del{" "}
-          {pricing.porcentajeAbonoMinimo}%).
+          apenas esté listo para pagar la primera partida y activar tu equipo.
         </p>
       </section>
     );
@@ -352,10 +395,9 @@ export function InscripcionForm({
               ¿Deseas adquirir el uniforme oficial personalizado con la Copa Muñeca e&apos;Burro?
             </span>
             <p className="mt-1 text-sm text-black/60">
-              Pedido de plantilla completa ({pricing.maxJugadoresPorEquipo} uniformes) a $
-              {pricing.precioUniforme.toLocaleString("es-CO")} c/u = $
-              {montoUniformeKit.toLocaleString("es-CO")}. La talla de cada jugador se pide después,
-              al completar la plantilla en el portal.
+              Pedido de plantilla completa ({pricing.maxJugadoresPorEquipo} uniformes) a{" "}
+              {formatCOP(pricing.precioUniforme)} c/u = {formatCOP(montoUniformeKit)}. La talla de
+              cada jugador se pide después, al completar la plantilla en el portal.
             </p>
             <div className="mt-3 flex gap-3">
               {[
@@ -385,23 +427,37 @@ export function InscripcionForm({
         <div className="mt-3 space-y-1 text-sm text-white/80">
           <div className="flex justify-between">
             <span>Inscripción</span>
-            <span>${pricing.montoInscripcion.toLocaleString("es-CO")}</span>
+            <span>{formatCOP(pricing.montoInscripcion)}</span>
           </div>
-          {form.tieneUniformePropio === false && form.compraUniformeCopa && (
+          {compraUniformeActiva && (
             <div className="flex justify-between">
               <span>
-                Uniformes ({pricing.maxJugadoresPorEquipo} × $
-                {pricing.precioUniforme.toLocaleString("es-CO")})
+                Uniformes ({pricing.maxJugadoresPorEquipo} × {formatCOP(pricing.precioUniforme)})
               </span>
-              <span>${montoUniformeKit.toLocaleString("es-CO")}</span>
+              <span>{formatCOP(montoUniformeKit)}</span>
             </div>
           )}
         </div>
         <div className="mt-3 flex items-baseline justify-between border-t border-white/15 pt-3">
           <span className="font-display text-xl">Total</span>
           <span className="font-display text-3xl text-muneca-yellow">
-            ${montoTotal.toLocaleString("es-CO")}
+            {formatCOP(montoTotal)}
           </span>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-donkey-gray">
+            Se paga en {numeroCuotas} partidas, cada una {pricing.diasPlazoSaldo} días después de
+            la anterior
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-white/80">
+            {cuotasPreview.map((monto, index) => (
+              <li key={index} className="flex justify-between">
+                <span>Partida {index + 1}</span>
+                <span>{formatCOP(monto)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {error && (
