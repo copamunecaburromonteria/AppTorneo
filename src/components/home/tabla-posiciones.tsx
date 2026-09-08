@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { Trophy } from "@phosphor-icons/react/dist/ssr";
 import { tablaPosiciones } from "@/lib/mock-data";
 
 const COLS = ["Pos", "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "DG", "Pts"];
@@ -13,35 +15,94 @@ export function TablaPosiciones() {
           Tabla de posiciones presentada por [Patrocinador]
         </p>
 
-        <div className="mt-6 overflow-x-auto rounded-xl border border-black/10 bg-muneca-white">
-          <table className="w-full min-w-[560px] text-sm">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-black/10 bg-muneca-white shadow-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="bg-muneca-black text-muneca-white">
+              <tr className="bg-gradient-to-r from-muneca-purple-dark to-muneca-black text-muneca-white">
                 {COLS.map((col) => (
-                  <th key={col} className="px-3 py-3 text-left font-semibold uppercase text-xs tracking-wide first:pl-4">
+                  <th
+                    key={col}
+                    className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide first:pl-4"
+                  >
                     {col}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {tablaPosiciones.map((fila, i) => (
-                <tr
-                  key={fila.equipo}
-                  className={i % 2 === 0 ? "bg-muneca-white" : "bg-black/[0.015]"}
-                >
-                  <td className="px-3 py-3 pl-4 font-bold text-muneca-purple">{fila.posicion}</td>
-                  <td className="px-3 py-3 font-semibold">{fila.equipo}</td>
-                  <td className="px-3 py-3">{fila.pj}</td>
-                  <td className="px-3 py-3">{fila.pg}</td>
-                  <td className="px-3 py-3">{fila.pe}</td>
-                  <td className="px-3 py-3">{fila.pp}</td>
-                  <td className="px-3 py-3">{fila.gf}</td>
-                  <td className="px-3 py-3">{fila.gc}</td>
-                  <td className="px-3 py-3">{fila.gf - fila.gc}</td>
-                  <td className="px-3 py-3 font-bold">{fila.pts}</td>
-                </tr>
-              ))}
+              {tablaPosiciones.map((fila, i) => {
+                const dg = fila.gf - fila.gc;
+                const esLider = fila.posicion === 1;
+                return (
+                  <tr
+                    key={fila.equipo}
+                    className={`border-b border-black/5 transition-colors last:border-0 hover:bg-muneca-purple/5 ${
+                      esLider
+                        ? "bg-muneca-yellow/10"
+                        : i % 2 === 0
+                          ? "bg-muneca-white"
+                          : "bg-muneca-purple/[0.03]"
+                    }`}
+                  >
+                    <td className="px-3 py-3 pl-4">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                          esLider
+                            ? "bg-muneca-yellow text-muneca-black"
+                            : "bg-muneca-purple text-white"
+                        }`}
+                      >
+                        {fila.posicion}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src="/brand/escudo-dummy.png"
+                          alt=""
+                          aria-hidden="true"
+                          width={1208}
+                          height={1283}
+                          className="h-6 w-6 object-contain"
+                        />
+                        <span className="font-semibold text-muneca-black">
+                          {fila.equipo}
+                        </span>
+                        {esLider && (
+                          <Trophy
+                            size={16}
+                            weight="fill"
+                            className="text-muneca-yellow"
+                            aria-label="Líder"
+                          />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-muneca-black/70">{fila.pj}</td>
+                    <td className="px-3 py-3 font-semibold text-emerald-600">{fila.pg}</td>
+                    <td className="px-3 py-3 text-muneca-black/50">{fila.pe}</td>
+                    <td className="px-3 py-3 font-semibold text-rose-600">{fila.pp}</td>
+                    <td className="px-3 py-3 text-muneca-black/70">{fila.gf}</td>
+                    <td className="px-3 py-3 text-muneca-black/70">{fila.gc}</td>
+                    <td
+                      className={`px-3 py-3 font-semibold ${
+                        dg > 0
+                          ? "text-emerald-600"
+                          : dg < 0
+                            ? "text-rose-600"
+                            : "text-muneca-black/50"
+                      }`}
+                    >
+                      {dg > 0 ? `+${dg}` : dg}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="inline-flex min-w-9 items-center justify-center rounded-md bg-muneca-purple px-2 py-1 text-xs font-bold text-white">
+                        {fila.pts}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

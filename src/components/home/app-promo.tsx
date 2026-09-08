@@ -11,7 +11,7 @@ export function AppPromo() {
   return (
     <section className="relative overflow-hidden bg-muneca-black text-muneca-white lg:bg-[url('/brand/app-promo-bg.jpg')] lg:bg-cover lg:bg-center">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:flex lg:min-h-[440px] lg:items-center lg:py-0">
-        <div className="text-center lg:ml-[38%] lg:max-w-sm lg:text-left">
+        <div className="text-center lg:ml-[48%] lg:max-w-sm lg:text-left">
           <h2 className="font-display text-4xl leading-tight sm:text-5xl">
             TODO EL TORNEO
             <br />
