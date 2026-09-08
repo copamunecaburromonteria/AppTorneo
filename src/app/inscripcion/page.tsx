@@ -60,12 +60,13 @@ export default async function InscripcionPage() {
 
           <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6">
             <Image
-              src="/brand/isotipo.png"
+              src="/brand/mascota-badge.png"
               alt=""
               aria-hidden="true"
-              width={400}
-              height={400}
-              className="mx-auto mb-6 h-20 w-20 object-contain"
+              width={1254}
+              height={1254}
+              priority
+              className="mx-auto mb-6 h-24 w-24 object-contain sm:h-28 sm:w-28"
             />
             <h1 className="font-display text-5xl sm:text-6xl">INSCRIBE TU EQUIPO</h1>
             <p className="mt-3 text-lg text-white/80">
