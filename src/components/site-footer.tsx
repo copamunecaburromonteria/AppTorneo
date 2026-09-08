@@ -28,8 +28,18 @@ const FOOTER_LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-muneca-black text-muneca-white">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <footer className="relative overflow-hidden bg-muneca-black text-muneca-white">
+      {/* Fondo decorativo: resplandores de marca + acentos diagonales, sin imagen. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(123,31,162,0.25),transparent)]" />
+        <div className="absolute -left-20 top-8 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
+        <div className="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-muneca-yellow/10 blur-3xl" />
+        <div className="absolute right-12 top-0 h-40 w-1 rotate-[16deg] bg-muneca-yellow/25" />
+        <div className="absolute right-24 top-0 h-28 w-1 rotate-[16deg] bg-muneca-purple/40" />
+        <div className="absolute left-1/3 bottom-0 h-32 w-1 rotate-[16deg] bg-muneca-purple/20" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-end">
           <div className="flex items-center gap-3">
             {SOCIAL_LINKS.map(({ label, href, Icon }) => (
@@ -55,11 +65,11 @@ export function SiteFooter() {
 
         <div className="mt-8 flex flex-col items-center gap-6 border-b border-white/10 pb-8 text-center lg:flex-row lg:justify-between lg:text-left">
           <Image
-            src="/brand/mascota-footer.png"
-            alt="Copa Muñeca e'Burro"
-            width={932}
-            height={1472}
-            className="h-[150px] w-auto object-contain"
+            src="/brand/logo-footer.png"
+            alt="Copa Muñeca e'Burro Montería"
+            width={1170}
+            height={1186}
+            className="h-36 w-auto object-contain sm:h-40"
           />
           <nav className="font-display flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm uppercase tracking-wide text-white/70">
             {FOOTER_LINKS.map((label) => (

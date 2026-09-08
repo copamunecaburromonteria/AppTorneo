@@ -74,7 +74,7 @@ export function SiteHeader() {
         </Link>
 
         <nav
-          className={`font-display hidden items-center gap-6 text-base uppercase tracking-wider lg:flex ${
+          className={`font-display hidden items-center gap-6 text-lg uppercase tracking-wider lg:flex ${
             tone === "light" ? "text-white/90" : "text-muneca-black/70"
           }`}
         >
