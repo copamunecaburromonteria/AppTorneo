@@ -14,8 +14,6 @@ type Pricing = {
 
 const initialState: RegistroEquipoInput = {
   nombreEquipo: "",
-  colorPrimario: "",
-  colorSecundario: "",
   correo: "",
   password: "",
   delegadoNombre: "",
@@ -220,22 +218,6 @@ export function InscripcionForm({
             />
           </Field>
         </div>
-        <Field label="Color primario">
-          <input
-            type="color"
-            value={form.colorPrimario || "#7B1FA2"}
-            onChange={(e) => update("colorPrimario", e.target.value)}
-            className="mt-1.5 h-11 w-full cursor-pointer rounded-md border border-black/15"
-          />
-        </Field>
-        <Field label="Color secundario">
-          <input
-            type="color"
-            value={form.colorSecundario || "#FFD900"}
-            onChange={(e) => update("colorSecundario", e.target.value)}
-            className="mt-1.5 h-11 w-full cursor-pointer rounded-md border border-black/15"
-          />
-        </Field>
       </SectionCard>
 
       <SectionCard

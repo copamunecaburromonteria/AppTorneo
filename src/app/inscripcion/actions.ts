@@ -1,11 +1,11 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/resend/client";
+import { correoRegistroEquipo } from "@/lib/resend/templates";
 
 export type RegistroEquipoInput = {
   nombreEquipo: string;
-  colorPrimario: string;
-  colorSecundario: string;
   correo: string;
   password: string;
   delegadoNombre: string;
@@ -152,8 +152,6 @@ export async function registrarEquipo(
     .from("teams")
     .insert({
       nombre_equipo: nombreEquipo,
-      color_primario: input.colorPrimario || null,
-      color_secundario: input.colorSecundario || null,
       tiene_uniforme_propio: input.tieneUniformePropio,
       compra_uniforme_copa: compraUniforme,
     })
@@ -261,6 +259,19 @@ export async function registrarEquipo(
       error: "El equipo se registró, pero no se pudo generar el plan de pagos. Contáctanos para completarlo.",
     };
   }
+
+  // --- 7. Correo de confirmación ---
+  // Se espera (await) aunque el resultado no cambie la respuesta: en un
+  // entorno serverless, una promesa sin await puede cortarse apenas la
+  // función retorna, y el correo nunca saldría.
+  const { subject, html, text } = correoRegistroEquipo({
+    nombreEquipo,
+    delegadoNombre,
+    correo,
+    montoTotal,
+    cuotas,
+  });
+  await sendEmail({ to: correo, subject, html, text }).catch(() => {});
 
   return {
     success: true,
