@@ -49,7 +49,7 @@ export function Hero() {
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4 sm:justify-start">
             <a
-              href="#inscripcion"
+              href="/inscripcion"
               className="rounded-md bg-muneca-yellow px-8 py-4 text-base font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
             >
               Inscribe tu equipo →
@@ -63,7 +63,7 @@ export function Hero() {
           </div>
 
           <p className="mt-7 text-base uppercase tracking-[0.2em] text-donkey-gray">
-            32 equipos · Categoría Libre · Montería
+            24 equipos · Categoría Libre · Montería
           </p>
         </div>
       </div>

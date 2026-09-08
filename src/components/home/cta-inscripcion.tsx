@@ -19,10 +19,10 @@ export function CtaInscripcion() {
             ¿TU EQUIPO ESTÁ LISTO?
           </h2>
           <p className="mt-2 text-white/80">
-            32 equipos. Una copa. Una oportunidad para hacer historia.
+            24 equipos. Una copa. Una oportunidad para hacer historia.
           </p>
           <a
-            href="#"
+            href="/inscripcion"
             className="mt-6 inline-block rounded-md bg-muneca-yellow px-8 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
           >
             Inscribe tu equipo →

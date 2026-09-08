@@ -70,10 +70,10 @@ export const patrocinadoresPlaceholder = [
 ];
 
 export const torneoEnNumeros = {
-  equipos: 32,
-  jugadores: 480,
-  partidos: "+60",
-  partidosMaxPorEquipo: 7,
+  equipos: 24,
+  jugadores: 360,
+  partidos: "75",
+  partidosMaxPorEquipo: 9,
   premioCampeon: "$10M",
 };
 

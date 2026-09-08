@@ -24,7 +24,7 @@ const accentScript = Permanent_Marker({
 export const metadata: Metadata = {
   title: "Copa Muñeca e'Burro | Montería",
   description:
-    "Más que un torneo, es el parche. Copa Muñeca e'Burro — 32 equipos, categoría libre, Montería, Córdoba.",
+    "Más que un torneo, es el parche. Copa Muñeca e'Burro — 24 equipos, categoría libre, Montería, Córdoba.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

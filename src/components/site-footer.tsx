@@ -73,7 +73,7 @@ export function SiteFooter() {
           />
           <nav className="font-display flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-base uppercase tracking-wide text-white/70 sm:text-lg">
             {FOOTER_LINKS.map((label) => (
-              <a key={label} href="#inicio" className="hover:text-muneca-yellow">
+              <a key={label} href="/#inicio" className="hover:text-muneca-yellow">
                 {label}
               </a>
             ))}

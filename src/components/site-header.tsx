@@ -27,16 +27,16 @@ const TORNEO_LINKS = [
 ];
 
 const PARTIDOS_LINKS = [
-  { href: "#partidos", label: "Resultados" },
-  { href: "#posiciones", label: "Posiciones" },
-  { href: "#estadisticas", label: "Estadísticas" },
+  { href: "/#partidos", label: "Resultados" },
+  { href: "/#posiciones", label: "Posiciones" },
+  { href: "/#estadisticas", label: "Estadísticas" },
 ];
 
 // TODO: "Noticias" aún no tiene sección propia; Fotos/Videos apuntan a Galería por ahora.
 const CONTENIDO_LINKS = [
   { href: "#", label: "Noticias" },
-  { href: "#galeria", label: "Fotos" },
-  { href: "#galeria", label: "Videos" },
+  { href: "/#galeria", label: "Fotos" },
+  { href: "/#galeria", label: "Videos" },
 ];
 
 export function SiteHeader() {
@@ -62,7 +62,7 @@ export function SiteHeader() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6">
-        <Link href="#inicio" className="flex shrink-0 items-center">
+        <Link href="/#inicio" className="flex shrink-0 items-center">
           <Image
             src="/brand/logo-horizontal.png"
             alt="Copa Muñeca e'Burro Montería"
@@ -79,7 +79,7 @@ export function SiteHeader() {
           }`}
         >
           <a
-            href="#inicio"
+            href="/#inicio"
             aria-current="page"
             className={`relative pb-1 uppercase after:absolute after:inset-x-0 after:-bottom-[1px] after:h-0.5 after:rounded-full after:bg-muneca-yellow ${
               tone === "light" ? "text-white" : "text-muneca-black"
@@ -88,13 +88,13 @@ export function SiteHeader() {
             Inicio
           </a>
           <NavDropdown label="Torneo" items={TORNEO_LINKS} tone={tone} />
-          <a href="#equipos" className="pb-1 uppercase transition-colors hover:text-muneca-yellow">
+          <a href="/#equipos" className="pb-1 uppercase transition-colors hover:text-muneca-yellow">
             Equipos
           </a>
           <NavDropdown label="Partidos" items={PARTIDOS_LINKS} tone={tone} />
           <NavDropdown label="Contenido" items={CONTENIDO_LINKS} tone={tone} />
           <a
-            href="#patrocinadores"
+            href="/#patrocinadores"
             className="pb-1 uppercase transition-colors hover:text-muneca-yellow"
           >
             Patrocinadores
@@ -119,7 +119,7 @@ export function SiteHeader() {
         </div>
 
         <a
-          href="#inscripcion"
+          href="/inscripcion"
           className="shrink-0 rounded-md bg-muneca-yellow px-4 py-2 text-sm font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.03]"
         >
           Inscribe tu equipo →
