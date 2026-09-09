@@ -2,10 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 /**
- * Protege /admin: exige sesión iniciada. La verificación de que el usuario
- * tenga rol "admin" (no solo cualquier sesión) se hace en
- * src/app/admin/(dashboard)/layout.tsx, que sí puede consultar la tabla
- * profiles.
+ * Protege /admin y /portal: exige sesión iniciada. La verificación de rol
+ * (admin vs equipo, y que el equipo tenga team_id) se hace en el layout de
+ * cada sección, que sí puede consultar la tabla profiles.
  */
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,18 +34,25 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isLoginRoute = pathname === "/admin/login";
-  const isAdminRoute = pathname.startsWith("/admin");
+  const seccion = pathname.startsWith("/admin")
+    ? "admin"
+    : pathname.startsWith("/portal")
+      ? "portal"
+      : null;
 
-  if (isAdminRoute && !isLoginRoute && !user) {
+  if (!seccion) return response;
+
+  const isLoginRoute = pathname === `/${seccion}/login`;
+
+  if (!isLoginRoute && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = `/${seccion}/login`;
     return NextResponse.redirect(url);
   }
 
   if (isLoginRoute && user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin";
+    url.pathname = `/${seccion}`;
     return NextResponse.redirect(url);
   }
 
@@ -54,5 +60,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/portal/:path*"],
 };
