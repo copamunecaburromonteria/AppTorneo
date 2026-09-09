@@ -46,8 +46,11 @@ const STAFF_LABEL: Record<string, string> = {
 
 function Card({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-white/10 bg-white/5 p-5">
-      <h2 className="font-display mb-4 text-lg uppercase tracking-wide">{titulo}</h2>
+    <section className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/20 backdrop-blur-sm transition-colors hover:border-white/20">
+      <h2 className="font-display mb-4 flex items-center gap-2 text-lg uppercase tracking-wide">
+        <span className="h-2 w-2 rounded-full bg-muneca-yellow" aria-hidden="true" />
+        {titulo}
+      </h2>
       {children}
     </section>
   );
