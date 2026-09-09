@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { cerrarSesionEquipo } from "@/app/portal/actions";
 import { SiteHeader } from "@/components/site-header";
@@ -63,24 +62,15 @@ export default async function PortalDashboardLayout({
           <div className="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-muneca-yellow/10 blur-3xl" />
         </div>
 
-        <div className="relative border-b border-white/10 px-4 pb-4 pt-32 sm:px-6 sm:pt-28 lg:pt-24">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/brand/mascota-badge.png"
-                alt="Copa Muñeca e'Burro"
-                width={1254}
-                height={1254}
-                className="h-9 w-9 shrink-0 object-contain"
-              />
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-white/50">
-                  Portal de equipos
-                </p>
-                <p className="font-display uppercase tracking-wide">
-                  {team?.nombre_equipo ?? "Mi equipo"}
-                </p>
-              </div>
+        <div className="relative mx-auto max-w-3xl px-4 pb-8 pt-28 sm:px-6 sm:pt-24 lg:pt-20">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-5 py-4 shadow-lg shadow-black/20 backdrop-blur-sm">
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-white/50">
+                Portal de equipos
+              </p>
+              <p className="font-display text-xl uppercase tracking-wide">
+                {team?.nombre_equipo ?? "Mi equipo"}
+              </p>
             </div>
             <form action={cerrarSesionEquipo}>
               <button
@@ -91,9 +81,9 @@ export default async function PortalDashboardLayout({
               </button>
             </form>
           </div>
-        </div>
 
-        <div className="relative mx-auto max-w-3xl px-4 py-8 sm:px-6">{children}</div>
+          {children}
+        </div>
       </main>
       <SiteFooter />
     </div>
