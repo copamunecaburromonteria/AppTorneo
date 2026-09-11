@@ -1,20 +1,68 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 export function Hero() {
+  const imgWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = imgWrapRef.current;
+    if (!el) return;
+
+    // Respeta si la persona prefiere menos movimiento en pantalla.
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
+    let ticking = false;
+
+    function actualizar() {
+      const rect = el!.getBoundingClientRect();
+      // Solo se mueve mientras el héroe está cerca del viewport — evita
+      // trabajo de más cuando ya se hizo scroll mucho más abajo.
+      if (rect.bottom > 0 && rect.top < window.innerHeight) {
+        const offset = Math.min(window.scrollY * 0.15, 200);
+        el!.style.transform = `translate3d(0, ${offset}px, 0)`;
+      }
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(actualizar);
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <section
       id="inicio"
       className="relative isolate flex min-h-[640px] items-center overflow-hidden bg-muneca-black text-muneca-white lg:min-h-[820px]"
     >
-      <Image
-        src="/brand/hero-photo-01.jpg"
-        alt=""
+      <div
+        ref={imgWrapRef}
         aria-hidden="true"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-[68%_center]"
-      />
+        className="absolute -top-[220px] -bottom-[220px] left-0 right-0 will-change-transform"
+      >
+        <Image
+          src="/brand/hero-stadium.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
+
+      {/* Toque opaco: oscurece la foto para que el logo y el texto se lean bien */}
+      <div aria-hidden className="absolute inset-0 bg-muneca-black/45" />
       <div
         aria-hidden
         className="absolute inset-0 bg-gradient-to-t from-muneca-black via-muneca-black/60 to-transparent"

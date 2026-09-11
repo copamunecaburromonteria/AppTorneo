@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { cerrarSesion } from "@/app/admin/actions";
 
@@ -64,6 +65,22 @@ export default async function AdminDashboardLayout({
           </button>
         </form>
       </header>
+
+      <nav className="flex items-center gap-1 border-b border-white/10 px-4 py-2 sm:px-6">
+        <Link
+          href="/admin"
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          Equipos y pagos
+        </Link>
+        <Link
+          href="/admin/arbitros"
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          Árbitros
+        </Link>
+      </nav>
+
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</div>
     </div>
   );
