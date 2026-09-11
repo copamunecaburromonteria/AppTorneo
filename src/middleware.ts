@@ -1,13 +1,63 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const PREVIEW_COOKIE = "cme_preview";
+
+const STATIC_FILE_RE =
+  /\.(png|jpe?g|gif|svg|webp|ico|css|js|mjs|json|xml|txt|woff2?|ttf|map)$/i;
+
+/**
+ * Sitio "en construcción" para el público. Mientras la variable de entorno
+ * MAINTENANCE_MODE sea "true", toda ruta pública (todo menos /admin,
+ * /portal, /api y archivos estáticos) se sirve como /en-construccion.
+ *
+ * Quien tenga el enlace de vista previa (visitar una vez
+ * /api/preview?key=PREVIEW_BYPASS_SECRET) recibe una cookie y ve el sitio
+ * real con normalidad — así Fernando puede seguir revisando los cambios en
+ * producción mientras el público ve la página de construcción.
+ */
+function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
+  if (process.env.MAINTENANCE_MODE !== "true") return null;
+
+  const { pathname } = request.nextUrl;
+
+  const rutaExcluida =
+    pathname === "/en-construccion" ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/api") ||
+    STATIC_FILE_RE.test(pathname);
+
+  if (rutaExcluida) return null;
+
+  const secreto = process.env.PREVIEW_BYPASS_SECRET;
+  const cookie = request.cookies.get(PREVIEW_COOKIE)?.value;
+  if (secreto && cookie === secreto) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = "/en-construccion";
+  return NextResponse.rewrite(url);
+}
+
 /**
  * Protege /admin y /portal: exige sesión iniciada. La verificación de rol
  * (admin vs equipo, y que el equipo tenga team_id) se hace en el layout de
  * cada sección, que sí puede consultar la tabla profiles.
  */
 export async function middleware(request: NextRequest) {
+  const gate = aplicarModoConstruccion(request);
+  if (gate) return gate;
+
+  const { pathname } = request.nextUrl;
+  const seccion = pathname.startsWith("/admin")
+    ? "admin"
+    : pathname.startsWith("/portal")
+      ? "portal"
+      : null;
+
   let response = NextResponse.next({ request });
+
+  if (!seccion) return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,15 +83,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-  const seccion = pathname.startsWith("/admin")
-    ? "admin"
-    : pathname.startsWith("/portal")
-      ? "portal"
-      : null;
-
-  if (!seccion) return response;
-
   const isLoginRoute = pathname === `/${seccion}/login`;
 
   if (!isLoginRoute && !user) {
@@ -60,5 +101,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/portal/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
