@@ -1,11 +1,15 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend/client";
 import { correoRegistroEquipo } from "@/lib/resend/templates";
 
 export type RegistroEquipoInput = {
   nombreEquipo: string;
+  anioFundacion: string;
+  ciudadBarrio: string;
+  descripcion: string;
   correo: string;
   password: string;
   delegadoNombre: string;
@@ -32,6 +36,7 @@ export type RegistroEquipoResult =
   | {
       success: true;
       teamId: string;
+      correo: string;
       montoTotal: number;
       montoInscripcion: number;
       montoUniformes: number;
@@ -68,6 +73,18 @@ export async function registrarEquipo(
   const delegadoApellido = input.delegadoApellido.trim();
   const delegadoDocumento = input.delegadoDocumento.trim();
   const delegadoContactoPrincipal = input.delegadoContactoPrincipal.trim();
+
+  const ciudadBarrio = input.ciudadBarrio.trim();
+  const descripcion = input.descripcion.trim();
+  const anioFundacionRaw = input.anioFundacion.trim();
+  let anioFundacion: number | null = null;
+  if (anioFundacionRaw) {
+    const parsed = Number(anioFundacionRaw);
+    if (!Number.isInteger(parsed) || parsed < 1900 || parsed > new Date().getFullYear()) {
+      return { success: false, error: "El año de fundación no es válido." };
+    }
+    anioFundacion = parsed;
+  }
 
   if (!nombreEquipo) return { success: false, error: "Falta el nombre del equipo." };
   if (!correo || !correo.includes("@"))
@@ -152,6 +169,9 @@ export async function registrarEquipo(
     .from("teams")
     .insert({
       nombre_equipo: nombreEquipo,
+      anio_fundacion: anioFundacion,
+      ciudad_barrio: ciudadBarrio || null,
+      descripcion: descripcion || null,
       tiene_uniforme_propio: input.tieneUniformePropio,
       compra_uniforme_copa: compraUniforme,
     })
@@ -276,10 +296,27 @@ export async function registrarEquipo(
   return {
     success: true,
     teamId,
+    correo,
     montoTotal,
     montoInscripcion,
     montoUniformes,
     cantidadUniformes,
     cuotas,
   };
+}
+
+/**
+ * Inicia sesión inmediatamente después de registrar el equipo, usando el
+ * cliente ligado a las cookies de la petición (a diferencia de
+ * `registrarEquipo`, que usa el cliente de service role y no deja sesión).
+ * Así el delegado no tiene que volver a loguearse para continuar el wizard
+ * en /portal/inscripcion.
+ */
+export async function iniciarSesionTrasRegistro(
+  correo: string,
+  password: string
+): Promise<{ success: boolean }> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email: correo, password });
+  return { success: !error };
 }

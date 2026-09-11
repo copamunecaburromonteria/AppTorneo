@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { evaluarEstadoPlantilla } from "@/lib/portal/plantilla";
 import {
@@ -140,6 +141,7 @@ export default async function PortalPage({
     (a: { numero_cuota: number }, b: { numero_cuota: number }) => a.numero_cuota - b.numero_cuota
   );
   const compraUniformeCopa = Boolean(team?.compra_uniforme_copa);
+  const inscripcionIncompleta = (players ?? []).length === 0;
 
   return (
     <div className="space-y-6">
@@ -153,6 +155,23 @@ export default async function PortalPage({
 
       {error && (
         <p className="rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</p>
+      )}
+
+      {inscripcionIncompleta && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-muneca-yellow/40 bg-muneca-yellow/10 px-5 py-4">
+          <div>
+            <p className="text-sm font-semibold text-muneca-black">Todavía no completas tu inscripción</p>
+            <p className="text-sm text-black/60">
+              Te falta cargar la plantilla de jugadores y revisar tu plan de pago.
+            </p>
+          </div>
+          <Link
+            href="/portal/inscripcion?paso=4"
+            className="shrink-0 rounded-md bg-muneca-yellow px-4 py-2 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02]"
+          >
+            Continuar inscripción →
+          </Link>
+        </div>
       )}
 
       <section className="rounded-2xl bg-muneca-black p-6 text-muneca-white sm:p-8">

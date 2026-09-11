@@ -8,8 +8,10 @@ import {
   FacebookLogo,
   TiktokLogo,
   YoutubeLogo,
+  CaretDown,
 } from "@phosphor-icons/react";
 import { NavDropdown } from "@/components/nav-dropdown";
+import { cerrarSesionEquipo } from "@/app/portal/actions";
 
 const SOCIAL_LINKS = [
   { href: "https://www.instagram.com/copamunecaburromonteria", label: "Instagram", Icon: InstagramLogo },
@@ -38,7 +40,55 @@ const CONTENIDO_LINKS = [
   { href: "/#galeria", label: "Videos" },
 ];
 
-export function SiteHeader() {
+export type SiteHeaderUserChip = {
+  /** Nombre para mostrar (ej. delegado). */
+  nombre: string;
+  /** Ej. "Delegado". */
+  rol: string;
+  /** Nombre del equipo, si aplica. */
+  equipo?: string;
+};
+
+function UserChip({ chip }: { chip: SiteHeaderUserChip; tone: "light" | "dark" }) {
+  const inicial = chip.nombre.trim().charAt(0).toUpperCase() || "?";
+
+  return (
+    <details className="group relative">
+      <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors marker:content-none [&::-webkit-details-marker]:hidden">
+        <span className="font-display flex h-8 w-8 items-center justify-center rounded-full bg-muneca-purple text-sm text-white">
+          {inicial}
+        </span>
+        <span className="hidden text-left sm:block">
+          <span className="block text-sm font-semibold leading-tight">{chip.nombre}</span>
+          <span className="block text-xs leading-tight text-current opacity-60">
+            {chip.rol}
+            {chip.equipo ? ` · ${chip.equipo}` : ""}
+          </span>
+        </span>
+        <CaretDown size={12} weight="bold" className="opacity-50" aria-hidden="true" />
+      </summary>
+
+      <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-48 overflow-hidden rounded-xl border border-black/10 bg-white py-1.5 text-muneca-black shadow-lg">
+        <Link
+          href="/portal"
+          className="block px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5"
+        >
+          Mi equipo
+        </Link>
+        <form action={cerrarSesionEquipo}>
+          <button
+            type="submit"
+            className="block w-full px-4 py-2 text-left text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50"
+          >
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
+    </details>
+  );
+}
+
+export function SiteHeader({ userChip }: { userChip?: SiteHeaderUserChip }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -100,31 +150,39 @@ export function SiteHeader() {
           </a>
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          {SOCIAL_LINKS.map(({ label, href, Icon }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={label}
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muneca-yellow hover:text-muneca-black ${
-                tone === "light"
-                  ? "bg-white/10 text-white/85"
-                  : "bg-muneca-black/5 text-muneca-black/60"
-              }`}
-            >
-              <Icon size={16} weight="regular" aria-hidden="true" />
-            </a>
-          ))}
-        </div>
+        {userChip ? (
+          <div className={tone === "light" ? "text-white" : "text-muneca-black"}>
+            <UserChip chip={userChip} tone={tone} />
+          </div>
+        ) : (
+          <>
+            <div className="hidden items-center gap-3 md:flex">
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muneca-yellow hover:text-muneca-black ${
+                    tone === "light"
+                      ? "bg-white/10 text-white/85"
+                      : "bg-muneca-black/5 text-muneca-black/60"
+                  }`}
+                >
+                  <Icon size={16} weight="regular" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
 
-        <a
-          href="/inscripcion"
-          className="shrink-0 rounded-md bg-muneca-yellow px-4 py-2 text-sm font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.03]"
-        >
-          Inscribe tu equipo →
-        </a>
+            <a
+              href="/inscripcion"
+              className="shrink-0 rounded-md bg-muneca-yellow px-4 py-2 text-sm font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.03]"
+            >
+              Inscribe tu equipo →
+            </a>
+          </>
+        )}
       </div>
     </header>
   );
