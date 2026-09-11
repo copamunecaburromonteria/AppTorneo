@@ -44,11 +44,17 @@ const STAFF_LABEL: Record<string, string> = {
   preparador_fisico: "Preparador físico",
 };
 
+const inputClass =
+  "w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-muneca-black outline-none transition-colors focus:border-muneca-purple focus:ring-2 focus:ring-muneca-purple/20 disabled:bg-black/[0.03] disabled:opacity-60";
+
+const secondaryButtonClass =
+  "rounded-md bg-black/5 px-4 py-2 text-sm font-semibold text-muneca-black transition-colors hover:bg-black/10";
+
 function Card({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/20 backdrop-blur-sm transition-colors hover:border-white/20">
-      <h2 className="font-display mb-4 flex items-center gap-2 text-lg uppercase tracking-wide">
-        <span className="h-2 w-2 rounded-full bg-muneca-yellow" aria-hidden="true" />
+    <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+      <h2 className="font-display mb-5 flex items-center gap-2 text-xl uppercase tracking-wide text-muneca-black">
+        <span className="h-2 w-2 rounded-full bg-muneca-purple" aria-hidden="true" />
         {titulo}
       </h2>
       {children}
@@ -71,13 +77,13 @@ function Campo({
 }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-white/70">{label}</span>
+      <span className="mb-1 block font-semibold text-muneca-black/70">{label}</span>
       <input
         name={name}
         type={type}
         defaultValue={defaultValue}
         required={required}
-        className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-white outline-none focus:border-muneca-yellow"
+        className={inputClass}
       />
     </label>
   );
@@ -138,42 +144,43 @@ export default async function PortalPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl uppercase tracking-wide">Mi equipo</h1>
-        <p className="mt-1 text-sm text-white/60">
+        <h1 className="font-display text-2xl uppercase tracking-wide text-muneca-black">Mi equipo</h1>
+        <p className="mt-1 text-sm text-black/60">
           {team?.nombre_equipo}
           {team?.orden_inscripcion != null && ` · Cupo #${team.orden_inscripcion}`}
         </p>
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>
+        <p className="rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</p>
       )}
 
-      <Card titulo="Estado de tu inscripción">
-        <p className="text-sm text-white/70">
+      <section className="rounded-2xl bg-muneca-black p-6 text-muneca-white sm:p-8">
+        <p className="text-xs uppercase tracking-wide text-donkey-gray">Estado de tu inscripción</p>
+        <p className="mt-2 text-sm text-white/70">
           Estado:{" "}
-          <span className="font-semibold text-white">
+          <span className="font-semibold text-muneca-yellow">
             {ESTADO_EQUIPO_LABEL[team?.estado_inscripcion ?? ""] ?? team?.estado_inscripcion}
           </span>
         </p>
         {pago && (
-          <p className="mt-2 text-sm text-white/70">
+          <p className="mt-1 text-sm text-white/70">
             Pagado {formatCOP(Number(pago.monto_pagado))} de {formatCOP(Number(pago.monto_total))}
           </p>
         )}
         {cuotas.length > 0 && (
-          <ul className="mt-3 divide-y divide-white/10 rounded-lg border border-white/10">
+          <ul className="mt-4 divide-y divide-white/10 rounded-xl bg-white/5">
             {cuotas.map(
               (c: { numero_cuota: number; monto: number; fecha_limite: string; estado: string }) => (
                 <li
                   key={c.numero_cuota}
-                  className="flex items-center justify-between px-3 py-2 text-sm"
+                  className="flex items-center justify-between px-4 py-2.5 text-sm"
                 >
-                  <span>
+                  <span className="text-white/80">
                     Partida {c.numero_cuota} — {formatCOP(Number(c.monto))} · vence{" "}
                     {formatFecha(c.fecha_limite)}
                   </span>
-                  <span className="text-white/60">
+                  <span className="text-white/50">
                     {ESTADO_CUOTA_LABEL[c.estado] ?? c.estado}
                   </span>
                 </li>
@@ -181,10 +188,10 @@ export default async function PortalPage({
             )}
           </ul>
         )}
-      </Card>
+      </section>
 
       <Card titulo="Datos del delegado">
-        <form action={guardarDelegado} className="grid gap-3 sm:grid-cols-2">
+        <form action={guardarDelegado} className="grid gap-4 sm:grid-cols-2">
           <Campo label="Nombre" name="nombre" defaultValue={delegado?.nombre ?? ""} required />
           <Campo label="Apellido" name="apellido" defaultValue={delegado?.apellido ?? ""} required />
           <Campo label="Documento" name="documento" defaultValue={delegado?.documento ?? ""} required />
@@ -216,32 +223,28 @@ export default async function PortalPage({
       </Card>
 
       <Card titulo="Cuerpo técnico">
-        <ul className="mb-4 divide-y divide-white/10 rounded-lg border border-white/10">
+        <ul className="mb-4 divide-y divide-black/10 rounded-lg border border-black/10">
           {(staff ?? []).map((s) => (
-            <li key={s.id} className="flex items-center justify-between px-3 py-2 text-sm">
+            <li key={s.id} className="flex items-center justify-between px-3 py-2 text-sm text-muneca-black">
               <span>
                 {s.nombre} · {STAFF_LABEL[s.rol] ?? s.rol}
                 {s.documento ? ` · ${s.documento}` : ""}
               </span>
               <form action={eliminarStaff.bind(null, s.id)}>
-                <button type="submit" className="text-xs text-red-400 hover:underline">
+                <button type="submit" className="text-xs text-rose-600 hover:underline">
                   Eliminar
                 </button>
               </form>
             </li>
           ))}
           {(staff ?? []).length === 0 && (
-            <li className="px-3 py-2 text-sm text-white/50">Todavía no has agregado a nadie.</li>
+            <li className="px-3 py-2 text-sm text-black/50">Todavía no has agregado a nadie.</li>
           )}
         </ul>
         <form action={agregarStaff} className="grid gap-3 sm:grid-cols-4">
           <label className="block text-sm sm:col-span-1">
-            <span className="mb-1 block text-white/70">Rol</span>
-            <select
-              name="rol"
-              defaultValue="dt"
-              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-1.5 text-white outline-none focus:border-muneca-yellow"
-            >
+            <span className="mb-1 block font-semibold text-muneca-black/70">Rol</span>
+            <select name="rol" defaultValue="dt" className={inputClass}>
               <option value="dt">Director técnico</option>
               <option value="preparador_fisico">Preparador físico</option>
             </select>
@@ -253,10 +256,7 @@ export default async function PortalPage({
             <Campo label="Documento (opcional)" name="documento" />
           </div>
           <div className="flex items-end sm:col-span-1">
-            <button
-              type="submit"
-              className="w-full rounded-md bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20"
-            >
+            <button type="submit" className={`w-full ${secondaryButtonClass}`}>
               Agregar
             </button>
           </div>
@@ -266,27 +266,24 @@ export default async function PortalPage({
       <Card titulo="Colores del equipo">
         <form action={guardarColores} className="flex flex-wrap items-end gap-6">
           <label className="block text-sm">
-            <span className="mb-1 block text-white/70">Color primario</span>
+            <span className="mb-1 block font-semibold text-muneca-black/70">Color primario</span>
             <input
               type="color"
               name="color_primario"
               defaultValue={team?.color_primario ?? "#7b1fa2"}
-              className="h-10 w-16 rounded-md border border-white/15 bg-white/5"
+              className="h-10 w-16 rounded-md border border-black/15 bg-white"
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block text-white/70">Color secundario</span>
+            <span className="mb-1 block font-semibold text-muneca-black/70">Color secundario</span>
             <input
               type="color"
               name="color_secundario"
               defaultValue={team?.color_secundario ?? "#f5c518"}
-              className="h-10 w-16 rounded-md border border-white/15 bg-white/5"
+              className="h-10 w-16 rounded-md border border-black/15 bg-white"
             />
           </label>
-          <button
-            type="submit"
-            className="rounded-md bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20"
-          >
+          <button type="submit" className={secondaryButtonClass}>
             Guardar colores
           </button>
         </form>
@@ -297,8 +294,8 @@ export default async function PortalPage({
           <p
             className={`mb-4 rounded-md px-3 py-2 text-sm ${
               estadoPlantilla.puedeEditar
-                ? "bg-yellow-500/10 text-yellow-300"
-                : "bg-white/10 text-white/70"
+                ? "bg-amber-50 text-amber-700"
+                : "bg-black/5 text-black/60"
             }`}
           >
             {estadoPlantilla.motivo}
@@ -310,7 +307,7 @@ export default async function PortalPage({
             <form
               key={p.id}
               action={editarJugador.bind(null, p.id)}
-              className="grid gap-2 rounded-lg border border-white/10 p-3 sm:grid-cols-6"
+              className="grid gap-2 rounded-lg border border-black/10 p-3 sm:grid-cols-6"
             >
               <input
                 name="nombre"
@@ -318,13 +315,13 @@ export default async function PortalPage({
                 disabled={!estadoPlantilla.puedeEditar}
                 placeholder="Nombre"
                 required
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50 sm:col-span-2"
+                className={`${inputClass} px-2 py-1.5 sm:col-span-2`}
               />
               <select
                 name="tipo_documento"
                 defaultValue={p.tipo_documento}
                 disabled={!estadoPlantilla.puedeEditar}
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50"
+                className={`${inputClass} px-2 py-1.5`}
               >
                 <option value="TI">TI</option>
                 <option value="CC">CC</option>
@@ -338,7 +335,7 @@ export default async function PortalPage({
                 disabled={!estadoPlantilla.puedeEditar}
                 placeholder="N° documento"
                 required
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50"
+                className={`${inputClass} px-2 py-1.5`}
               />
               <input
                 name="numero_camiseta"
@@ -347,13 +344,13 @@ export default async function PortalPage({
                 defaultValue={p.numero_camiseta ?? ""}
                 disabled={!estadoPlantilla.puedeEditar}
                 placeholder="N° camiseta"
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50"
+                className={`${inputClass} px-2 py-1.5`}
               />
               <select
                 name="posicion"
                 defaultValue={p.posicion ?? ""}
                 disabled={!estadoPlantilla.puedeEditar}
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50"
+                className={`${inputClass} px-2 py-1.5`}
               >
                 <option value="">Posición</option>
                 <option value="Arquero">Arquero</option>
@@ -366,14 +363,14 @@ export default async function PortalPage({
                 defaultValue={p.eps ?? ""}
                 disabled={!estadoPlantilla.puedeEditar}
                 placeholder="EPS"
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50 sm:col-span-2"
+                className={`${inputClass} px-2 py-1.5 sm:col-span-2`}
               />
               {compraUniformeCopa && (
                 <select
                   name="talla_uniforme"
                   defaultValue={p.talla_uniforme ?? ""}
                   disabled={!estadoPlantilla.puedeEditar}
-                  className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow disabled:opacity-50"
+                  className={`${inputClass} px-2 py-1.5`}
                 >
                   <option value="">Talla uniforme</option>
                   {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
@@ -394,7 +391,7 @@ export default async function PortalPage({
                   <button
                     type="submit"
                     formAction={eliminarJugador.bind(null, p.id)}
-                    className="rounded-md bg-red-500/15 px-3 py-1.5 text-xs font-semibold text-red-300"
+                    className="rounded-md bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100"
                   >
                     Eliminar
                   </button>
@@ -403,26 +400,22 @@ export default async function PortalPage({
             </form>
           ))}
           {(players ?? []).length === 0 && (
-            <p className="text-sm text-white/50">Todavía no has cargado jugadores.</p>
+            <p className="text-sm text-black/50">Todavía no has cargado jugadores.</p>
           )}
         </div>
 
         {estadoPlantilla.puedeEditar && (players ?? []).length < maxJugadores && (
           <form
             action={agregarJugador}
-            className="mt-4 grid gap-2 rounded-lg border border-dashed border-white/20 p-3 sm:grid-cols-6"
+            className="mt-4 grid gap-2 rounded-lg border border-dashed border-black/20 p-3 sm:grid-cols-6"
           >
             <input
               name="nombre"
               placeholder="Nombre"
               required
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow sm:col-span-2"
+              className={`${inputClass} px-2 py-1.5 sm:col-span-2`}
             />
-            <select
-              name="tipo_documento"
-              defaultValue="CC"
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow"
-            >
+            <select name="tipo_documento" defaultValue="CC" className={`${inputClass} px-2 py-1.5`}>
               <option value="TI">TI</option>
               <option value="CC">CC</option>
               <option value="CE">CE</option>
@@ -433,20 +426,16 @@ export default async function PortalPage({
               name="numero_documento"
               placeholder="N° documento"
               required
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow"
+              className={`${inputClass} px-2 py-1.5`}
             />
             <input
               name="numero_camiseta"
               type="number"
               min={0}
               placeholder="N° camiseta"
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow"
+              className={`${inputClass} px-2 py-1.5`}
             />
-            <select
-              name="posicion"
-              defaultValue=""
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow"
-            >
+            <select name="posicion" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
               <option value="">Posición</option>
               <option value="Arquero">Arquero</option>
               <option value="Defensa">Defensa</option>
@@ -456,14 +445,10 @@ export default async function PortalPage({
             <input
               name="eps"
               placeholder="EPS"
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow sm:col-span-2"
+              className={`${inputClass} px-2 py-1.5 sm:col-span-2`}
             />
             {compraUniformeCopa && (
-              <select
-                name="talla_uniforme"
-                defaultValue=""
-                className="rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:border-muneca-yellow"
-              >
+              <select name="talla_uniforme" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
                 <option value="">Talla uniforme</option>
                 {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
                   <option key={t} value={t}>
@@ -473,10 +458,7 @@ export default async function PortalPage({
               </select>
             )}
             <div className="sm:col-span-2">
-              <button
-                type="submit"
-                className="w-full rounded-md bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20"
-              >
+              <button type="submit" className={`w-full ${secondaryButtonClass}`}>
                 Agregar jugador
               </button>
             </div>
