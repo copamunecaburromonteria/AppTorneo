@@ -11,12 +11,11 @@ import {
 } from "@phosphor-icons/react";
 import { NavDropdown } from "@/components/nav-dropdown";
 
-// TODO: reemplazar por los handles/URLs reales de cada red social.
 const SOCIAL_LINKS = [
-  { href: "#", label: "Instagram", Icon: InstagramLogo },
-  { href: "#", label: "Facebook", Icon: FacebookLogo },
-  { href: "#", label: "TikTok", Icon: TiktokLogo },
-  { href: "#", label: "YouTube", Icon: YoutubeLogo },
+  { href: "https://www.instagram.com/copamunecaburromonteria", label: "Instagram", Icon: InstagramLogo },
+  { href: "https://www.facebook.com/copamunecaburromonteria", label: "Facebook", Icon: FacebookLogo },
+  { href: "https://www.tiktok.com/@copamunecaburromonteria", label: "TikTok", Icon: TiktokLogo },
+  { href: "https://www.youtube.com/@copamunecaburromonteria", label: "YouTube", Icon: YoutubeLogo },
 ];
 
 // TODO: "Cómo funciona", "Reglamento" y "Premios" aún no tienen página/sección propia.
@@ -106,6 +105,8 @@ export function SiteHeader() {
             <a
               key={label}
               href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label={label}
               className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muneca-yellow hover:text-muneca-black ${
                 tone === "light"
