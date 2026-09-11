@@ -46,7 +46,7 @@ export function WizardShell({
     <div className="flex flex-1 flex-col">
       <SiteHeader userChip={userChip} />
       <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-8 pt-32 text-muneca-white sm:pt-28 lg:pt-24">
+        <section className="relative overflow-hidden bg-muneca-black pb-8 pt-36 text-muneca-white">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
