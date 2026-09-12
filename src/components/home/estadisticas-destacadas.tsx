@@ -33,7 +33,7 @@ export function EstadisticasDestacadas() {
                 <p className="truncate font-semibold">{card.nombre}</p>
                 <p className="text-xs text-muneca-black/50">{card.equipo}</p>
                 <p className="text-xs font-bold text-muneca-purple">{card.valor}</p>
-                <a href="#" className="mt-1 inline-block text-xs font-bold text-muneca-black/70 hover:text-muneca-purple">
+                <a href="/estadisticas" className="mt-1 inline-block text-xs font-bold text-muneca-black/70 hover:text-muneca-purple">
                   {card.cta} →
                 </a>
               </div>

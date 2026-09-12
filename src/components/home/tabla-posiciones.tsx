@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Trophy } from "@phosphor-icons/react/dist/ssr";
 import { tablaPosiciones } from "@/lib/mock-data";
 
@@ -8,12 +9,22 @@ export function TablaPosiciones() {
   return (
     <section id="posiciones" className="bg-black/[0.02]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
-          Tabla de posiciones
-        </p>
-        <p className="mt-1 pl-3 text-xs text-muneca-black/50">
-          Tabla de posiciones presentada por [Patrocinador]
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
+              Tabla de posiciones
+            </p>
+            <p className="mt-1 pl-3 text-xs text-muneca-black/50">
+              Tabla de posiciones presentada por [Patrocinador]
+            </p>
+          </div>
+          <Link
+            href="/posiciones"
+            className="pl-3 text-xs font-bold text-muneca-black/70 hover:text-muneca-purple sm:pl-0"
+          >
+            Ver tabla completa →
+          </Link>
+        </div>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-black/10 bg-muneca-white shadow-sm">
           <table className="w-full min-w-[640px] text-sm">

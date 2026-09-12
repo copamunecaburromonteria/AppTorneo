@@ -1,15 +1,31 @@
 import { UsersThree, User, SoccerBall, Trophy, Heart } from "@phosphor-icons/react/dist/ssr";
-import { torneoEnNumeros } from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/server";
 
-const ITEMS = [
-  { Icon: UsersThree, valor: `${torneoEnNumeros.equipos}`, label: "Equipos" },
-  { Icon: User, valor: `${torneoEnNumeros.jugadores}`, label: "Jugadores" },
-  { Icon: SoccerBall, valor: `${torneoEnNumeros.partidos}`, label: "Partidos" },
-  { Icon: Trophy, valor: "1", label: "Campeón" },
-  { Icon: Heart, valor: "Una", label: "Comunidad" },
-];
+export async function StatsBar() {
+  const supabase = await createClient();
 
-export function StatsBar() {
+  const [{ count: totalEquipos }, { count: totalJugadores }, { count: totalPartidos }] =
+    await Promise.all([
+      supabase
+        .from("teams")
+        .select("*", { count: "exact", head: true })
+        .eq("estado_inscripcion", "validado"),
+      supabase
+        .from("players")
+        .select("*", { count: "exact", head: true })
+        .eq("es_jugador", true)
+        .neq("estado", "dado_de_baja"),
+      supabase.from("matches").select("*", { count: "exact", head: true }),
+    ]);
+
+  const ITEMS = [
+    { Icon: UsersThree, valor: `${totalEquipos ?? 0}`, label: "Equipos" },
+    { Icon: User, valor: `${totalJugadores ?? 0}`, label: "Jugadores" },
+    { Icon: SoccerBall, valor: `${totalPartidos ?? 0}`, label: "Partidos" },
+    { Icon: Trophy, valor: "1", label: "Campeón" },
+    { Icon: Heart, valor: "Una", label: "Comunidad" },
+  ];
+
   return (
     <div className="border-y border-white/10 bg-muneca-black text-muneca-white">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-8 text-center sm:grid-cols-5 sm:gap-y-0 sm:divide-x sm:divide-white/10 sm:px-6 sm:py-10">

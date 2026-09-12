@@ -79,6 +79,12 @@ export default async function AdminDashboardLayout({
         >
           Árbitros
         </Link>
+        <Link
+          href="/admin/operadores"
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          Operadores
+        </Link>
       </nav>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</div>

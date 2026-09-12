@@ -9,7 +9,8 @@ const STATIC_FILE_RE =
 /**
  * Sitio "en construcción" para el público. Mientras la variable de entorno
  * MAINTENANCE_MODE sea "true", toda ruta pública (todo menos /admin,
- * /portal, /api y archivos estáticos) se sirve como /en-construccion.
+ * /portal, /operador, /lider-arbitros, /api y archivos estáticos) se sirve
+ * como /en-construccion.
  *
  * Quien tenga el enlace de vista previa (visitar una vez
  * /api/preview?key=PREVIEW_BYPASS_SECRET) recibe una cookie y ve el sitio
@@ -25,6 +26,8 @@ function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
     pathname === "/en-construccion" ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/portal") ||
+    pathname.startsWith("/operador") ||
+    pathname.startsWith("/lider-arbitros") ||
     pathname.startsWith("/api") ||
     STATIC_FILE_RE.test(pathname);
 
@@ -40,9 +43,14 @@ function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
 }
 
 /**
- * Protege /admin y /portal: exige sesión iniciada. La verificación de rol
- * (admin vs equipo, y que el equipo tenga team_id) se hace en el layout de
- * cada sección, que sí puede consultar la tabla profiles.
+ * Protege /admin, /portal y /lider-arbitros: exige sesión iniciada. La
+ * verificación de rol (admin vs equipo vs lider_arbitros, y que el equipo
+ * tenga team_id) se hace en el layout de cada sección, que sí puede
+ * consultar la tabla profiles.
+ *
+ * /operador tiene su propio esquema de sesión (cookie firmada, sin Supabase
+ * Auth) validado en cada Server Action/página de esa sección — no pasa por
+ * este middleware.
  */
 export async function middleware(request: NextRequest) {
   const gate = aplicarModoConstruccion(request);
@@ -53,7 +61,9 @@ export async function middleware(request: NextRequest) {
     ? "admin"
     : pathname.startsWith("/portal")
       ? "portal"
-      : null;
+      : pathname.startsWith("/lider-arbitros")
+        ? "lider-arbitros"
+        : null;
 
   let response = NextResponse.next({ request });
 
