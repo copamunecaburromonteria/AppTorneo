@@ -4,6 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+
+const inputClass =
+  "mt-1.5 w-full rounded-md border border-black/15 bg-white px-3.5 py-2.5 text-sm text-muneca-black placeholder:text-black/35 focus:border-muneca-purple focus:outline-none focus:ring-2 focus:ring-muneca-purple/20";
+
+const labelClass = "block text-sm font-semibold text-muneca-black";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -34,63 +42,78 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muneca-black px-4 py-16">
-      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl">
-        <Image
-          src="/brand/mascota-badge.png"
-          alt="Copa Muñeca e'Burro"
-          width={1254}
-          height={1254}
-          className="mx-auto mb-6 h-16 w-16 object-contain"
-        />
-        <h1 className="font-display text-center text-2xl uppercase tracking-wide text-muneca-white">
-          Panel administrativo
-        </h1>
-        <p className="mt-1 text-center text-sm text-white/60">
-          Copa Muñeca e&apos;Burro
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <div>
-            <label htmlFor="correo" className="mb-1 block text-sm font-medium text-white/80">
-              Correo
-            </label>
-            <input
-              id="correo"
-              type="email"
-              required
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
-              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-white outline-none focus:border-muneca-yellow"
-            />
+    <div className="flex flex-1 flex-col">
+      <SiteHeader />
+      <main className="flex-1 bg-muneca-white">
+        <section className="relative overflow-hidden bg-muneca-black pb-14 pt-32 text-center text-muneca-white sm:pt-28 lg:pt-24">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(123,31,162,0.35),transparent)]" />
+            <div className="absolute -right-24 top-10 h-80 w-80 rounded-full bg-muneca-purple/30 blur-3xl" />
           </div>
-          <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-white/80">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-white outline-none focus:border-muneca-yellow"
+          <div className="relative mx-auto max-w-md px-4 sm:px-6">
+            <div className="mb-6 text-left">
+              <Breadcrumbs
+                tone="light"
+                items={[{ label: "Inicio", href: "/" }, { label: "Panel administrativo" }]}
+              />
+            </div>
+            <Image
+              src="/brand/mascota-badge.png"
+              alt="Copa Muñeca e'Burro"
+              width={1254}
+              height={1254}
+              priority
+              className="mx-auto mb-5 h-16 w-16 object-contain"
             />
+            <h1 className="font-display text-4xl uppercase sm:text-5xl">Panel administrativo</h1>
+            <p className="mt-2 text-white/70">Copa Muñeca e&apos;Burro</p>
           </div>
+        </section>
 
-          {error && (
-            <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>
-          )}
+        <section className="mx-auto max-w-sm px-4 py-12 sm:px-6">
+          <div className="rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <label className="block">
+                <span className={labelClass}>Correo</span>
+                <input
+                  type="email"
+                  required
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className={labelClass}>Contraseña</span>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
 
-          <button
-            type="submit"
-            disabled={cargando}
-            className="w-full rounded-md bg-muneca-yellow px-4 py-2 font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
-          >
-            {cargando ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
-      </div>
-    </main>
+              {error && (
+                <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={cargando}
+                className="w-full rounded-md bg-muneca-yellow px-4 py-2.5 text-sm font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
+              >
+                {cargando ? "Entrando..." : "Entrar"}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-xs text-black/40">
+              Acceso exclusivo del equipo organizador de la Copa.
+            </p>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

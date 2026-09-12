@@ -14,6 +14,11 @@ async function accion(_prev: EstadoForm, formData: FormData): Promise<EstadoForm
 
 type Escuela = { id: string; nombre: string };
 
+const inputClass =
+  "w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-muneca-black outline-none focus:border-muneca-purple focus:ring-2 focus:ring-muneca-purple/20";
+
+const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-wide text-muneca-black/50";
+
 export function NuevoArbitroForm({ escuelas }: { escuelas: Escuela[] }) {
   const [state, formAction, pending] = useActionState(accion, estadoInicial);
   const formRef = useRef<HTMLFormElement>(null);
@@ -28,37 +33,19 @@ export function NuevoArbitroForm({ escuelas }: { escuelas: Escuela[] }) {
     <form
       ref={formRef}
       action={formAction}
-      className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-5 sm:grid-cols-2"
+      className="grid gap-3 rounded-xl border border-black/10 bg-white p-5 shadow-sm sm:grid-cols-2"
     >
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Nombre *
-        </label>
-        <input
-          name="nombre"
-          required
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Nombre *</label>
+        <input name="nombre" required className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Número de documento *
-        </label>
-        <input
-          name="numero_documento"
-          required
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Número de documento *</label>
+        <input name="numero_documento" required className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Escuela arbitral
-        </label>
-        <select
-          name="escuela_id"
-          defaultValue=""
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow [&>option]:bg-muneca-black"
-        >
+        <label className={labelClass}>Escuela arbitral</label>
+        <select name="escuela_id" defaultValue="" className={inputClass}>
           <option value="">Sin escuela / independiente</option>
           {escuelas.map((escuela) => (
             <option key={escuela.id} value={escuela.id}>
@@ -68,32 +55,16 @@ export function NuevoArbitroForm({ escuelas }: { escuelas: Escuela[] }) {
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Teléfono
-        </label>
-        <input
-          name="telefono"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Teléfono</label>
+        <input name="telefono" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Correo
-        </label>
-        <input
-          name="correo"
-          type="email"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Correo</label>
+        <input name="correo" type="email" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Notas
-        </label>
-        <input
-          name="notas"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Notas</label>
+        <input name="notas" className={inputClass} />
       </div>
 
       <div className="flex items-center gap-3 sm:col-span-2">
@@ -104,7 +75,7 @@ export function NuevoArbitroForm({ escuelas }: { escuelas: Escuela[] }) {
         >
           {pending ? "Guardando..." : "Agregar árbitro"}
         </button>
-        {state.error && <span className="text-xs text-red-400">{state.error}</span>}
+        {state.error && <span className="text-xs text-rose-600">{state.error}</span>}
       </div>
     </form>
   );

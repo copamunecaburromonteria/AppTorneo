@@ -53,7 +53,7 @@ export function OperadorAcciones({ operadorId, activo }: { operadorId: string; a
           type="button"
           onClick={toggleActivo}
           disabled={pending}
-          className="rounded-md border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/80 transition-colors hover:border-muneca-yellow/60 hover:text-muneca-yellow disabled:opacity-60"
+          className="rounded-md border border-black/15 px-2.5 py-1 text-xs font-semibold text-muneca-black/70 transition-colors hover:border-muneca-purple/40 hover:text-muneca-purple disabled:opacity-60"
         >
           {activo ? "Marcar inactivo" : "Marcar activo"}
         </button>
@@ -61,7 +61,7 @@ export function OperadorAcciones({ operadorId, activo }: { operadorId: string; a
           type="button"
           onClick={() => setCambiandoPin((v) => !v)}
           disabled={pending}
-          className="rounded-md border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/80 transition-colors hover:border-muneca-yellow/60 hover:text-muneca-yellow disabled:opacity-60"
+          className="rounded-md border border-black/15 px-2.5 py-1 text-xs font-semibold text-muneca-black/70 transition-colors hover:border-muneca-purple/40 hover:text-muneca-purple disabled:opacity-60"
         >
           Cambiar PIN
         </button>
@@ -69,11 +69,11 @@ export function OperadorAcciones({ operadorId, activo }: { operadorId: string; a
           type="button"
           onClick={eliminar}
           disabled={pending}
-          className="rounded-md border border-white/15 px-2.5 py-1 text-xs font-semibold text-red-400 transition-colors hover:border-red-400/60 disabled:opacity-60"
+          className="rounded-md border border-black/15 px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"
         >
           Eliminar
         </button>
-        {error && <span className="text-xs text-red-400">{error}</span>}
+        {error && <span className="text-xs text-rose-600">{error}</span>}
       </div>
 
       {cambiandoPin && (
@@ -85,7 +85,7 @@ export function OperadorAcciones({ operadorId, activo }: { operadorId: string; a
             pattern="\d{4,6}"
             maxLength={6}
             placeholder="Nuevo PIN"
-            className="w-28 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-muneca-yellow"
+            className="w-28 rounded-md border border-black/15 bg-white px-2 py-1 text-xs text-muneca-black outline-none focus:border-muneca-purple"
           />
           <button
             type="button"

@@ -12,6 +12,11 @@ async function accion(_prev: EstadoForm, formData: FormData): Promise<EstadoForm
   return result.success ? { success: true, error: "" } : { success: false, error: result.error };
 }
 
+const inputClass =
+  "w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-muneca-black outline-none focus:border-muneca-purple focus:ring-2 focus:ring-muneca-purple/20";
+
+const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-wide text-muneca-black/50";
+
 export function NuevaEscuelaForm() {
   const [state, formAction, pending] = useActionState(accion, estadoInicial);
   const formRef = useRef<HTMLFormElement>(null);
@@ -26,54 +31,27 @@ export function NuevaEscuelaForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-5 sm:grid-cols-2"
+      className="grid gap-3 rounded-xl border border-black/10 bg-white p-5 shadow-sm sm:grid-cols-2"
     >
       <div className="sm:col-span-2">
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Nombre de la escuela *
-        </label>
-        <input
-          name="nombre"
-          required
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Nombre de la escuela *</label>
+        <input name="nombre" required className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Representante
-        </label>
-        <input
-          name="representante"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Representante</label>
+        <input name="representante" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Teléfono
-        </label>
-        <input
-          name="telefono"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Teléfono</label>
+        <input name="telefono" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Correo
-        </label>
-        <input
-          name="correo"
-          type="email"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Correo</label>
+        <input name="correo" type="email" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Notas
-        </label>
-        <input
-          name="notas"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Notas</label>
+        <input name="notas" className={inputClass} />
       </div>
 
       <div className="flex items-center gap-3 sm:col-span-2">
@@ -84,7 +62,7 @@ export function NuevaEscuelaForm() {
         >
           {pending ? "Guardando..." : "Agregar escuela"}
         </button>
-        {state.error && <span className="text-xs text-red-400">{state.error}</span>}
+        {state.error && <span className="text-xs text-rose-600">{state.error}</span>}
       </div>
     </form>
   );

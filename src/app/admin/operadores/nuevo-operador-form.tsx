@@ -12,6 +12,11 @@ async function accion(_prev: EstadoForm, formData: FormData): Promise<EstadoForm
   return result.success ? { success: true, error: "" } : { success: false, error: result.error };
 }
 
+const inputClass =
+  "w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-muneca-black outline-none focus:border-muneca-purple focus:ring-2 focus:ring-muneca-purple/20";
+
+const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-wide text-muneca-black/50";
+
 export function NuevoOperadorForm() {
   const [state, formAction, pending] = useActionState(accion, estadoInicial);
   const formRef = useRef<HTMLFormElement>(null);
@@ -26,23 +31,14 @@ export function NuevoOperadorForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-5 sm:grid-cols-3"
+      className="grid gap-3 rounded-xl border border-black/10 bg-white p-5 shadow-sm sm:grid-cols-3"
     >
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          Nombre *
-        </label>
-        <input
-          name="nombre"
-          required
-          placeholder="Ej. Operador Cancha 1"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
-        />
+        <label className={labelClass}>Nombre *</label>
+        <input name="nombre" required placeholder="Ej. Operador Cancha 1" className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60">
-          PIN (4-6 dígitos) *
-        </label>
+        <label className={labelClass}>PIN (4-6 dígitos) *</label>
         <input
           name="pin"
           required
@@ -50,7 +46,7 @@ export function NuevoOperadorForm() {
           pattern="\d{4,6}"
           maxLength={6}
           placeholder="1234"
-          className="w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-muneca-yellow"
+          className={inputClass}
         />
       </div>
 
@@ -65,7 +61,7 @@ export function NuevoOperadorForm() {
       </div>
 
       {state.error && (
-        <p className="text-xs text-red-400 sm:col-span-3">{state.error}</p>
+        <p className="text-xs text-rose-600 sm:col-span-3">{state.error}</p>
       )}
     </form>
   );

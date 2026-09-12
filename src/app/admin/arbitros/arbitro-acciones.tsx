@@ -25,12 +25,12 @@ export function ArbitroAcciones({ arbitroId, activo }: { arbitroId: string; acti
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={toggleActivo}
         disabled={pending}
-        className="rounded-md border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/80 transition-colors hover:border-muneca-yellow/60 hover:text-muneca-yellow disabled:opacity-60"
+        className="rounded-md border border-black/15 px-2.5 py-1 text-xs font-semibold text-muneca-black/70 transition-colors hover:border-muneca-purple/40 hover:text-muneca-purple disabled:opacity-60"
       >
         {activo ? "Marcar inactivo" : "Marcar activo"}
       </button>
@@ -38,11 +38,11 @@ export function ArbitroAcciones({ arbitroId, activo }: { arbitroId: string; acti
         type="button"
         onClick={eliminar}
         disabled={pending}
-        className="rounded-md border border-white/15 px-2.5 py-1 text-xs font-semibold text-red-400 transition-colors hover:border-red-400/60 disabled:opacity-60"
+        className="rounded-md border border-black/15 px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"
       >
         Eliminar
       </button>
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {error && <span className="text-xs text-rose-600">{error}</span>}
     </div>
   );
 }

@@ -34,50 +34,54 @@ export default async function AdminArbitrosPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="font-display text-2xl uppercase tracking-wide">Árbitros</h1>
-        <p className="mt-1 text-sm text-white/60">
+        <h1 className="font-display text-2xl uppercase tracking-wide text-muneca-black">
+          Árbitros
+        </h1>
+        <p className="mt-1 text-sm text-muneca-black/60">
           Registro de escuelas arbitrales y la planilla de árbitros del torneo. La
           coordinación de quién dirige cada partido sigue siendo manual por WhatsApp por
-          ahora — la asignación puntual a cada partido se hará desde la consola del
-          operador cuando esté lista (Fase 2).
+          ahora — la asignación puntual a cada partido se hace desde el panel de Líder de
+          Árbitros.
         </p>
       </div>
 
       <section className="space-y-4">
-        <h2 className="font-display text-lg uppercase tracking-wide text-white/90">
+        <h2 className="font-display text-lg uppercase tracking-wide text-muneca-black">
           Escuelas arbitrales
         </h2>
 
         <NuevaEscuelaForm />
 
         {escuelasError && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-rose-600">
             No se pudieron cargar las escuelas: {escuelasError.message}
           </p>
         )}
 
         {!escuelasError && (!escuelas || escuelas.length === 0) && (
-          <p className="text-sm text-white/60">Todavía no hay escuelas arbitrales registradas.</p>
+          <p className="text-sm text-muneca-black/50">
+            Todavía no hay escuelas arbitrales registradas.
+          </p>
         )}
 
         {escuelas && escuelas.length > 0 && (
-          <div className="divide-y divide-white/10 rounded-xl border border-white/10">
+          <div className="divide-y divide-black/10 overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
             {escuelas.map((escuela) => (
               <div
                 key={escuela.id}
-                className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
+                className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between"
               >
-                <div>
-                  <p className="font-semibold text-white">{escuela.nombre}</p>
-                  <p className="text-sm text-white/60">
+                <div className="min-w-0">
+                  <p className="font-semibold text-muneca-black">{escuela.nombre}</p>
+                  <p className="text-sm text-muneca-black/60">
                     {[escuela.representante, escuela.telefono, escuela.correo]
                       .filter(Boolean)
                       .join(" · ") || "Sin datos de contacto adicionales"}
                   </p>
                   {escuela.notas && (
-                    <p className="mt-1 text-xs text-white/40">{escuela.notas}</p>
+                    <p className="mt-1 text-xs text-muneca-black/40">{escuela.notas}</p>
                   )}
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-muneca-black/40">
                     Registrada el {formatFecha(escuela.created_at)}
                   </p>
                 </div>
@@ -89,26 +93,26 @@ export default async function AdminArbitrosPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-lg uppercase tracking-wide text-white/90">
+        <h2 className="font-display text-lg uppercase tracking-wide text-muneca-black">
           Planilla de árbitros del torneo
         </h2>
 
         <NuevoArbitroForm escuelas={escuelas ?? []} />
 
         {arbitrosError && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-rose-600">
             No se pudieron cargar los árbitros: {arbitrosError.message}
           </p>
         )}
 
         {!arbitrosError && (!arbitros || arbitros.length === 0) && (
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-muneca-black/50">
             Todavía no hay árbitros registrados en la planilla del torneo.
           </p>
         )}
 
         {arbitros && arbitros.length > 0 && (
-          <div className="divide-y divide-white/10 rounded-xl border border-white/10">
+          <div className="divide-y divide-black/10 overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
             {arbitros.map((arbitro) => {
               const escuelaRaw = arbitro.escuelas_arbitrales as unknown as EscuelaConArbitro;
               const escuela = Array.isArray(escuelaRaw)
@@ -118,33 +122,33 @@ export default async function AdminArbitrosPage() {
               return (
                 <div
                   key={arbitro.id}
-                  className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
+                  className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between"
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-white">{arbitro.nombre}</p>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-muneca-black">{arbitro.nombre}</p>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                           arbitro.activo
-                            ? "bg-emerald-500/15 text-emerald-300"
-                            : "bg-white/10 text-white/50"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-black/5 text-muneca-black/50"
                         }`}
                       >
                         {arbitro.activo ? "Activo" : "Inactivo"}
                       </span>
                     </div>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-muneca-black/60">
                       Doc. {arbitro.numero_documento}
                       {escuela ? ` · ${escuela.nombre}` : " · Independiente"}
                     </p>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-muneca-black/60">
                       {[arbitro.telefono, arbitro.correo].filter(Boolean).join(" · ") ||
                         "Sin datos de contacto adicionales"}
                     </p>
                     {arbitro.notas && (
-                      <p className="mt-1 text-xs text-white/40">{arbitro.notas}</p>
+                      <p className="mt-1 text-xs text-muneca-black/40">{arbitro.notas}</p>
                     )}
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-muneca-black/40">
                       Registrado el {formatFecha(arbitro.created_at)}
                     </p>
                   </div>
