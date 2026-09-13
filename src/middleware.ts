@@ -97,7 +97,10 @@ export async function middleware(request: NextRequest) {
 
   if (!isLoginRoute && !user) {
     const url = request.nextUrl.clone();
+    const destinoOriginal = pathname + request.nextUrl.search;
     url.pathname = `/${seccion}/login`;
+    url.search = "";
+    url.searchParams.set("next", destinoOriginal);
     return NextResponse.redirect(url);
   }
 

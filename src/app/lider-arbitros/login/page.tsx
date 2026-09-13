@@ -37,7 +37,8 @@ export default function LiderArbitrosLoginPage() {
       return;
     }
 
-    router.push("/lider-arbitros");
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next && next.startsWith("/lider-arbitros") ? next : "/lider-arbitros");
     router.refresh();
   }
 

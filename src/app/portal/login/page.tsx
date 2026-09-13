@@ -37,7 +37,8 @@ export default function PortalLoginPage() {
       return;
     }
 
-    router.push("/portal");
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next && next.startsWith("/portal") ? next : "/portal");
     router.refresh();
   }
 
