@@ -29,8 +29,8 @@ export default async function PortalDashboardLayout({
   if (profile?.rol !== "equipo" || !profile.team_id) {
     return (
       <div className="flex flex-1 flex-col">
-        <SiteHeader />
-        <main className="flex flex-1 flex-col bg-muneca-white px-4 pt-32 text-muneca-black sm:px-6 sm:pt-28 lg:pt-24">
+        <SiteHeader forceSolid />
+        <main className="flex flex-1 flex-col bg-muneca-white px-4 pt-36 text-muneca-black sm:px-6 sm:pt-32 lg:pt-32">
           <Breadcrumbs items={[{ label: "Inicio", href: "/" }, { label: "Portal de equipos" }]} />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
             <p>Esta cuenta no tiene un equipo asociado.</p>
@@ -57,9 +57,9 @@ export default async function PortalDashboardLayout({
 
   return (
     <div className="flex flex-1 flex-col">
-      <SiteHeader />
+      <SiteHeader forceSolid />
       <main className="flex-1 bg-muneca-white">
-        <div className="border-b border-black/10 bg-black/[0.02] px-4 pb-5 pt-32 sm:px-6 sm:pt-28 lg:pt-24">
+        <div className="border-b border-black/10 bg-black/[0.02] px-4 pb-5 pt-36 sm:px-6 sm:pt-32 lg:pt-32">
           <div className="mx-auto max-w-3xl">
             <Breadcrumbs items={[{ label: "Inicio", href: "/" }, { label: "Portal de equipos" }]} />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">

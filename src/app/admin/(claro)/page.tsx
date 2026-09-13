@@ -25,10 +25,10 @@ const ESTADO_EQUIPO_LABEL: Record<string, string> = {
 };
 
 const ESTADO_EQUIPO_CLASE: Record<string, string> = {
-  pendiente_validacion: "bg-yellow-500/15 text-yellow-300",
-  validado: "bg-emerald-500/15 text-emerald-300",
-  lista_espera: "bg-white/10 text-white/70",
-  rechazado: "bg-red-500/15 text-red-300",
+  pendiente_validacion: "bg-amber-50 text-amber-700",
+  validado: "bg-emerald-50 text-emerald-700",
+  lista_espera: "bg-black/5 text-muneca-black/50",
+  rechazado: "bg-rose-50 text-rose-700",
 };
 
 const ESTADO_CUOTA_LABEL: Record<string, string> = {
@@ -38,9 +38,9 @@ const ESTADO_CUOTA_LABEL: Record<string, string> = {
 };
 
 const ESTADO_CUOTA_CLASE: Record<string, string> = {
-  pendiente: "bg-yellow-500/15 text-yellow-300",
-  pagada: "bg-emerald-500/15 text-emerald-300",
-  vencida: "bg-red-500/15 text-red-300",
+  pendiente: "bg-amber-50 text-amber-700",
+  pagada: "bg-emerald-50 text-emerald-700",
+  vencida: "bg-rose-50 text-rose-700",
 };
 
 export default async function AdminPagosPage() {
@@ -58,24 +58,26 @@ export default async function AdminPagosPage() {
 
   if (error) {
     return (
-      <p className="text-red-400">No se pudieron cargar los equipos: {error.message}</p>
+      <p className="text-sm text-rose-600">No se pudieron cargar los equipos: {error.message}</p>
     );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl uppercase tracking-wide">
+        <h1 className="font-display text-2xl uppercase tracking-wide text-muneca-black">
           Equipos y pagos
         </h1>
-        <p className="mt-1 text-sm text-white/60">
+        <p className="mt-1 text-sm text-muneca-black/60">
           Mientras no está conectado el checkout de Wompi, valida aquí manualmente
           los pagos recibidos por transferencia, Nequi u otro medio.
         </p>
       </div>
 
       {(!equipos || equipos.length === 0) && (
-        <p className="text-white/60">Todavía no hay equipos inscritos.</p>
+        <p className="rounded-xl border border-dashed border-black/15 px-4 py-8 text-center text-sm text-muneca-black/50">
+          Todavía no hay equipos inscritos.
+        </p>
       )}
 
       <div className="space-y-4">
@@ -92,30 +94,30 @@ export default async function AdminPagosPage() {
           return (
             <div
               key={equipo.id}
-              className="rounded-xl border border-white/10 bg-white/5 p-5"
+              className="rounded-xl border border-black/10 bg-white p-5 shadow-sm"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-display text-lg uppercase tracking-wide">
+                    <h2 className="font-display text-lg uppercase tracking-wide text-muneca-black">
                       {equipo.nombre_equipo}
                     </h2>
                     {equipo.orden_inscripcion != null && (
-                      <span className="rounded-full bg-muneca-purple/30 px-2 py-0.5 text-xs font-bold">
+                      <span className="rounded-full bg-muneca-purple/10 px-2 py-0.5 text-xs font-bold text-muneca-purple">
                         #{equipo.orden_inscripcion}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-white/60">
+                  <p className="text-sm text-muneca-black/60">
                     {delegado?.nombre} · {delegado?.correo}
                   </p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-muneca-black/40">
                     Inscrito el {formatFecha(equipo.created_at)}
                   </p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    ESTADO_EQUIPO_CLASE[equipo.estado_inscripcion] ?? "bg-white/10 text-white/70"
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                    ESTADO_EQUIPO_CLASE[equipo.estado_inscripcion] ?? "bg-black/5 text-muneca-black/50"
                   }`}
                 >
                   {ESTADO_EQUIPO_LABEL[equipo.estado_inscripcion] ?? equipo.estado_inscripcion}
@@ -123,13 +125,13 @@ export default async function AdminPagosPage() {
               </div>
 
               {pago && (
-                <p className="mt-3 text-sm text-white/70">
+                <p className="mt-3 text-sm text-muneca-black/70">
                   Pagado {formatCOP(Number(pago.monto_pagado))} de{" "}
                   {formatCOP(Number(pago.monto_total))}
                 </p>
               )}
 
-              <div className="mt-4 divide-y divide-white/10 rounded-lg border border-white/10">
+              <div className="mt-4 divide-y divide-black/10 rounded-lg border border-black/10">
                 {cuotas.map(
                   (cuota: {
                     id: string;
@@ -145,12 +147,14 @@ export default async function AdminPagosPage() {
                       className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
                     >
                       <div className="text-sm">
-                        <span className="font-semibold">Partida {cuota.numero_cuota}</span>{" "}
-                        <span className="text-white/60">
+                        <span className="font-semibold text-muneca-black">
+                          Partida {cuota.numero_cuota}
+                        </span>{" "}
+                        <span className="text-muneca-black/60">
                           — {formatCOP(Number(cuota.monto))} · vence {formatFecha(cuota.fecha_limite)}
                         </span>
                         {cuota.estado === "pagada" && cuota.fecha_pago && (
-                          <span className="ml-2 text-xs text-white/40">
+                          <span className="ml-2 text-xs text-muneca-black/40">
                             pagada el {formatFecha(cuota.fecha_pago)}
                             {cuota.referencia_wompi ? ` · ref. ${cuota.referencia_wompi}` : ""}
                           </span>
@@ -160,7 +164,7 @@ export default async function AdminPagosPage() {
                       <div className="flex items-center gap-3">
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            ESTADO_CUOTA_CLASE[cuota.estado] ?? "bg-white/10 text-white/70"
+                            ESTADO_CUOTA_CLASE[cuota.estado] ?? "bg-black/5 text-muneca-black/50"
                           }`}
                         >
                           {ESTADO_CUOTA_LABEL[cuota.estado] ?? cuota.estado}

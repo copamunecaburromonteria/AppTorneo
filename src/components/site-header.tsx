@@ -88,7 +88,21 @@ function UserChip({ chip }: { chip: SiteHeaderUserChip; tone: "light" | "dark" }
   );
 }
 
-export function SiteHeader({ userChip }: { userChip?: SiteHeaderUserChip }) {
+export function SiteHeader({
+  userChip,
+  forceSolid = false,
+}: {
+  userChip?: SiteHeaderUserChip;
+  /**
+   * Para páginas que no tienen un hero oscuro debajo del header (paneles
+   * internos: admin, portal, líder de árbitros) — sin esto, el header
+   * arranca transparente con texto blanco pensado para verse sobre un fondo
+   * oscuro, y sobre un fondo claro el menú queda invisible hasta que el
+   * usuario hace scroll. Fuerza el estilo "sólido" (fondo blanco, texto
+   * oscuro) desde el primer render.
+   */
+  forceSolid?: boolean;
+}) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -100,12 +114,13 @@ export function SiteHeader({ userChip }: { userChip?: SiteHeaderUserChip }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const tone = scrolled ? "dark" : "light";
+  const solid = forceSolid || scrolled;
+  const tone = solid ? "dark" : "light";
 
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled
+        solid
           ? "border-b border-black/10 bg-muneca-white/95 backdrop-blur"
           : "bg-transparent"
       }`}

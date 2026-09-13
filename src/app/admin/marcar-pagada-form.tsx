@@ -26,7 +26,7 @@ export function MarcarPagadaForm({ cuotaId }: { cuotaId: string }) {
         type="text"
         name="referencia"
         placeholder="Referencia (opcional)"
-        className="w-40 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-muneca-yellow"
+        className="w-40 rounded-md border border-black/15 bg-white px-2 py-1 text-xs text-muneca-black outline-none focus:border-muneca-purple"
       />
       <button
         type="submit"
@@ -35,7 +35,7 @@ export function MarcarPagadaForm({ cuotaId }: { cuotaId: string }) {
       >
         {pending ? "Guardando..." : "Marcar como pagada"}
       </button>
-      {state.error && <span className="text-xs text-red-400">{state.error}</span>}
+      {state.error && <span className="text-xs text-rose-600">{state.error}</span>}
     </form>
   );
 }

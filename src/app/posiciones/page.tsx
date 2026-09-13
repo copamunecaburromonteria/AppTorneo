@@ -1,14 +1,9 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
-import { TeamCrest } from "@/components/team-crest";
-
-const COLS = ["Pos", "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "DG", "Pts"];
-
-/** Cuántos equipos por grupo clasifican a la fase eliminatoria (formato-torneo.md). */
-const CLASIFICAN_POR_GRUPO = 4;
+import { createClient } from "@/lib/supabase/server";
+import { PosicionesTabs, type FilaTabla, type GrupoData, type PartidoResumen } from "@/components/posiciones/posiciones-tabs";
 
 type TeamInfo = { id: string; nombre_equipo: string; escudo_url: string | null };
 type TeamRel = TeamInfo | TeamInfo[] | null;
@@ -31,22 +26,11 @@ type StandingRow = {
   pts: number;
 };
 
-type FilaTabla = {
-  team_id: string;
-  nombre_equipo: string;
-  escudo_url: string | null;
-  pj: number;
-  pg: number;
-  pe: number;
-  pp: number;
-  gf: number;
-  gc: number;
-  dg: number;
-  pts: number;
-};
-
 /**
- * Tabla de posiciones completa, por grupo. Desempate automático: puntos →
+ * Tabla de posiciones completa, por grupo, con pestañas (una pestaña por
+ * grupo en vez de tablas apiladas), tarjetas de estadísticas del grupo
+ * (más goles, mejor defensa, mejor diferencia, líder) y la próxima jornada
+ * de ese grupo — ver `PosicionesTabs`. Desempate automático: puntos →
  * diferencia de gol → goles a favor (los primeros 3 criterios de
  * `formato-torneo.md`). El 4° (enfrentamiento directo) y 5° (sorteo) — que
  * solo aplican en empates exactos entre 2+ equipos en los 3 primeros
@@ -57,21 +41,57 @@ type FilaTabla = {
 export default async function PosicionesPage() {
   const supabase = await createClient();
 
-  const [{ data: groups }, { data: teamGroupRaw }, { data: standingsRaw }] = await Promise.all([
-    supabase.from("groups").select("id, letra").order("letra", { ascending: true }),
-    supabase
-      .from("team_group")
-      .select("group_id, team_id, teams:team_id(id, nombre_equipo, escudo_url)"),
-    supabase
-      .from("v_standings")
-      .select("group_id, team_id, pj, pg, pe, pp, gf, gc, dg, pts"),
-  ]);
+  const [{ data: groups }, { data: teamGroupRaw }, { data: standingsRaw }, { data: partidosRaw }] =
+    await Promise.all([
+      supabase.from("groups").select("id, letra").order("letra", { ascending: true }),
+      supabase
+        .from("team_group")
+        .select("group_id, team_id, teams:team_id(id, nombre_equipo, escudo_url)"),
+      supabase
+        .from("v_standings")
+        .select("group_id, team_id, pj, pg, pe, pp, gf, gc, dg, pts"),
+      supabase
+        .from("matches")
+        .select(
+          "id, cancha, fecha_hora_programada, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url)"
+        )
+        .eq("estado", "programado")
+        .order("fecha_hora_programada", { ascending: true }),
+    ]);
 
   const standingsPorEquipo = new Map<string, StandingRow>(
     (standingsRaw ?? []).map((s) => [s.team_id, s])
   );
 
-  const gruposConTablas = (groups ?? []).map((g) => {
+  // team_id -> group_id, para poder ubicar cada partido programado en su grupo.
+  const grupoPorEquipo = new Map<string, string>(
+    (teamGroupRaw ?? []).map((tg) => [tg.team_id, tg.group_id])
+  );
+
+  const PARTIDOS_POR_GRUPO = 4;
+  const proximaJornadaPorGrupo = new Map<string, PartidoResumen[]>();
+  for (const p of partidosRaw ?? []) {
+    const local = unwrapTeam(p.equipo_local as TeamRel);
+    const visitante = unwrapTeam(p.equipo_visitante as TeamRel);
+    const groupId = (local && grupoPorEquipo.get(local.id)) ?? null;
+    if (!groupId) continue;
+
+    const lista = proximaJornadaPorGrupo.get(groupId) ?? [];
+    if (lista.length >= PARTIDOS_POR_GRUPO) continue;
+
+    lista.push({
+      id: p.id as string,
+      cancha: p.cancha as number,
+      fecha: p.fecha_hora_programada as string,
+      local: local ? { nombre_equipo: local.nombre_equipo, escudo_url: local.escudo_url } : null,
+      visitante: visitante
+        ? { nombre_equipo: visitante.nombre_equipo, escudo_url: visitante.escudo_url }
+        : null,
+    });
+    proximaJornadaPorGrupo.set(groupId, lista);
+  }
+
+  const grupos: GrupoData[] = (groups ?? []).map((g) => {
     const equiposDelGrupo = (teamGroupRaw ?? []).filter((tg) => tg.group_id === g.id);
 
     const filas: FilaTabla[] = equiposDelGrupo.map((tg) => {
@@ -94,7 +114,12 @@ export default async function PosicionesPage() {
 
     filas.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 
-    return { grupo: g, filas };
+    return {
+      id: g.id,
+      letra: g.letra,
+      filas,
+      proximaJornada: proximaJornadaPorGrupo.get(g.id) ?? [],
+    };
   });
 
   const breadcrumbs: Crumb[] = [
@@ -121,98 +146,7 @@ export default async function PosicionesPage() {
         </section>
 
         <div className="mx-auto max-w-6xl space-y-10 px-4 py-8 sm:px-6 sm:py-10">
-          {gruposConTablas.length === 0 && (
-            <p className="text-center text-sm text-muneca-black/40">
-              Todavía no hay grupos configurados.
-            </p>
-          )}
-
-          {gruposConTablas.map(({ grupo, filas }) => (
-            <div key={grupo.id}>
-              <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
-                Grupo {grupo.letra}
-              </p>
-
-              <div className="mt-4 overflow-x-auto rounded-xl border border-black/10 bg-muneca-white shadow-sm">
-                <table className="w-full min-w-[640px] text-sm">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-muneca-purple-dark to-muneca-black text-muneca-white">
-                      {COLS.map((col) => (
-                        <th
-                          key={col}
-                          className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide first:pl-4"
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filas.map((fila, i) => {
-                      const clasifica = i < CLASIFICAN_POR_GRUPO;
-                      return (
-                        <tr
-                          key={fila.team_id}
-                          className={`border-b border-black/5 transition-colors last:border-0 hover:bg-muneca-purple/5 ${
-                            clasifica
-                              ? "bg-muneca-yellow/10"
-                              : i % 2 === 0
-                                ? "bg-muneca-white"
-                                : "bg-muneca-purple/[0.03]"
-                          }`}
-                        >
-                          <td className="px-3 py-3 pl-4">
-                            <span
-                              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                                clasifica
-                                  ? "bg-muneca-yellow text-muneca-black"
-                                  : "bg-muneca-purple text-white"
-                              }`}
-                            >
-                              {i + 1}
-                            </span>
-                          </td>
-                          <td className="px-3 py-3">
-                            <Link
-                              href={`/equipos/${fila.team_id}`}
-                              className="flex items-center gap-2 hover:text-muneca-purple"
-                            >
-                              <TeamCrest url={fila.escudo_url} size="sm" />
-                              <span className="font-semibold text-muneca-black">
-                                {fila.nombre_equipo}
-                              </span>
-                            </Link>
-                          </td>
-                          <td className="px-3 py-3 text-muneca-black/70">{fila.pj}</td>
-                          <td className="px-3 py-3 font-semibold text-emerald-600">{fila.pg}</td>
-                          <td className="px-3 py-3 text-muneca-black/50">{fila.pe}</td>
-                          <td className="px-3 py-3 font-semibold text-rose-600">{fila.pp}</td>
-                          <td className="px-3 py-3 text-muneca-black/70">{fila.gf}</td>
-                          <td className="px-3 py-3 text-muneca-black/70">{fila.gc}</td>
-                          <td
-                            className={`px-3 py-3 font-semibold ${
-                              fila.dg > 0
-                                ? "text-emerald-600"
-                                : fila.dg < 0
-                                  ? "text-rose-600"
-                                  : "text-muneca-black/50"
-                            }`}
-                          >
-                            {fila.dg > 0 ? `+${fila.dg}` : fila.dg}
-                          </td>
-                          <td className="px-3 py-3">
-                            <span className="inline-flex min-w-9 items-center justify-center rounded-md bg-muneca-purple px-2 py-1 text-xs font-bold text-white">
-                              {fila.pts}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
+          <PosicionesTabs grupos={grupos} />
 
           <p className="text-center text-xs text-muneca-black/40">
             Desempate automático: puntos → diferencia de gol → goles a favor. El enfrentamiento
