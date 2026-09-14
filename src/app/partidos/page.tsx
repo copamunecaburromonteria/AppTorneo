@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 import { createClient } from "@/lib/supabase/server";
 import { calcularJornada } from "@/lib/jornada";
 import { DIA_LABEL, fechaYmdBogota } from "@/lib/franjas-horario";
@@ -104,10 +105,12 @@ export default async function PartidosPage() {
     });
 
   return (
-    <>
+    <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1 bg-muneca-black text-white">
-        <section className="relative isolate overflow-hidden pb-16 pt-36">
+        <section className="relative isolate overflow-hidden pb-10 pt-36">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_15%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/25 blur-3xl" />
@@ -117,8 +120,8 @@ export default async function PartidosPage() {
           <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
             <Breadcrumbs tone="light" items={[{ label: "Inicio", href: "/" }, { label: "Calendario" }]} />
 
-            <h1 className="font-display mt-3 text-3xl uppercase tracking-wide sm:text-4xl">Calendario</h1>
-            <p className="mt-2 max-w-xl text-sm text-white/60">
+            <h1 className="font-display mt-3 text-4xl sm:text-5xl">Calendario</h1>
+            <p className="mt-2 max-w-xl text-white/70">
               Consulta aquí toda la programación de la Copa Muñeca e&apos;Burro.
             </p>
 
@@ -138,6 +141,6 @@ export default async function PartidosPage() {
         </section>
       </main>
       <SiteFooter />
-    </>
+    </div>
   );
 }

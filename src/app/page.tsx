@@ -11,7 +11,6 @@ import { EstadisticasDestacadas } from "@/components/home/estadisticas-destacada
 import { Equipos } from "@/components/home/equipos";
 import { Galeria } from "@/components/home/galeria";
 import { Patrocinadores } from "@/components/home/patrocinadores";
-import { CtaInscripcion } from "@/components/home/cta-inscripcion";
 
 export default function Home() {
   return (
@@ -29,7 +28,6 @@ export default function Home() {
         <Equipos />
         <Galeria />
         <Patrocinadores />
-        <CtaInscripcion />
       </main>
       <SiteFooter />
     </div>
