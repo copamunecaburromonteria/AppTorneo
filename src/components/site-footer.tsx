@@ -31,7 +31,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Inicio", href: "/#inicio" },
       { label: "Sobre la Copa", href: "/#torneo" },
       { label: "Cómo funciona", href: "/como-funciona" },
-      { label: "Reglamento", href: "#" },
+      { label: "Reglamento", href: "/reglamento" },
       { label: "Premios", href: "/premios" },
     ],
   },

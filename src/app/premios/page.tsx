@@ -5,10 +5,34 @@ import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
 const PREMIOS_PRINCIPALES = [
-  { icon: "🥇", categoria: "Campeón", premio: "$5.000.000 COP", destacado: true },
-  { icon: "🥈", categoria: "Subcampeón", premio: "$3.000.000 COP", destacado: false },
-  { icon: "🧤", categoria: "Mejor arquero", premio: "$1.000.000 COP + trofeo", destacado: false },
-  { icon: "⚽", categoria: "Goleador", premio: "$1.000.000 COP + trofeo", destacado: false },
+  {
+    icon: "🥇",
+    categoria: "Campeón",
+    monto: "$5.000.000 COP",
+    extra: "+ trofeo y medallas",
+    destacado: true,
+  },
+  {
+    icon: "🥈",
+    categoria: "Subcampeón",
+    monto: "$3.000.000 COP",
+    extra: "+ trofeo y medallas",
+    destacado: false,
+  },
+  {
+    icon: "🧤",
+    categoria: "Mejor arquero",
+    monto: "$1.000.000 COP",
+    extra: "+ trofeo",
+    destacado: false,
+  },
+  {
+    icon: "⚽",
+    categoria: "Goleador",
+    monto: "$1.000.000 COP",
+    extra: "+ trofeo",
+    destacado: false,
+  },
 ];
 
 const PREMIOS_SORPRESA = [
@@ -86,7 +110,10 @@ export default function PremiosPage() {
                     p.destacado ? "text-muneca-yellow" : "text-white"
                   }`}
                 >
-                  {p.premio}
+                  {p.monto}
+                </p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+                  {p.extra}
                 </p>
               </div>
             ))}
