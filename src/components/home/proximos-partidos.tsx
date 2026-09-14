@@ -44,12 +44,12 @@ export async function ProximosPartidos() {
               Vive cada jornada.
             </p>
           </div>
-          <a
-            href="#"
+          <Link
+            href="/partidos"
             className="rounded-md border border-muneca-purple px-4 py-2 text-xs font-bold uppercase text-muneca-purple hover:bg-muneca-purple hover:text-muneca-white"
           >
             Ver calendario completo
-          </a>
+          </Link>
         </div>
 
         {partidos.length === 0 ? (

@@ -28,7 +28,7 @@ const TORNEO_LINKS = [
 ];
 
 const PARTIDOS_LINKS = [
-  { href: "/#partidos", label: "Resultados" },
+  { href: "/partidos", label: "Calendario completo" },
   { href: "/#posiciones", label: "Posiciones" },
   { href: "/#estadisticas", label: "Estadísticas" },
 ];
