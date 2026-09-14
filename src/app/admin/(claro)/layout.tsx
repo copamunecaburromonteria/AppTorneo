@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminHeaderStats } from "@/components/admin/admin-header-stats";
 
 /**
  * Layout claro (mismo lenguaje visual de /inscripcion y /portal: SiteHeader +
@@ -55,6 +56,28 @@ export default async function AdminClaroLayout({
     );
   }
 
+  const [
+    { count: equiposCount },
+    { count: partidosCount },
+    { count: arbitrosCount },
+    { count: operadoresCount },
+  ] = await Promise.all([
+    supabase
+      .from("teams")
+      .select("*", { count: "exact", head: true })
+      .neq("estado_inscripcion", "lista_espera"),
+    supabase.from("matches").select("*", { count: "exact", head: true }),
+    supabase.from("arbitros").select("*", { count: "exact", head: true }),
+    supabase.from("operadores").select("*", { count: "exact", head: true }),
+  ]);
+
+  const navCounts = {
+    equipos: equiposCount ?? 0,
+    partidos: partidosCount ?? 0,
+    arbitros: arbitrosCount ?? 0,
+    operadores: operadoresCount ?? 0,
+  };
+
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader forceSolid />
@@ -65,9 +88,20 @@ export default async function AdminClaroLayout({
               items={[{ label: "Inicio", href: "/" }, { label: "Panel administrativo", href: "/admin" }]}
             />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="font-display text-2xl uppercase tracking-wide text-muneca-black">
-                Panel administrativo
-              </p>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <p className="font-display text-2xl uppercase tracking-wide text-muneca-black">
+                  Panel administrativo
+                </p>
+                {/* Texto fijo por ahora — no hay todavía un dato de "temporada" ni
+                    de estado del torneo en la base de datos (ver conversación con
+                    Fernando: se deja fijo mientras no exista esa fuente real). */}
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
+                  ● Torneo activo
+                </span>
+                <span className="rounded-full bg-muneca-purple/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-muneca-purple">
+                  Temporada 2026
+                </span>
+              </div>
               <form action={cerrarSesion}>
                 <button
                   type="submit"
@@ -77,7 +111,10 @@ export default async function AdminClaroLayout({
                 </button>
               </form>
             </div>
-            <AdminNav />
+
+            <AdminHeaderStats />
+
+            <AdminNav counts={navCounts} />
           </div>
         </div>
 

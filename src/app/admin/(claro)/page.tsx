@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { MarcarPagadaForm } from "@/app/admin/marcar-pagada-form";
 import { armarLinkWhatsApp } from "@/lib/whatsapp";
+import { AccionesRapidas } from "./acciones-rapidas";
 
 function formatCOP(valor: number) {
   return new Intl.NumberFormat("es-CO", {
@@ -47,26 +48,34 @@ const ESTADO_CUOTA_CLASE: Record<string, string> = {
 export default async function AdminPagosPage() {
   const supabase = await createClient();
 
-  const [{ data: equiposRaw, error }, { data: enEspera, error: errorEspera }] = await Promise.all([
-    supabase
-      .from("teams")
-      .select(
-        `id, nombre_equipo, estado_inscripcion, orden_inscripcion, created_at,
-         team_delegado(nombre, correo),
-         payments(id, monto_total, monto_pagado, tipo_pago,
-           payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi))`
-      )
-      .neq("estado_inscripcion", "lista_espera")
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("teams")
-      .select(
-        `id, nombre_equipo, created_at,
-         team_delegado(nombre, apellido, correo, contacto_principal, contacto_alterno, whatsapp_notificaciones)`
-      )
-      .eq("estado_inscripcion", "lista_espera")
-      .order("created_at", { ascending: true }),
-  ]);
+  const [{ data: equiposRaw, error }, { data: enEspera, error: errorEspera }, { data: config }] =
+    await Promise.all([
+      supabase
+        .from("teams")
+        .select(
+          `id, nombre_equipo, estado_inscripcion, orden_inscripcion, created_at,
+           team_delegado(nombre, correo),
+           payments(id, monto_total, monto_pagado, tipo_pago,
+             payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi))`
+        )
+        .neq("estado_inscripcion", "lista_espera")
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("teams")
+        .select(
+          `id, nombre_equipo, created_at,
+           team_delegado(nombre, apellido, correo, contacto_principal, contacto_alterno, whatsapp_notificaciones)`
+        )
+        .eq("estado_inscripcion", "lista_espera")
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("torneo_config")
+        .select(
+          "numero_equipos_torneo, monto_inscripcion, precio_uniforme, porcentaje_abono_minimo, dias_plazo_saldo, dias_aviso_previo_cuota, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme"
+        )
+        .eq("id", 1)
+        .maybeSingle(),
+    ]);
 
   const equipos = equiposRaw;
 
@@ -75,6 +84,8 @@ export default async function AdminPagosPage() {
       <p className="text-sm text-rose-600">No se pudieron cargar los equipos: {error.message}</p>
     );
   }
+
+  const validados = (equipos ?? []).filter((e) => e.estado_inscripcion === "validado").length;
 
   return (
     <div className="space-y-6">
@@ -87,6 +98,22 @@ export default async function AdminPagosPage() {
           los pagos recibidos por transferencia, Nequi u otro medio.
         </p>
       </div>
+
+      {config && (
+        <AccionesRapidas
+          cupoActual={config.numero_equipos_torneo}
+          validados={validados}
+          configPagos={{
+            monto_inscripcion: Number(config.monto_inscripcion),
+            precio_uniforme: Number(config.precio_uniforme),
+            porcentaje_abono_minimo: Number(config.porcentaje_abono_minimo),
+            dias_plazo_saldo: config.dias_plazo_saldo,
+            dias_aviso_previo_cuota: config.dias_aviso_previo_cuota,
+            numero_cuotas_sin_uniforme: config.numero_cuotas_sin_uniforme,
+            numero_cuotas_con_uniforme: config.numero_cuotas_con_uniforme,
+          }}
+        />
+      )}
 
       <section>
         <div className="flex items-center gap-2">
