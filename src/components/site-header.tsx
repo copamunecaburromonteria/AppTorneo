@@ -20,11 +20,12 @@ const SOCIAL_LINKS = [
   { href: "https://www.youtube.com/@copamunecaburromonteria", label: "YouTube", Icon: YoutubeLogo },
 ];
 
-// TODO: "Cómo funciona", "Reglamento" y "Premios" aún no tienen página/sección propia.
+// TODO: "Reglamento" aún no tiene página propia — se construye cuando
+// Fernando lo pida explícitamente (ver plan-fases-tareas.md).
 const TORNEO_LINKS = [
-  { href: "#", label: "Cómo funciona" },
+  { href: "/como-funciona", label: "Cómo funciona" },
   { href: "#", label: "Reglamento" },
-  { href: "#", label: "Premios" },
+  { href: "/premios", label: "Premios" },
 ];
 
 const PARTIDOS_LINKS = [
