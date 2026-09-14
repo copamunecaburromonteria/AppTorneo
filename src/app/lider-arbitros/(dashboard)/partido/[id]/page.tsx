@@ -64,7 +64,17 @@ export default async function LiderArbitrosPartidoPage({
     (a) => !asignados.some((x) => x.arbitro_id === a.id)
   );
 
-  const fecha = new Date(partido.fecha_hora_programada);
+  const fechaLabel = new Intl.DateTimeFormat("es-CO", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    timeZone: "America/Bogota",
+  }).format(new Date(partido.fecha_hora_programada));
+  const horaLabel = new Intl.DateTimeFormat("es-CO", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Bogota",
+  }).format(new Date(partido.fecha_hora_programada));
 
   return (
     <div className="space-y-6">
@@ -80,8 +90,7 @@ export default async function LiderArbitrosPartidoPage({
           Cancha {partido.cancha} · {partido.fase} · {ESTADO_LABEL[partido.estado] ?? partido.estado}
         </p>
         <p className="mt-1 text-sm text-black/60">
-          {fecha.toLocaleDateString("es-CO", { weekday: "long", day: "2-digit", month: "long" })} ·{" "}
-          {fecha.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}
+          {fechaLabel} · {horaLabel}
         </p>
         <div className="mt-3 flex items-center justify-between gap-2">
           <p className="flex-1 font-display text-xl text-muneca-black sm:text-2xl">

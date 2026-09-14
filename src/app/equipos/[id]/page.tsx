@@ -28,6 +28,30 @@ const ESTADO_BADGE: Record<string, { label: string; className: string }> = {
   },
 };
 
+/** Fechas/horas siempre formateadas en hora de Bogotá (ver src/lib/franjas-horario.ts). */
+function formatFechaCorta(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "America/Bogota",
+  }).format(new Date(iso));
+}
+function formatFechaLarga(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    timeZone: "America/Bogota",
+  }).format(new Date(iso));
+}
+function formatHora(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Bogota",
+  }).format(new Date(iso));
+}
+
 type EquipoInfo = { id: string; nombre_equipo: string; escudo_url: string | null };
 type EquipoRel = EquipoInfo | EquipoInfo[] | null;
 
@@ -146,7 +170,7 @@ export default async function EquipoPage({
     return { ...m, rival, esLocal, golesPropios, golesRival, resultado };
   });
 
-  const proximoPartido = partidos.find((p) => p.estado === "programado") ?? null;
+  const proximosPartidos = partidos.filter((p) => p.estado === "programado");
   const partidosJugados = partidos
     .filter((p) => p.estado === "finalizado")
     .sort(
@@ -311,40 +335,38 @@ export default async function EquipoPage({
                 </div>
               </div>
 
-              {/* Próximo partido */}
-              {proximoPartido && (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-                  <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
-                    🗓️ Próximo partido
-                  </p>
-                  <Link
-                    href={`/partidos/${proximoPartido.id}`}
-                    className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] p-3 transition-colors hover:bg-white/[0.07]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <TeamCrest url={proximoPartido.rival?.escudo_url} size="sm" />
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          vs {proximoPartido.rival?.nombre_equipo ?? "Por definir"}
-                        </p>
-                        <p className="text-xs text-white/40">
-                          Cancha {proximoPartido.cancha} ·{" "}
-                          {new Date(proximoPartido.fecha_hora_programada).toLocaleDateString(
-                            "es-CO",
-                            { weekday: "long", day: "2-digit", month: "long" }
-                          )}{" "}
-                          ·{" "}
-                          {new Date(proximoPartido.fecha_hora_programada).toLocaleTimeString(
-                            "es-CO",
-                            { hour: "numeric", minute: "2-digit" }
-                          )}
-                        </p>
+              {/* Próximos partidos: todos los partidos programados de este equipo, no solo el siguiente */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
+                  🗓️ Próximos partidos · {proximosPartidos.length}
+                </p>
+                <div className="mt-3 space-y-2">
+                  {proximosPartidos.length === 0 && (
+                    <p className="text-xs text-white/40">Este equipo no tiene partidos programados por ahora.</p>
+                  )}
+                  {proximosPartidos.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/partidos/${p.id}`}
+                      className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] p-3 transition-colors hover:bg-white/[0.07]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <TeamCrest url={p.rival?.escudo_url} size="sm" />
+                        <div>
+                          <p className="text-sm font-semibold text-white">
+                            {p.esLocal ? "vs" : "@"} {p.rival?.nombre_equipo ?? "Por definir"}
+                          </p>
+                          <p className="text-xs text-white/40">
+                            Cancha {p.cancha} · {formatFechaLarga(p.fecha_hora_programada)} ·{" "}
+                            {formatHora(p.fecha_hora_programada)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-sm font-semibold text-muneca-yellow">Ver partido →</span>
-                  </Link>
+                      <span className="shrink-0 text-sm font-semibold text-muneca-yellow">Ver partido →</span>
+                    </Link>
+                  ))}
                 </div>
-              )}
+              </div>
 
               {/* Partidos jugados */}
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
@@ -387,10 +409,7 @@ export default async function EquipoPage({
                             vs {p.rival?.nombre_equipo ?? "Por definir"}
                           </p>
                           <p className="text-[11px] text-white/40">
-                            {new Date(p.fecha_hora_programada).toLocaleDateString("es-CO", {
-                              day: "2-digit",
-                              month: "short",
-                            })}
+                            {formatFechaCorta(p.fecha_hora_programada)}
                           </p>
                         </div>
                       </div>

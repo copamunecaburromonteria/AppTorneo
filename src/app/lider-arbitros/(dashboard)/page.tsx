@@ -1,15 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-
-/** getDay(): 0=domingo ... 4=jueves, 5=viernes, 6=sábado. */
-const DIA_LABEL: Record<number, string> = { 4: "Jueves", 5: "Viernes", 6: "Sábado" };
-
-/** Franjas horarias fijas del torneo (ver especificacion-funcional-ecosistema.md §19.5). */
-const SLOTS_POR_DIA: Record<number, number[]> = {
-  4: [19, 20, 21, 22],
-  5: [19, 20, 21, 22],
-  6: [17, 18, 19, 20, 21],
-};
+import { DIA_LABEL, SLOTS_POR_DIA, diaSemanaBogota, fechaYmdBogota, horaBogota } from "@/lib/franjas-horario";
 
 type EquipoRel = { nombre_equipo: string } | { nombre_equipo: string }[] | null;
 
@@ -66,7 +57,7 @@ export default async function LiderArbitrosCalendarioPage() {
 
   const porFecha = new Map<string, MatchRow[]>();
   for (const m of matches) {
-    const key = m.fecha_hora_programada.slice(0, 10);
+    const key = fechaYmdBogota(m.fecha_hora_programada);
     const lista = porFecha.get(key);
     if (lista) lista.push(m);
     else porFecha.set(key, [m]);
@@ -86,15 +77,23 @@ export default async function LiderArbitrosCalendarioPage() {
 
       {fechasOrdenadas.map((fechaKey) => {
         const partidosDelDia = porFecha.get(fechaKey)!;
-        const fechaRef = new Date(partidosDelDia[0].fecha_hora_programada);
-        const dow = fechaRef.getDay();
+        const dow = diaSemanaBogota(fechaKey);
         const slots = SLOTS_POR_DIA[dow] ?? [];
-        const diaLabel = DIA_LABEL[dow] ?? fechaRef.toLocaleDateString("es-CO", { weekday: "long" });
-        const fechaLabel = fechaRef.toLocaleDateString("es-CO", { day: "2-digit", month: "long" });
+        const fechaAnclada = new Date(`${fechaKey}T12:00:00-05:00`);
+        const diaLabel =
+          DIA_LABEL[dow] ??
+          new Intl.DateTimeFormat("es-CO", { weekday: "long", timeZone: "America/Bogota" }).format(
+            fechaAnclada
+          );
+        const fechaLabel = new Intl.DateTimeFormat("es-CO", {
+          day: "2-digit",
+          month: "long",
+          timeZone: "America/Bogota",
+        }).format(fechaAnclada);
 
         const porHoraCancha = new Map<string, MatchRow>();
         for (const m of partidosDelDia) {
-          const hora = new Date(m.fecha_hora_programada).getHours();
+          const hora = horaBogota(m.fecha_hora_programada);
           porHoraCancha.set(`${hora}-${m.cancha}`, m);
         }
 
