@@ -10,11 +10,16 @@ export type AdminNavCounts = {
   operadores?: number;
 };
 
-const ADMIN_NAV = [
-  { href: "/admin", label: "Equipos y pagos", contador: "equipos" as const },
-  { href: "/admin/partidos", label: "Partidos", contador: "partidos" as const },
-  { href: "/admin/arbitros", label: "Árbitros", contador: "arbitros" as const },
-  { href: "/admin/operadores", label: "Operadores", contador: "operadores" as const },
+const ADMIN_NAV: {
+  href: string;
+  label: string;
+  contador?: keyof AdminNavCounts;
+}[] = [
+  { href: "/admin", label: "Equipos y pagos", contador: "equipos" },
+  { href: "/admin/partidos", label: "Partidos", contador: "partidos" },
+  { href: "/admin/arbitros", label: "Árbitros", contador: "arbitros" },
+  { href: "/admin/operadores", label: "Operadores", contador: "operadores" },
+  { href: "/admin/accesos", label: "Accesos" },
 ];
 
 /**
@@ -30,7 +35,7 @@ export function AdminNav({ counts }: { counts?: AdminNavCounts }) {
     <nav className="mt-5 flex gap-1 overflow-x-auto">
       {ADMIN_NAV.map((item) => {
         const activo = pathname === item.href;
-        const contador = counts?.[item.contador];
+        const contador = item.contador ? counts?.[item.contador] : undefined;
         return (
           <Link
             key={item.href}
