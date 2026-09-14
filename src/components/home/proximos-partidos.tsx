@@ -33,31 +33,31 @@ export async function ProximosPartidos() {
   }));
 
   return (
-    <section id="partidos" className="bg-muneca-white">
+    <section id="partidos" className="bg-muneca-black">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
+            <p className="border-l-4 border-muneca-yellow pl-3 text-sm font-bold uppercase tracking-widest text-muneca-yellow">
               Próximos partidos
             </p>
-            <p className="mt-1 pl-3 text-sm text-muneca-black/60">
+            <p className="mt-1 pl-3 text-sm text-white/60">
               Vive cada jornada.
             </p>
           </div>
           <Link
             href="/partidos"
-            className="rounded-md border border-muneca-purple px-4 py-2 text-xs font-bold uppercase text-muneca-purple hover:bg-muneca-purple hover:text-muneca-white"
+            className="rounded-md border border-muneca-yellow px-4 py-2 text-xs font-bold uppercase text-muneca-yellow hover:bg-muneca-yellow hover:text-muneca-black"
           >
             Ver calendario completo
           </Link>
         </div>
 
         {partidos.length === 0 ? (
-          <div className="mt-8 rounded-xl border border-dashed border-muneca-purple/30 bg-black/[0.02] px-6 py-16 text-center">
-            <p className="font-display text-2xl text-muneca-black sm:text-3xl">
+          <div className="mt-8 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-16 text-center">
+            <p className="font-display text-2xl text-white sm:text-3xl">
               Acá vas a ver toda la programación
             </p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muneca-black/60">
+            <p className="mx-auto mt-2 max-w-md text-sm text-white/60">
               Los partidos se publicarán aquí apenas se confirme el calendario del torneo.
             </p>
           </div>
@@ -66,9 +66,9 @@ export async function ProximosPartidos() {
             {partidos.map((p) => (
               <div
                 key={p.id}
-                className="rounded-xl border border-black/10 bg-white p-5 shadow-sm"
+                className="rounded-xl border border-white/10 bg-white/[0.04] p-5"
               >
-                <p className="text-center text-xs font-bold uppercase tracking-wide text-muneca-purple">
+                <p className="text-center text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                   {p.fecha.toLocaleDateString("es-CO", { weekday: "long", day: "2-digit", month: "short" })}
                   {" · "}
                   {p.fecha.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}
@@ -77,26 +77,26 @@ export async function ProximosPartidos() {
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
                     <TeamCrest url={p.local?.escudo_url} size="sm" />
-                    <span className="line-clamp-2 text-xs font-semibold leading-tight text-muneca-black">
+                    <span className="line-clamp-2 text-xs font-semibold leading-tight text-white">
                       {p.local?.nombre_equipo ?? "Por definir"}
                     </span>
                   </div>
-                  <span className="font-display text-lg text-muneca-black/40">VS</span>
+                  <span className="font-display text-lg text-white/40">VS</span>
                   <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
                     <TeamCrest url={p.visitante?.escudo_url} size="sm" />
-                    <span className="line-clamp-2 text-xs font-semibold leading-tight text-muneca-black">
+                    <span className="line-clamp-2 text-xs font-semibold leading-tight text-white">
                       {p.visitante?.nombre_equipo ?? "Por definir"}
                     </span>
                   </div>
                 </div>
 
-                <p className="mt-3 text-center text-xs text-muneca-black/50">
+                <p className="mt-3 text-center text-xs text-white/50">
                   📍 Cancha {p.cancha}
                 </p>
 
                 <Link
                   href={`/partidos/${p.id}`}
-                  className="mt-4 block rounded-md bg-muneca-purple py-2 text-center text-xs font-bold uppercase text-white transition-transform hover:scale-[1.02]"
+                  className="mt-4 block rounded-md bg-muneca-yellow py-2 text-center text-xs font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02]"
                 >
                   Ver partido
                 </Link>

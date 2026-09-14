@@ -50,10 +50,10 @@ function StatCard({
   valor: string;
 }) {
   return (
-    <div className="rounded-xl border border-black/10 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-muneca-purple">
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+      <div className="flex items-center gap-2 text-muneca-yellow">
         {icono}
-        <p className="text-xs font-bold uppercase tracking-wide text-muneca-black/50">
+        <p className="text-xs font-bold uppercase tracking-wide text-white/50">
           {etiqueta}
         </p>
       </div>
@@ -61,14 +61,14 @@ function StatCard({
         <div className="mt-3 flex items-center gap-2.5">
           <TeamCrest url={fila.escudo_url} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-muneca-black">
+            <p className="truncate text-sm font-semibold text-white">
               {fila.nombre_equipo}
             </p>
-            <p className="text-xs text-muneca-black/50">{valor}</p>
+            <p className="text-xs text-white/50">{valor}</p>
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-sm text-muneca-black/40">Sin datos todavía</p>
+        <p className="mt-3 text-sm text-white/40">Sin datos todavía</p>
       )}
     </div>
   );
@@ -124,7 +124,7 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
 
   if (!grupo) {
     return (
-      <p className="text-center text-sm text-muneca-black/40">
+      <p className="text-center text-sm text-white/40">
         Todavía no hay grupos configurados.
       </p>
     );
@@ -154,7 +154,7 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
               className={`rounded-full px-5 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${
                 activo
                   ? "bg-muneca-purple text-white shadow-sm"
-                  : "border border-black/15 text-muneca-black/60 hover:border-muneca-purple/40 hover:text-muneca-purple"
+                  : "border border-white/15 text-white/60 hover:border-muneca-yellow/50 hover:text-muneca-yellow"
               }`}
             >
               Grupo {g.letra}
@@ -164,7 +164,7 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
       </div>
 
       <div>
-        <div className="overflow-x-auto rounded-xl border border-black/10 bg-muneca-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/[0.04]">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="bg-gradient-to-r from-muneca-purple-dark to-muneca-black text-muneca-white">
@@ -184,12 +184,12 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
                 return (
                   <tr
                     key={fila.team_id}
-                    className={`border-b border-black/5 transition-colors last:border-0 hover:bg-muneca-purple/5 ${
+                    className={`border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.06] ${
                       clasifica
                         ? "bg-muneca-yellow/10"
                         : i % 2 === 0
-                          ? "bg-muneca-white"
-                          : "bg-muneca-purple/[0.03]"
+                          ? "bg-white/[0.02]"
+                          : "bg-white/[0.045]"
                     }`}
                   >
                     <td className="px-3 py-3 pl-4">
@@ -206,27 +206,27 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
                     <td className="px-3 py-3">
                       <Link
                         href={`/equipos/${fila.team_id}`}
-                        className="flex items-center gap-2 hover:text-muneca-purple"
+                        className="flex items-center gap-2 hover:text-muneca-yellow"
                       >
                         <TeamCrest url={fila.escudo_url} size="sm" />
-                        <span className="font-semibold text-muneca-black">
+                        <span className="font-semibold text-white">
                           {fila.nombre_equipo}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.pj}</td>
-                    <td className="px-3 py-3 font-semibold text-emerald-600">{fila.pg}</td>
-                    <td className="px-3 py-3 text-muneca-black/50">{fila.pe}</td>
-                    <td className="px-3 py-3 font-semibold text-rose-600">{fila.pp}</td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.gf}</td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.gc}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.pj}</td>
+                    <td className="px-3 py-3 font-semibold text-emerald-400">{fila.pg}</td>
+                    <td className="px-3 py-3 text-white/50">{fila.pe}</td>
+                    <td className="px-3 py-3 font-semibold text-rose-400">{fila.pp}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.gf}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.gc}</td>
                     <td
                       className={`px-3 py-3 font-semibold ${
                         fila.dg > 0
-                          ? "text-emerald-600"
+                          ? "text-emerald-400"
                           : fila.dg < 0
-                            ? "text-rose-600"
-                            : "text-muneca-black/50"
+                            ? "text-rose-400"
+                            : "text-white/50"
                       }`}
                     >
                       {fila.dg > 0 ? `+${fila.dg}` : fila.dg}
@@ -241,7 +241,7 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
               })}
               {grupo.filas.length === 0 && (
                 <tr>
-                  <td colSpan={COLS.length} className="px-4 py-8 text-center text-sm text-muneca-black/40">
+                  <td colSpan={COLS.length} className="px-4 py-8 text-center text-sm text-white/40">
                     Todavía no hay equipos asignados a este grupo.
                   </td>
                 </tr>
@@ -250,7 +250,7 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
           </table>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muneca-black/50">
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-white/50">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-muneca-yellow" /> Clasifica a eliminatorias
           </span>
@@ -262,10 +262,10 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
 
       <div>
         <div className="flex items-center justify-between gap-3">
-          <p className="font-display text-lg uppercase tracking-wide text-muneca-black">
+          <p className="font-display text-lg uppercase tracking-wide text-white">
             Estadísticas del grupo
           </p>
-          <span className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+          <span className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
             Grupo {grupo.letra}
           </span>
         </div>
@@ -289,16 +289,16 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
 
       <div>
         <div className="flex items-center justify-between gap-3">
-          <p className="font-display text-lg uppercase tracking-wide text-muneca-black">
+          <p className="font-display text-lg uppercase tracking-wide text-white">
             Próxima jornada
           </p>
-          <span className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+          <span className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
             Grupo {grupo.letra}
           </span>
         </div>
 
         {grupo.proximaJornada.length === 0 ? (
-          <p className="mt-4 rounded-xl border border-dashed border-black/15 px-4 py-8 text-center text-sm text-muneca-black/50">
+          <p className="mt-4 rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-white/50">
             Todavía no hay partidos programados para este grupo.
           </p>
         ) : (
@@ -306,31 +306,31 @@ export function PosicionesTabs({ grupos }: { grupos: GrupoData[] }) {
             {grupo.proximaJornada.map((p) => {
               const fecha = new Date(p.fecha);
               return (
-                <div key={p.id} className="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
-                  <p className="text-center text-xs font-bold uppercase tracking-wide text-muneca-purple">
+                <div key={p.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+                  <p className="text-center text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                     {fecha.toLocaleDateString("es-CO", { weekday: "long", day: "2-digit", month: "short" })}
                   </p>
-                  <p className="text-center text-xs text-muneca-black/50">
+                  <p className="text-center text-xs text-white/50">
                     {fecha.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}
                   </p>
 
                   <div className="mt-3 flex items-center justify-between gap-2">
                     <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
                       <TeamCrest url={p.local?.escudo_url} size="sm" />
-                      <span className="line-clamp-2 text-xs font-semibold leading-tight text-muneca-black">
+                      <span className="line-clamp-2 text-xs font-semibold leading-tight text-white">
                         {p.local?.nombre_equipo ?? "Por definir"}
                       </span>
                     </div>
-                    <span className="font-display text-lg text-muneca-black/40">VS</span>
+                    <span className="font-display text-lg text-white/40">VS</span>
                     <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
                       <TeamCrest url={p.visitante?.escudo_url} size="sm" />
-                      <span className="line-clamp-2 text-xs font-semibold leading-tight text-muneca-black">
+                      <span className="line-clamp-2 text-xs font-semibold leading-tight text-white">
                         {p.visitante?.nombre_equipo ?? "Por definir"}
                       </span>
                     </div>
                   </div>
 
-                  <p className="mt-3 text-center text-xs text-muneca-black/50">📍 Cancha {p.cancha}</p>
+                  <p className="mt-3 text-center text-xs text-white/50">📍 Cancha {p.cancha}</p>
 
                   <Link
                     href={`/partidos/${p.id}`}

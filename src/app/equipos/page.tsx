@@ -5,16 +5,14 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
 type Equipo = { id: string; nombre_equipo: string; escudo_url: string | null };
 
 /**
- * Índice público de equipos — nueva página (2026-09-14), a la que apunta el
- * botón "Ver todos los equipos" de la sección de equipos del home
- * (`components/home/equipos.tsx`). Antes ese botón no existía porque con 24
- * equipos todos cabían directamente en el home; esta página es la que
- * escala si el cupo del torneo crece más adelante (brief original, sección
- * 34: más equipos en próximas ediciones).
+ * Índice público de equipos — fondo oscuro (2026-09-14), igual que
+ * /partidos y /equipos/[equipo], parte del rediseño completo de la
+ * plataforma a un solo tema oscuro que pidió Fernando.
  */
 export default async function EquiposPage() {
   const supabase = await createClient();
@@ -36,8 +34,10 @@ export default async function EquiposPage() {
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+      <main className="flex-1 bg-muneca-black">
+        <section className="relative isolate overflow-hidden pb-10 pt-36 text-white">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
@@ -60,11 +60,11 @@ export default async function EquiposPage() {
 
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
           {equipos.length === 0 ? (
-            <div className="flex flex-col items-center rounded-2xl border border-dashed border-muneca-purple/25 bg-black/[0.015] px-6 py-16 text-center sm:py-24">
-              <p className="font-display text-4xl leading-none text-muneca-black sm:text-6xl">
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-16 text-center sm:py-24">
+              <p className="font-display text-4xl leading-none text-white sm:text-6xl">
                 TE ESTAMOS ESPERANDO
               </p>
-              <p className="mt-4 max-w-md text-sm text-muneca-black/60 sm:text-base">
+              <p className="mt-4 max-w-md text-sm text-white/60 sm:text-base">
                 Todavía no hay equipos confirmados — sé de los primeros en hacer parte de la Copa.
               </p>
               <Link
@@ -81,10 +81,10 @@ export default async function EquiposPage() {
                   key={equipo.id}
                   href={`/equipos/${equipo.id}`}
                   title={equipo.nombre_equipo}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-4 shadow-sm transition-transform hover:scale-[1.03] hover:border-muneca-purple/30"
+                  className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-4 transition-transform hover:scale-[1.03] hover:border-muneca-yellow/40"
                 >
                   <TeamCrest url={equipo.escudo_url} size="lg" />
-                  <span className="line-clamp-2 text-center text-xs font-semibold leading-tight text-muneca-black/70">
+                  <span className="line-clamp-2 text-center text-xs font-semibold leading-tight text-white/70">
                     {equipo.nombre_equipo}
                   </span>
                 </Link>

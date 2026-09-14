@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 import { createClient } from "@/lib/supabase/server";
 import { PosicionesTabs, type FilaTabla, type GrupoData, type PartidoResumen } from "@/components/posiciones/posiciones-tabs";
 
@@ -37,6 +38,9 @@ type StandingRow = {
  * criterios — todavía no se calculan automáticamente; se nota al pie de la
  * tabla para no dar una posición por definitiva cuando aplicaría un
  * desempate manual.
+ *
+ * Fondo oscuro (2026-09-14), igual que /partidos y /equipos/[equipo],
+ * parte del rediseño completo de la plataforma a un solo tema oscuro.
  */
 export default async function PosicionesPage() {
   const supabase = await createClient();
@@ -130,8 +134,10 @@ export default async function PosicionesPage() {
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+      <main className="flex-1 bg-muneca-black text-white">
+        <section className="relative isolate overflow-hidden pb-10 pt-36">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
@@ -148,7 +154,7 @@ export default async function PosicionesPage() {
         <div className="mx-auto max-w-6xl space-y-10 px-4 py-8 sm:px-6 sm:py-10">
           <PosicionesTabs grupos={grupos} />
 
-          <p className="text-center text-xs text-muneca-black/40">
+          <p className="text-center text-xs text-white/40">
             Desempate automático: puntos → diferencia de gol → goles a favor. El enfrentamiento
             directo y el sorteo (para empates exactos que persistan) todavía no se calculan
             automáticamente.
@@ -157,7 +163,7 @@ export default async function PosicionesPage() {
           <div>
             <Link
               href="/"
-              className="text-sm font-semibold text-black/50 transition-colors hover:text-muneca-purple"
+              className="text-sm font-semibold text-white/40 transition-colors hover:text-muneca-yellow"
             >
               ← Volver al inicio
             </Link>

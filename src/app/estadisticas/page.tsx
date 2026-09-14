@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
 const TOP_JUGADORES = 20;
 const TOP_EQUIPOS = 12;
@@ -25,26 +26,26 @@ function FilaJugador({
   valor: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-black/5 py-2.5 last:border-0">
+    <div className="flex items-center justify-between gap-3 border-b border-white/5 py-2.5 last:border-0">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/10 text-xs font-bold text-muneca-purple">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/20 text-xs font-bold text-muneca-yellow">
           {pos}
         </span>
         <div className="min-w-0">
           {jugador ? (
             <Link
               href={`/jugadores/${jugador.id}`}
-              className="truncate text-sm font-semibold text-muneca-black hover:text-muneca-purple"
+              className="truncate text-sm font-semibold text-white hover:text-muneca-yellow"
             >
               {jugador.nombre}
             </Link>
           ) : (
-            <span className="text-sm font-semibold text-muneca-black/40">—</span>
+            <span className="text-sm font-semibold text-white/40">—</span>
           )}
           {equipo && (
             <Link
               href={`/equipos/${equipo.id}`}
-              className="flex items-center gap-1.5 text-xs text-muneca-black/50 hover:text-muneca-purple"
+              className="flex items-center gap-1.5 text-xs text-white/50 hover:text-muneca-yellow"
             >
               <TeamCrest url={equipo.escudo_url} size="xs" />
               {equipo.nombre_equipo}
@@ -159,8 +160,10 @@ export default async function EstadisticasPage() {
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+      <main className="flex-1 bg-muneca-black text-white">
+        <section className="relative isolate overflow-hidden pb-10 pt-36">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
@@ -176,13 +179,13 @@ export default async function EstadisticasPage() {
 
         <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                 ⚽ Goleadores
               </p>
               <div className="mt-2">
                 {goleadores.length === 0 && (
-                  <p className="py-4 text-center text-xs text-muneca-black/40">
+                  <p className="py-4 text-center text-xs text-white/40">
                     Todavía no hay goles registrados.
                   </p>
                 )}
@@ -192,21 +195,19 @@ export default async function EstadisticasPage() {
                     pos={i + 1}
                     jugador={jugadorPorId.get(g.player_id)}
                     equipo={equipoPorId.get(g.team_id)}
-                    valor={
-                      <span className="font-display text-lg text-muneca-black">{g.goles}</span>
-                    }
+                    valor={<span className="font-display text-lg text-white">{g.goles}</span>}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                 🟨🟥 Tarjetas
               </p>
               <div className="mt-2">
                 {tarjetas.length === 0 && (
-                  <p className="py-4 text-center text-xs text-muneca-black/40">
+                  <p className="py-4 text-center text-xs text-white/40">
                     Todavía no hay tarjetas registradas.
                   </p>
                 )}
@@ -217,9 +218,9 @@ export default async function EstadisticasPage() {
                     jugador={jugadorPorId.get(t.player_id)}
                     equipo={equipoPorId.get(t.team_id)}
                     valor={
-                      <span className="font-display text-lg text-muneca-black">
+                      <span className="font-display text-lg text-white">
                         {t.amarillas}
-                        <span className="mx-1 text-sm text-muneca-black/30">/</span>
+                        <span className="mx-1 text-sm text-white/30">/</span>
                         {t.rojas}
                       </span>
                     }
@@ -228,13 +229,13 @@ export default async function EstadisticasPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                 ⭐ Ranking MVP
               </p>
               <div className="mt-2">
                 {mvpRanking.length === 0 && (
-                  <p className="py-4 text-center text-xs text-muneca-black/40">
+                  <p className="py-4 text-center text-xs text-white/40">
                     Todavía no hay MVP votados.
                   </p>
                 )}
@@ -247,9 +248,7 @@ export default async function EstadisticasPage() {
                       jugador={jugador}
                       equipo={jugador ? equipoPorId.get(jugador.team_id) : undefined}
                       valor={
-                        <span className="font-display text-lg text-muneca-black">
-                          {m.mvp_count}
-                        </span>
+                        <span className="font-display text-lg text-white">{m.mvp_count}</span>
                       }
                     />
                   );
@@ -257,32 +256,32 @@ export default async function EstadisticasPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                 🛡️ Fair Play
               </p>
-              <p className="mt-0.5 text-[11px] text-muneca-black/40">
+              <p className="mt-0.5 text-[11px] text-white/40">
                 Amarilla = 1 pt · Roja = 3 pts. Gana el equipo con menor puntaje.
               </p>
               <div className="mt-2">
                 {fairPlay.map((f, i) => (
                   <div
                     key={f.equipo.id}
-                    className="flex items-center justify-between gap-3 border-b border-black/5 py-2.5 last:border-0"
+                    className="flex items-center justify-between gap-3 border-b border-white/5 py-2.5 last:border-0"
                   >
                     <Link
                       href={`/equipos/${f.equipo.id}`}
-                      className="flex min-w-0 items-center gap-3 hover:text-muneca-purple"
+                      className="flex min-w-0 items-center gap-3 hover:text-muneca-yellow"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/10 text-xs font-bold text-muneca-purple">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/20 text-xs font-bold text-muneca-yellow">
                         {i + 1}
                       </span>
                       <TeamCrest url={f.equipo.escudo_url} size="sm" />
-                      <span className="truncate text-sm font-semibold text-muneca-black">
+                      <span className="truncate text-sm font-semibold text-white">
                         {f.equipo.nombre_equipo}
                       </span>
                     </Link>
-                    <span className="font-display shrink-0 text-lg text-muneca-black">
+                    <span className="font-display shrink-0 text-lg text-white">
                       {f.puntos}
                     </span>
                   </div>
@@ -290,11 +289,11 @@ export default async function EstadisticasPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm lg:col-span-2">
-              <p className="text-xs font-bold uppercase tracking-wide text-muneca-purple">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 lg:col-span-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
                 🧤 Valla menos vencida
               </p>
-              <p className="mt-0.5 text-[11px] text-muneca-black/40">
+              <p className="mt-0.5 text-[11px] text-white/40">
                 Ranking por equipo (menos goles en contra) — todavía no se registran alineaciones
                 para atribuir este dato a un arquero individual.
               </p>
@@ -302,22 +301,22 @@ export default async function EstadisticasPage() {
                 {vallaMenosVencida.map((v, i) => (
                   <div
                     key={v.equipo.id}
-                    className="flex items-center justify-between gap-3 border-b border-black/5 py-2.5 last:border-0"
+                    className="flex items-center justify-between gap-3 border-b border-white/5 py-2.5 last:border-0"
                   >
                     <Link
                       href={`/equipos/${v.equipo.id}`}
-                      className="flex min-w-0 items-center gap-3 hover:text-muneca-purple"
+                      className="flex min-w-0 items-center gap-3 hover:text-muneca-yellow"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/10 text-xs font-bold text-muneca-purple">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muneca-purple/20 text-xs font-bold text-muneca-yellow">
                         {i + 1}
                       </span>
                       <TeamCrest url={v.equipo.escudo_url} size="sm" />
-                      <span className="truncate text-sm font-semibold text-muneca-black">
+                      <span className="truncate text-sm font-semibold text-white">
                         {v.equipo.nombre_equipo}
                       </span>
                     </Link>
-                    <span className="shrink-0 text-sm text-muneca-black/60">
-                      <span className="font-display text-lg text-muneca-black">{v.gc}</span> en{" "}
+                    <span className="shrink-0 text-sm text-white/60">
+                      <span className="font-display text-lg text-white">{v.gc}</span> en{" "}
                       {v.pj} PJ
                     </span>
                   </div>
@@ -329,7 +328,7 @@ export default async function EstadisticasPage() {
           <div>
             <Link
               href="/"
-              className="text-sm font-semibold text-black/50 transition-colors hover:text-muneca-purple"
+              className="text-sm font-semibold text-white/40 transition-colors hover:text-muneca-yellow"
             >
               ← Volver al inicio
             </Link>

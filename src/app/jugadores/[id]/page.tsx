@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
 /**
  * Foto del jugador. Mientras `players.foto_url` siga vacío para todo el
@@ -29,6 +30,11 @@ function FotoJugador({ url }: { url?: string | null }) {
   );
 }
 
+/**
+ * Página pública del jugador — fondo oscuro (2026-09-14), igual que
+ * /partidos y /equipos/[equipo], parte del rediseño completo de la
+ * plataforma a un solo tema oscuro que pidió Fernando.
+ */
 export default async function JugadorPage({
   params,
 }: {
@@ -80,8 +86,10 @@ export default async function JugadorPage({
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+      <main className="flex-1 bg-muneca-black text-white">
+        <section className="relative isolate overflow-hidden pb-10 pt-36">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
@@ -118,31 +126,31 @@ export default async function JugadorPage({
 
         <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
           <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-black/10 bg-white p-5 text-center shadow-sm">
-              <p className="font-display text-3xl text-muneca-black">{goles}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muneca-black/50">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center">
+              <p className="font-display text-3xl text-white">{goles}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/50">
                 ⚽ Goles
               </p>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white p-5 text-center shadow-sm">
-              <p className="font-display text-3xl text-muneca-black">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center">
+              <p className="font-display text-3xl text-white">
                 {amarillas}
-                <span className="mx-1 text-lg text-muneca-black/30">/</span>
+                <span className="mx-1 text-lg text-white/30">/</span>
                 {rojas}
               </p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muneca-black/50">
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/50">
                 🟨/🟥 Tarjetas
               </p>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white p-5 text-center shadow-sm">
-              <p className="font-display text-3xl text-muneca-black">{mvpCount}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muneca-black/50">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center">
+              <p className="font-display text-3xl text-white">{mvpCount}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/50">
                 ⭐ MVP
               </p>
             </div>
           </div>
 
-          <p className="text-center text-xs text-muneca-black/40">
+          <p className="text-center text-xs text-white/40">
             Partidos jugados por el jugador se mostrarán aquí una vez la plataforma maneje la
             selección de titulares por partido.
           </p>
@@ -151,7 +159,7 @@ export default async function JugadorPage({
             {team && (
               <Link
                 href={`/equipos/${team.id}`}
-                className="text-sm font-semibold text-black/50 transition-colors hover:text-muneca-purple"
+                className="text-sm font-semibold text-white/40 transition-colors hover:text-muneca-yellow"
               >
                 ← Volver a {team.nombre_equipo}
               </Link>

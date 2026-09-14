@@ -2,12 +2,12 @@ const PLACEHOLDERS = ["Jugada", "Gol", "Hinchada", "Trofeo"];
 
 export function Galeria() {
   return (
-    <section id="galeria" className="bg-muneca-white">
+    <section id="galeria" className="bg-black">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
+        <p className="border-l-4 border-muneca-yellow pl-3 text-sm font-bold uppercase tracking-widest text-muneca-yellow">
           Galería
         </p>
-        <p className="mt-1 pl-3 text-xs text-muneca-black/50">
+        <p className="mt-1 pl-3 text-xs text-white/50">
           Momentos que también cuentan.
         </p>
 
@@ -22,7 +22,7 @@ export function Galeria() {
           ))}
           <a
             href="#"
-            className="flex h-32 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-muneca-purple/50 text-muneca-purple"
+            className="flex h-32 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-muneca-yellow/40 text-muneca-yellow"
           >
             →
           </a>

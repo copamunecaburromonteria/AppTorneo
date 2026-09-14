@@ -24,17 +24,17 @@ const ICONS: Record<string, typeof MapPin> = {
 
 export function TorneoIntro() {
   return (
-    <section id="torneo" className="bg-muneca-white">
+    <section id="torneo" className="bg-muneca-black">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="flex flex-col items-center gap-10 lg:flex-row">
           <div className="flex-1 text-center lg:text-left">
-            <p className="text-sm font-bold uppercase tracking-widest text-muneca-purple">
+            <p className="text-sm font-bold uppercase tracking-widest text-muneca-yellow">
               — El torneo
             </p>
-            <h2 className="font-display mt-2 text-4xl leading-tight sm:text-5xl">
+            <h2 className="font-display mt-2 text-4xl leading-tight text-white sm:text-5xl">
               UNA NUEVA FORMA DE VIVIR EL FÚTBOL EN MONTERÍA.
             </h2>
-            <p className="mt-4 max-w-xl text-base text-muneca-black/70 mx-auto lg:mx-0">
+            <p className="mt-4 max-w-xl text-base text-white/70 mx-auto lg:mx-0">
               La Copa Muñeca e&apos;Burro nace para reunir equipos, personas e
               historias alrededor del fútbol aficionado. Una competencia
               organizada, con su propia plataforma digital, premiación
@@ -42,7 +42,7 @@ export function TorneoIntro() {
             </p>
             <a
               href="#partidos"
-              className="mt-6 inline-block rounded-md bg-muneca-purple px-6 py-3 text-sm font-bold uppercase text-muneca-white transition-transform hover:scale-[1.03]"
+              className="mt-6 inline-block rounded-md bg-muneca-yellow px-6 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
             >
               Conoce más
             </a>
@@ -65,10 +65,10 @@ export function TorneoIntro() {
             return (
               <div
                 key={item}
-                className="flex flex-col items-center gap-2 rounded-lg border border-black/10 bg-black/[0.02] px-2 py-4 text-center"
+                className="flex flex-col items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-4 text-center"
               >
-                <Icon size={24} weight="regular" className="text-muneca-purple" />
-                <span className="text-xs font-semibold text-muneca-black/70">
+                <Icon size={24} weight="regular" className="text-muneca-yellow" />
+                <span className="text-xs font-semibold text-white/70">
                   {item}
                 </span>
               </div>

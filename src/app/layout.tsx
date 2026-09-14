@@ -24,7 +24,7 @@ const accentScript = Permanent_Marker({
 export const metadata: Metadata = {
   title: "Copa Muñeca e'Burro | Montería",
   description:
-    "Más que un torneo, es el parche. Copa Muñeca e'Burro — 24 equipos, categoría libre, Montería, Córdoba.",
+    "Más que un torneo, es el parche. Copa Muñeca e'Burro — 32 equipos, categoría libre, Montería, Córdoba.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -33,7 +33,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${bebas.variable} ${montserrat.variable} ${accentScript.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-muneca-white text-muneca-black">
+      {/* Toda la plataforma pasó a fondo oscuro (2026-09-14, a petición de
+          Fernando) — el body queda oscuro por defecto para que no haya
+          "destello" claro en los bordes/rebote de scroll de ninguna página. */}
+      <body className="min-h-full flex flex-col bg-muneca-black text-muneca-white">
         {children}
       </body>
     </html>

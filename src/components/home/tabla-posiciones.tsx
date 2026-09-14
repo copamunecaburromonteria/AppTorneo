@@ -7,26 +7,26 @@ const COLS = ["Pos", "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "DG", "Pts"];
 
 export function TablaPosiciones() {
   return (
-    <section id="posiciones" className="bg-black/[0.02]">
+    <section id="posiciones" className="bg-black">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <p className="border-l-4 border-muneca-purple pl-3 text-sm font-bold uppercase tracking-widest text-muneca-purple">
+            <p className="border-l-4 border-muneca-yellow pl-3 text-sm font-bold uppercase tracking-widest text-muneca-yellow">
               Tabla de posiciones
             </p>
-            <p className="mt-1 pl-3 text-xs text-muneca-black/50">
+            <p className="mt-1 pl-3 text-xs text-white/50">
               Tabla de posiciones presentada por [Patrocinador]
             </p>
           </div>
           <Link
             href="/posiciones"
-            className="pl-3 text-xs font-bold text-muneca-black/70 hover:text-muneca-purple sm:pl-0"
+            className="pl-3 text-xs font-bold text-white/70 hover:text-muneca-yellow sm:pl-0"
           >
             Ver tabla completa →
           </Link>
         </div>
 
-        <div className="mt-6 overflow-x-auto rounded-xl border border-black/10 bg-muneca-white shadow-sm">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.04]">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="bg-gradient-to-r from-muneca-purple-dark to-muneca-black text-muneca-white">
@@ -47,12 +47,12 @@ export function TablaPosiciones() {
                 return (
                   <tr
                     key={fila.equipo}
-                    className={`border-b border-black/5 transition-colors last:border-0 hover:bg-muneca-purple/5 ${
+                    className={`border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.06] ${
                       esLider
                         ? "bg-muneca-yellow/10"
                         : i % 2 === 0
-                          ? "bg-muneca-white"
-                          : "bg-muneca-purple/[0.03]"
+                          ? "bg-white/[0.02]"
+                          : "bg-white/[0.045]"
                     }`}
                   >
                     <td className="px-3 py-3 pl-4">
@@ -76,7 +76,7 @@ export function TablaPosiciones() {
                           height={1283}
                           className="h-6 w-6 object-contain"
                         />
-                        <span className="font-semibold text-muneca-black">
+                        <span className="font-semibold text-white">
                           {fila.equipo}
                         </span>
                         {esLider && (
@@ -89,19 +89,19 @@ export function TablaPosiciones() {
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.pj}</td>
-                    <td className="px-3 py-3 font-semibold text-emerald-600">{fila.pg}</td>
-                    <td className="px-3 py-3 text-muneca-black/50">{fila.pe}</td>
-                    <td className="px-3 py-3 font-semibold text-rose-600">{fila.pp}</td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.gf}</td>
-                    <td className="px-3 py-3 text-muneca-black/70">{fila.gc}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.pj}</td>
+                    <td className="px-3 py-3 font-semibold text-emerald-400">{fila.pg}</td>
+                    <td className="px-3 py-3 text-white/50">{fila.pe}</td>
+                    <td className="px-3 py-3 font-semibold text-rose-400">{fila.pp}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.gf}</td>
+                    <td className="px-3 py-3 text-white/70">{fila.gc}</td>
                     <td
                       className={`px-3 py-3 font-semibold ${
                         dg > 0
-                          ? "text-emerald-600"
+                          ? "text-emerald-400"
                           : dg < 0
-                            ? "text-rose-600"
-                            : "text-muneca-black/50"
+                            ? "text-rose-400"
+                            : "text-white/50"
                       }`}
                     >
                       {dg > 0 ? `+${dg}` : dg}
@@ -117,7 +117,7 @@ export function TablaPosiciones() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-muneca-black/40">
+        <p className="mt-3 text-xs text-white/40">
           Datos de ejemplo — se conecta a resultados reales una vez definido el formato del torneo.
         </p>
       </div>

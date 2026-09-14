@@ -61,9 +61,9 @@ const initialState: RegistroEquipoInput = {
 };
 
 const inputClass =
-  "mt-1.5 w-full rounded-md border border-black/15 bg-white px-3.5 py-2.5 text-sm text-muneca-black placeholder:text-black/35 focus:border-muneca-purple focus:outline-none focus:ring-2 focus:ring-muneca-purple/20";
+  "mt-1.5 w-full rounded-md border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-muneca-yellow focus:outline-none focus:ring-2 focus:ring-muneca-yellow/20";
 
-const labelClass = "block text-sm font-semibold text-muneca-black";
+const labelClass = "block text-sm font-semibold text-white";
 
 function repartirEnPartesIguales(total: number, partes: number): number[] {
   if (partes <= 0) return [total];
@@ -90,7 +90,7 @@ function Field({
     <label className="block">
       <span className={labelClass}>
         {label}
-        {required && <span className="text-muneca-purple"> *</span>}
+        {required && <span className="text-muneca-yellow"> *</span>}
       </span>
       {children}
     </label>
@@ -99,9 +99,9 @@ function Field({
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="font-display text-2xl text-muneca-black">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-black/60">{subtitle}</p>}
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+      <h2 className="font-display text-2xl text-white">{title}</h2>
+      {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
       <div className="mt-6 grid gap-5 sm:grid-cols-2">{children}</div>
     </div>
   );
@@ -126,7 +126,7 @@ function NavBotones({
         <button
           type="button"
           onClick={onAtras}
-          className="rounded-md px-4 py-2.5 text-sm font-semibold text-muneca-black/60 transition-colors hover:text-muneca-black"
+          className="rounded-md px-4 py-2.5 text-sm font-semibold text-white/60 transition-colors hover:text-white"
         >
           ← Atrás
         </button>
@@ -200,11 +200,11 @@ function ListaEsperaWizard() {
         team={teamPreview}
         breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
       >
-        <div className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-sm sm:p-10">
-          <p className="font-display text-2xl text-muneca-black sm:text-3xl">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center sm:p-10">
+          <p className="font-display text-2xl text-white sm:text-3xl">
             ¡Quedaste en la lista de espera!
           </p>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-muneca-black/70 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-sm text-white/70 sm:text-base">
             Los cupos están llenos para esta versión — sin embargo te dejamos en espera, por si
             alguno de los equipos que ya están activos no completa su inscripción. Te
             contactaremos por WhatsApp o correo si se libera un cupo.
@@ -223,8 +223,8 @@ function ListaEsperaWizard() {
       breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
     >
       <form onSubmit={enviar} className="space-y-6">
-        <div className="rounded-2xl border border-muneca-purple/20 bg-muneca-purple/5 p-5 text-sm text-muneca-black/80 sm:p-6">
-          <p className="font-display text-lg text-muneca-black sm:text-xl">
+        <div className="rounded-2xl border border-muneca-purple/30 bg-muneca-purple/10 p-5 text-sm text-white/80 sm:p-6">
+          <p className="font-display text-lg text-white sm:text-xl">
             Los cupos están llenos para esta versión
           </p>
           <p className="mt-1.5">
@@ -319,7 +319,7 @@ function ListaEsperaWizard() {
           </Field>
         </Card>
 
-        {error && <p className="rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-md bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{error}</p>}
 
         <div className="flex justify-end">
           <button
@@ -446,11 +446,11 @@ export function InscripcionWizard({
         team={teamPreview}
         breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
       >
-        <div className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-sm sm:p-10">
-          <p className="font-display text-2xl text-muneca-black sm:text-3xl">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center sm:p-10">
+          <p className="font-display text-2xl text-white sm:text-3xl">
             ¡Quedaste en la lista de espera!
           </p>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-muneca-black/70 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-sm text-white/70 sm:text-base">
             Los cupos se llenaron justo mientras completabas el formulario — te dejamos en lista
             de espera, por si alguno de los equipos activos no completa su inscripción. Te
             contactaremos por WhatsApp o correo si se libera un cupo.
@@ -640,7 +640,7 @@ export function InscripcionWizard({
             <Card title="Uniforme personalizado">
               <div className="sm:col-span-2">
                 <span className={labelClass}>
-                  ¿Tu equipo ya cuenta con uniforme propio? <span className="text-muneca-purple">*</span>
+                  ¿Tu equipo ya cuenta con uniforme propio? <span className="text-muneca-yellow">*</span>
                 </span>
                 <div className="mt-2 flex gap-3">
                   {[
@@ -654,7 +654,7 @@ export function InscripcionWizard({
                       className={`rounded-md border px-5 py-2.5 text-sm font-semibold transition-colors ${
                         form.tieneUniformePropio === opt.value
                           ? "border-muneca-purple bg-muneca-purple text-muneca-white"
-                          : "border-black/15 text-muneca-black hover:border-muneca-purple/50"
+                          : "border-white/15 text-white hover:border-muneca-yellow/50"
                       }`}
                     >
                       {opt.label}
@@ -664,11 +664,11 @@ export function InscripcionWizard({
               </div>
 
               {form.tieneUniformePropio === false && (
-                <div className="rounded-xl bg-muneca-purple/5 p-5 sm:col-span-2">
+                <div className="rounded-xl bg-muneca-purple/10 p-5 sm:col-span-2">
                   <span className={labelClass}>
                     ¿Deseas adquirir el uniforme oficial personalizado con la Copa Muñeca e&apos;Burro?
                   </span>
-                  <p className="mt-1 text-sm text-black/60">
+                  <p className="mt-1 text-sm text-white/60">
                     Pedido de plantilla completa ({pricing.maxJugadoresPorEquipo} uniformes) a{" "}
                     {formatCOP(pricing.precioUniforme)} c/u = {formatCOP(montoUniformeKit)}. La talla de
                     cada jugador se pide después, al completar la plantilla en el portal.
@@ -685,7 +685,7 @@ export function InscripcionWizard({
                         className={`rounded-md border px-5 py-2.5 text-sm font-semibold transition-colors ${
                           form.compraUniformeCopa === opt.value
                             ? "border-muneca-purple bg-muneca-purple text-muneca-white"
-                            : "border-black/15 text-muneca-black hover:border-muneca-purple/50"
+                            : "border-white/15 text-white hover:border-muneca-yellow/50"
                         }`}
                       >
                         {opt.label}
@@ -696,7 +696,7 @@ export function InscripcionWizard({
               )}
             </Card>
 
-            <div className="rounded-2xl bg-muneca-black p-6 text-muneca-white sm:p-8">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-muneca-white sm:p-8">
               <p className="text-sm uppercase tracking-wide text-donkey-gray">Resumen de pago</p>
               <div className="mt-3 space-y-1 text-sm text-white/80">
                 <div className="flex justify-between">
@@ -738,7 +738,7 @@ export function InscripcionWizard({
         )}
 
         {error && (
-          <p className="rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>
+          <p className="rounded-md bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{error}</p>
         )}
 
         {paso === 1 && <NavBotones paso={1} onSiguiente={irAPaso2} />}

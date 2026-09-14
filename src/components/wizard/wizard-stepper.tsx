@@ -30,7 +30,7 @@ export function WizardStepperSidebar({ pasoActual }: { pasoActual: number }) {
                 <span
                   aria-hidden="true"
                   className={`absolute left-[15px] top-8 h-[calc(100%-1.5rem)] w-0.5 ${
-                    completado ? "bg-muneca-purple" : "bg-black/10"
+                    completado ? "bg-muneca-purple" : "bg-white/10"
                   }`}
                 />
               )}
@@ -39,8 +39,8 @@ export function WizardStepperSidebar({ pasoActual }: { pasoActual: number }) {
                   completado
                     ? "bg-muneca-purple text-white"
                     : activo
-                      ? "bg-muneca-purple text-white ring-4 ring-muneca-purple/20"
-                      : "bg-black/5 text-black/40"
+                      ? "bg-muneca-purple text-white ring-4 ring-muneca-purple/25"
+                      : "bg-white/10 text-white/40"
                 }`}
               >
                 {completado ? <CheckIcon /> : step.id}
@@ -48,12 +48,12 @@ export function WizardStepperSidebar({ pasoActual }: { pasoActual: number }) {
               <div className="pt-0.5">
                 <p
                   className={`text-sm font-semibold ${
-                    activo ? "text-muneca-black" : completado ? "text-muneca-black/80" : "text-black/40"
+                    activo ? "text-white" : completado ? "text-white/80" : "text-white/40"
                   }`}
                 >
                   {step.label}
                 </p>
-                <p className={`text-xs ${activo ? "text-black/60" : "text-black/35"}`}>
+                <p className={`text-xs ${activo ? "text-white/60" : "text-white/35"}`}>
                   {step.description}
                 </p>
               </div>
@@ -73,16 +73,16 @@ export function WizardStepperMobile({ pasoActual }: { pasoActual: number }) {
   return (
     <div className="lg:hidden">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-muneca-black">
+        <p className="text-sm font-semibold text-white">
           {pasoActual}. {step.label}
         </p>
-        <p className="text-xs text-black/50">
+        <p className="text-xs text-white/50">
           Paso {pasoActual} de {TOTAL_PASOS}
         </p>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-muneca-purple transition-all"
+          className="h-full rounded-full bg-muneca-yellow transition-all"
           style={{ width: `${progreso}%` }}
         />
       </div>
