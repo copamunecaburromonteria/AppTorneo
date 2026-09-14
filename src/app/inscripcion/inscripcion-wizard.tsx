@@ -9,6 +9,27 @@ import {
   type RegistroEquipoInput,
 } from "./actions";
 
+const listaEsperaInitialState: RegistroEquipoInput = {
+  nombreEquipo: "",
+  anioFundacion: "",
+  ciudadBarrio: "",
+  descripcion: "",
+  correo: "",
+  password: "",
+  delegadoNombre: "",
+  delegadoApellido: "",
+  delegadoDocumento: "",
+  delegadoContactoPrincipal: "",
+  delegadoContactoAlterno: "",
+  delegadoWhatsapp: "",
+  dtNombre: "",
+  dtDocumento: "",
+  preparadorNombre: "",
+  preparadorDocumento: "",
+  tieneUniformePropio: null,
+  compraUniformeCopa: false,
+};
+
 type Pricing = {
   montoInscripcion: number;
   precioUniforme: number;
@@ -124,12 +145,204 @@ function NavBotones({
   );
 }
 
+/**
+ * Formulario reducido que se muestra en vez del wizard de pago cuando ya no
+ * hay cupo (los 24 equipos ya están validados) — pide solo los datos del
+ * equipo y del delegado para contactarlo si se libera un cupo. No crea
+ * cuenta de Auth ni plan de pagos, así que no hay "botón de cobro" que
+ * mostrar (ver `registrarEquipo`).
+ */
+function ListaEsperaWizard() {
+  const [form, setForm] = useState<RegistroEquipoInput>(listaEsperaInitialState);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [enviado, setEnviado] = useState(false);
+
+  function update<K extends keyof RegistroEquipoInput>(key: K, value: RegistroEquipoInput[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!form.nombreEquipo.trim()) return setError("Falta el nombre del equipo.");
+    if (!form.correo.includes("@")) return setError("El correo no es válido.");
+    if (!form.delegadoNombre || !form.delegadoApellido || !form.delegadoDocumento || !form.delegadoContactoPrincipal) {
+      return setError("Faltan datos obligatorios del delegado.");
+    }
+
+    setSubmitting(true);
+    const res = await registrarEquipo(form);
+    setSubmitting(false);
+
+    if (!res.success) {
+      setError(res.error);
+      return;
+    }
+
+    setEnviado(true);
+  }
+
+  const teamPreview = {
+    nombreEquipo: form.nombreEquipo,
+    delegadoNombre: [form.delegadoNombre, form.delegadoApellido].filter(Boolean).join(" ") || undefined,
+    delegadoContacto: form.delegadoContactoPrincipal || undefined,
+    delegadoDocumento: form.delegadoDocumento || undefined,
+  };
+
+  if (enviado) {
+    return (
+      <WizardShell
+        pasoActual={1}
+        titulo="INSCRIBE TU EQUIPO"
+        subtitulo="Copa Muñeca e'Burro · Categoría Libre · Montería, Córdoba"
+        team={teamPreview}
+        breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
+      >
+        <div className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-sm sm:p-10">
+          <p className="font-display text-2xl text-muneca-black sm:text-3xl">
+            ¡Quedaste en la lista de espera!
+          </p>
+          <p className="mx-auto mt-3 max-w-lg text-sm text-muneca-black/70 sm:text-base">
+            Los cupos están llenos para esta versión — sin embargo te dejamos en espera, por si
+            alguno de los equipos que ya están activos no completa su inscripción. Te
+            contactaremos por WhatsApp o correo si se libera un cupo.
+          </p>
+        </div>
+      </WizardShell>
+    );
+  }
+
+  return (
+    <WizardShell
+      pasoActual={1}
+      titulo="INSCRIBE TU EQUIPO"
+      subtitulo="Copa Muñeca e'Burro · Categoría Libre · Montería, Córdoba"
+      team={teamPreview}
+      breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
+    >
+      <form onSubmit={enviar} className="space-y-6">
+        <div className="rounded-2xl border border-muneca-purple/20 bg-muneca-purple/5 p-5 text-sm text-muneca-black/80 sm:p-6">
+          <p className="font-display text-lg text-muneca-black sm:text-xl">
+            Los cupos están llenos para esta versión
+          </p>
+          <p className="mt-1.5">
+            Sin embargo te dejamos en lista de espera, por si alguno de los equipos que ya están
+            activos no completa su inscripción. Déjanos tus datos y te contactamos si se libera un
+            cupo.
+          </p>
+        </div>
+
+        <Card title="Datos del equipo" subtitle="Comencemos con la información principal de tu equipo.">
+          <div className="sm:col-span-2">
+            <Field label="Nombre del equipo" required>
+              <input
+                required
+                value={form.nombreEquipo}
+                onChange={(e) => update("nombreEquipo", e.target.value)}
+                className={inputClass}
+                placeholder="Ej. Los Guerreros"
+              />
+            </Field>
+          </div>
+          <Field label="Año de fundación (opcional)">
+            <input
+              value={form.anioFundacion}
+              onChange={(e) => update("anioFundacion", e.target.value.replace(/[^0-9]/g, ""))}
+              inputMode="numeric"
+              maxLength={4}
+              className={inputClass}
+              placeholder="Ej. 2020"
+            />
+          </Field>
+          <Field label="Ciudad / Barrio (opcional)">
+            <input
+              value={form.ciudadBarrio}
+              onChange={(e) => update("ciudadBarrio", e.target.value)}
+              className={inputClass}
+              placeholder="Ej. Barrio, comuna o zona"
+            />
+          </Field>
+        </Card>
+
+        <Card title="Datos del delegado" subtitle="Para poder contactarte si se libera un cupo.">
+          <Field label="Nombre" required>
+            <input
+              required
+              value={form.delegadoNombre}
+              onChange={(e) => update("delegadoNombre", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Apellido" required>
+            <input
+              required
+              value={form.delegadoApellido}
+              onChange={(e) => update("delegadoApellido", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Documento" required>
+            <input
+              required
+              value={form.delegadoDocumento}
+              onChange={(e) => update("delegadoDocumento", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Correo electrónico" required>
+            <input
+              required
+              type="email"
+              value={form.correo}
+              onChange={(e) => update("correo", e.target.value)}
+              className={inputClass}
+              placeholder="delegado@correo.com"
+            />
+          </Field>
+          <Field label="Contacto principal" required>
+            <input
+              required
+              value={form.delegadoContactoPrincipal}
+              onChange={(e) => update("delegadoContactoPrincipal", e.target.value)}
+              className={inputClass}
+              placeholder="Número de celular"
+            />
+          </Field>
+          <Field label="WhatsApp (si es distinto)">
+            <input
+              value={form.delegadoWhatsapp}
+              onChange={(e) => update("delegadoWhatsapp", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </Card>
+
+        {error && <p className="rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>}
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-md bg-muneca-yellow px-6 py-2.5 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
+          >
+            {submitting ? "Enviando..." : "Unirme a la lista de espera →"}
+          </button>
+        </div>
+      </form>
+    </WizardShell>
+  );
+}
+
 export function InscripcionWizard({
   pricing,
   montoUniformeKit,
+  cupoLleno,
 }: {
   pricing: Pricing;
   montoUniformeKit: number;
+  cupoLleno: boolean;
 }) {
   const router = useRouter();
   const [paso, setPaso] = useState(1);
@@ -137,6 +350,14 @@ export function InscripcionWizard({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Salvavidas por si el cupo se llenó justo entre que se cargó la página y
+  // que este equipo se registró (poco probable, pero `registrarEquipo`
+  // vuelve a verificar el cupo del lado del servidor de todas formas).
+  const [quedoEnEspera, setQuedoEnEspera] = useState(false);
+
+  // Todos los hooks de arriba se declaran siempre (regla de hooks de React)
+  // aunque este componente no los termine usando cuando ya no hay cupo.
+  if (cupoLleno) return <ListaEsperaWizard />;
 
   function update<K extends keyof RegistroEquipoInput>(key: K, value: RegistroEquipoInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -189,6 +410,14 @@ export function InscripcionWizard({
       return;
     }
 
+    if (res.listaEspera) {
+      // El cupo se llenó justo mientras este equipo llenaba el formulario —
+      // no se creó cuenta ni plan de pagos, así que no hay a dónde loguear.
+      setSubmitting(false);
+      setQuedoEnEspera(true);
+      return;
+    }
+
     const login = await iniciarSesionTrasRegistro(res.correo, form.password);
     setSubmitting(false);
 
@@ -207,6 +436,29 @@ export function InscripcionWizard({
     delegadoContacto: form.delegadoContactoPrincipal || undefined,
     delegadoDocumento: form.delegadoDocumento || undefined,
   };
+
+  if (quedoEnEspera) {
+    return (
+      <WizardShell
+        pasoActual={paso}
+        titulo="INSCRIBE TU EQUIPO"
+        subtitulo="Copa Muñeca e'Burro · Categoría Libre · Montería, Córdoba"
+        team={teamPreview}
+        breadcrumbItems={[{ label: "Inicio", href: "/" }, { label: "Inscripción" }]}
+      >
+        <div className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-sm sm:p-10">
+          <p className="font-display text-2xl text-muneca-black sm:text-3xl">
+            ¡Quedaste en la lista de espera!
+          </p>
+          <p className="mx-auto mt-3 max-w-lg text-sm text-muneca-black/70 sm:text-base">
+            Los cupos se llenaron justo mientras completabas el formulario — te dejamos en lista
+            de espera, por si alguno de los equipos activos no completa su inscripción. Te
+            contactaremos por WhatsApp o correo si se libera un cupo.
+          </p>
+        </div>
+      </WizardShell>
+    );
+  }
 
   return (
     <WizardShell

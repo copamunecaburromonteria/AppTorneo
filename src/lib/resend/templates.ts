@@ -135,6 +135,46 @@ Copa Muñeca e'Burro — Montería, Córdoba`;
   };
 }
 
+/**
+ * Aviso al super admin cuando un equipo nuevo entra a la lista de espera
+ * porque los cupos del torneo ya están llenos (ver `numero_equipos_torneo`
+ * en `torneo_config`). Sujeto a la misma limitación de Resend que el resto
+ * de los correos (ver nota en `client.ts`) mientras no haya un dominio
+ * propio verificado — mientras tanto, la fila en `notificaciones_admin` y
+ * la sección "Equipos en espera" del panel admin son la fuente confiable.
+ */
+export function correoEquipoListaEspera(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  contacto: string;
+  correo: string;
+}): EmailContent {
+  const html = layout(
+    `${params.nombreEquipo} quedó en lista de espera`,
+    `
+    <p>Un equipo nuevo quedó en <strong>lista de espera</strong> — los cupos del torneo ya están llenos.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:12px;">
+      <tr><td style="padding:6px 12px 6px 0;color:#71717a;">Equipo</td><td style="padding:6px 0;font-weight:bold;">${params.nombreEquipo}</td></tr>
+      <tr><td style="padding:6px 12px 6px 0;color:#71717a;">Delegado</td><td style="padding:6px 0;">${params.delegadoNombre}</td></tr>
+      <tr><td style="padding:6px 12px 6px 0;color:#71717a;">Contacto</td><td style="padding:6px 0;">${params.contacto}</td></tr>
+      <tr><td style="padding:6px 12px 6px 0;color:#71717a;">Correo</td><td style="padding:6px 0;">${params.correo}</td></tr>
+    </table>
+    <p style="margin-top:20px;">Puedes verlo y contactarlo desde el panel admin, sección "Equipos en espera".</p>
+    `
+  );
+
+  const text = `Un equipo nuevo quedó en lista de espera — los cupos del torneo ya están llenos.
+
+Equipo: ${params.nombreEquipo}
+Delegado: ${params.delegadoNombre}
+Contacto: ${params.contacto}
+Correo: ${params.correo}
+
+Puedes verlo y contactarlo desde el panel admin, sección "Equipos en espera".`;
+
+  return { subject: `Lista de espera: ${params.nombreEquipo}`, html, text };
+}
+
 export function correoPagoConfirmado(params: {
   nombreEquipo: string;
   delegadoNombre: string;

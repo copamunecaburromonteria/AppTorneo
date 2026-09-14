@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { MarcarPagadaForm } from "@/app/admin/marcar-pagada-form";
+import { armarLinkWhatsApp } from "@/lib/whatsapp";
 
 function formatCOP(valor: number) {
   return new Intl.NumberFormat("es-CO", {
@@ -46,15 +47,28 @@ const ESTADO_CUOTA_CLASE: Record<string, string> = {
 export default async function AdminPagosPage() {
   const supabase = await createClient();
 
-  const { data: equipos, error } = await supabase
-    .from("teams")
-    .select(
-      `id, nombre_equipo, estado_inscripcion, orden_inscripcion, created_at,
-       team_delegado(nombre, correo),
-       payments(id, monto_total, monto_pagado, tipo_pago,
-         payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi))`
-    )
-    .order("created_at", { ascending: true });
+  const [{ data: equiposRaw, error }, { data: enEspera, error: errorEspera }] = await Promise.all([
+    supabase
+      .from("teams")
+      .select(
+        `id, nombre_equipo, estado_inscripcion, orden_inscripcion, created_at,
+         team_delegado(nombre, correo),
+         payments(id, monto_total, monto_pagado, tipo_pago,
+           payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi))`
+      )
+      .neq("estado_inscripcion", "lista_espera")
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("teams")
+      .select(
+        `id, nombre_equipo, created_at,
+         team_delegado(nombre, apellido, correo, contacto_principal, contacto_alterno, whatsapp_notificaciones)`
+      )
+      .eq("estado_inscripcion", "lista_espera")
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const equipos = equiposRaw;
 
   if (error) {
     return (
@@ -73,6 +87,82 @@ export default async function AdminPagosPage() {
           los pagos recibidos por transferencia, Nequi u otro medio.
         </p>
       </div>
+
+      <section>
+        <div className="flex items-center gap-2">
+          <h2 className="font-display text-lg uppercase tracking-wide text-muneca-black">
+            Equipos en espera
+          </h2>
+          {enEspera && enEspera.length > 0 && (
+            <span className="rounded-full bg-muneca-purple/10 px-2 py-0.5 text-xs font-bold text-muneca-purple">
+              {enEspera.length}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-sm text-muneca-black/60">
+          Se inscribieron cuando los cupos ya estaban llenos. Si se libera un cupo, contáctalos en
+          orden de llegada.
+        </p>
+
+        {errorEspera && (
+          <p className="mt-3 text-sm text-rose-600">
+            No se pudo cargar la lista de espera: {errorEspera.message}
+          </p>
+        )}
+
+        {!errorEspera && (!enEspera || enEspera.length === 0) && (
+          <p className="mt-3 rounded-xl border border-dashed border-black/15 px-4 py-6 text-center text-sm text-muneca-black/50">
+            Nadie en lista de espera por ahora.
+          </p>
+        )}
+
+        {enEspera && enEspera.length > 0 && (
+          <div className="mt-3 space-y-3">
+            {enEspera.map((equipo) => {
+              const delegadoRaw = equipo.team_delegado;
+              const delegado = Array.isArray(delegadoRaw) ? delegadoRaw[0] : delegadoRaw;
+              const numeroContacto = delegado?.whatsapp_notificaciones || delegado?.contacto_principal;
+              const linkWhatsApp = armarLinkWhatsApp(numeroContacto);
+
+              return (
+                <div
+                  key={equipo.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/10 bg-white p-4 shadow-sm"
+                >
+                  <div>
+                    <p className="font-display text-base uppercase tracking-wide text-muneca-black">
+                      {equipo.nombre_equipo}
+                    </p>
+                    <p className="text-sm text-muneca-black/60">
+                      {[delegado?.nombre, delegado?.apellido].filter(Boolean).join(" ") || "Delegado sin nombre"}
+                      {delegado?.correo ? ` · ${delegado.correo}` : ""}
+                    </p>
+                    {numeroContacto && (
+                      <p className="text-xs text-muneca-black/40">{numeroContacto}</p>
+                    )}
+                    <p className="text-xs text-muneca-black/40">
+                      Inscrito el {formatFecha(equipo.created_at)}
+                    </p>
+                  </div>
+
+                  {linkWhatsApp ? (
+                    <a
+                      href={linkWhatsApp}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold uppercase text-white transition-transform hover:scale-[1.02]"
+                    >
+                      Contactar
+                    </a>
+                  ) : (
+                    <span className="shrink-0 text-xs text-muneca-black/40">Sin número de contacto</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       {(!equipos || equipos.length === 0) && (
         <p className="rounded-xl border border-dashed border-black/15 px-4 py-8 text-center text-sm text-muneca-black/50">

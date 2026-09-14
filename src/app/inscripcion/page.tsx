@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { InscripcionWizard } from "./inscripcion-wizard";
 import { createClient } from "@/lib/supabase/server";
+import { verificarCupoDisponible } from "./actions";
 
 export const metadata: Metadata = {
   title: "Inscribe tu equipo | Copa Muñeca e'Burro",
@@ -46,8 +47,10 @@ async function getPricing() {
 }
 
 export default async function InscripcionPage() {
-  const pricing = await getPricing();
+  const [pricing, { cupoLleno }] = await Promise.all([getPricing(), verificarCupoDisponible()]);
   const montoUniformeKit = pricing.precioUniforme * pricing.maxJugadoresPorEquipo;
 
-  return <InscripcionWizard pricing={pricing} montoUniformeKit={montoUniformeKit} />;
+  return (
+    <InscripcionWizard pricing={pricing} montoUniformeKit={montoUniformeKit} cupoLleno={cupoLleno} />
+  );
 }

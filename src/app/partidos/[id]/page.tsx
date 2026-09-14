@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
+import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
 const ESTADO_LABEL: Record<string, string> = {
   programado: "Programado",
@@ -150,7 +151,12 @@ export default async function PartidoPage({
     <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1 bg-muneca-white">
-        <section className="relative overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+        <section className="relative isolate overflow-hidden bg-muneca-black pb-10 pt-36 text-muneca-white">
+          <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
+
+          {/* Toque opaco: oscurece la foto para que el marcador y los nombres se lean bien */}
+          <div aria-hidden className="absolute inset-0 bg-muneca-black/70" />
+
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
             <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />

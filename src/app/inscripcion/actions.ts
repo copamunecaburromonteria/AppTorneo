@@ -3,7 +3,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend/client";
-import { correoRegistroEquipo } from "@/lib/resend/templates";
+import { correoRegistroEquipo, correoEquipoListaEspera } from "@/lib/resend/templates";
+
+/**
+ * Correo del super admin al que llega el aviso cuando un equipo entra a
+ * lista de espera. Sujeto a la misma limitación de Resend en modo de
+ * prueba que el resto de los correos (ver `lib/resend/client.ts`) — la fila
+ * en `notificaciones_admin` y la sección "Equipos en espera" del panel
+ * admin no dependen de que el correo llegue.
+ */
+const ADMIN_NOTIFICATION_EMAIL = "copamunecaburromonteria@gmail.com";
 
 export type RegistroEquipoInput = {
   nombreEquipo: string;
@@ -35,6 +44,7 @@ export type CuotaPlan = {
 export type RegistroEquipoResult =
   | {
       success: true;
+      listaEspera: false;
       teamId: string;
       correo: string;
       montoTotal: number;
@@ -42,6 +52,15 @@ export type RegistroEquipoResult =
       montoUniformes: number;
       cantidadUniformes: number;
       cuotas: CuotaPlan[];
+    }
+  | {
+      // El equipo quedó registrado en lista de espera (cupos llenos): no se
+      // le creó cuenta de Auth ni plan de pagos, así que no hay "botón de
+      // cobro" que mostrarle — solo se le avisa que quedó en espera.
+      success: true;
+      listaEspera: true;
+      teamId: string;
+      nombreEquipo: string;
     }
   | { success: false; error: string };
 
@@ -61,6 +80,30 @@ function sumarDias(fecha: Date, dias: number): string {
   const copia = new Date(fecha);
   copia.setDate(copia.getDate() + dias);
   return copia.toISOString().slice(0, 10);
+}
+
+/**
+ * Para que `/inscripcion` sepa, antes de mostrar el formulario, si debe
+ * mostrar el flujo normal de pago o el de lista de espera (ver
+ * `registrarEquipo` para el criterio de cupo). Se usa solo para decidir qué
+ * formulario mostrar — `registrarEquipo` vuelve a verificar el cupo por su
+ * cuenta al momento de guardar, así que no hay forma de saltarse la lista
+ * de espera manipulando el formulario del navegador.
+ */
+export async function verificarCupoDisponible(): Promise<{ cupoLleno: boolean }> {
+  try {
+    const admin = createAdminClient();
+    const [{ count: validadosCount }, { data: config }] = await Promise.all([
+      admin.from("teams").select("id", { count: "exact", head: true }).eq("estado_inscripcion", "validado"),
+      admin.from("torneo_config").select("numero_equipos_torneo").eq("id", 1).single(),
+    ]);
+    const numeroEquiposTorneo = (config?.numero_equipos_torneo as number | undefined) ?? 24;
+    return { cupoLleno: (validadosCount ?? 0) >= numeroEquiposTorneo };
+  } catch {
+    // Si algo falla acá, no bloqueamos la inscripción — se deja pasar al
+    // flujo normal, que vuelve a verificar el cupo de todas formas.
+    return { cupoLleno: false };
+  }
 }
 
 export async function registrarEquipo(
@@ -86,15 +129,12 @@ export async function registrarEquipo(
     anioFundacion = parsed;
   }
 
+  // --- Validaciones comunes a ambos flujos (inscripción normal y lista de espera) ---
   if (!nombreEquipo) return { success: false, error: "Falta el nombre del equipo." };
   if (!correo || !correo.includes("@"))
     return { success: false, error: "El correo no es válido." };
-  if (!input.password || input.password.length < 8)
-    return { success: false, error: "La contraseña debe tener al menos 8 caracteres." };
   if (!delegadoNombre || !delegadoApellido || !delegadoDocumento || !delegadoContactoPrincipal)
     return { success: false, error: "Faltan datos obligatorios del delegado." };
-  if (input.tieneUniformePropio === null)
-    return { success: false, error: "Indica si el equipo ya cuenta con uniforme propio." };
 
   let admin;
   try {
@@ -106,11 +146,11 @@ export async function registrarEquipo(
     };
   }
 
-  // --- Precios y plan de pagos vigentes (torneo_config es la única fuente de verdad) ---
+  // --- Precios, plan de pagos y cupo vigentes (torneo_config es la única fuente de verdad) ---
   const { data: config, error: configError } = await admin
     .from("torneo_config")
     .select(
-      "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo"
+      "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo, numero_equipos_torneo"
     )
     .eq("id", 1)
     .single();
@@ -118,6 +158,83 @@ export async function registrarEquipo(
   if (configError || !config) {
     return { success: false, error: "No se pudo leer la configuración del torneo." };
   }
+
+  // --- ¿Hay cupo? Un equipo ocupa cupo real cuando queda VALIDADO (1a
+  // partida pagada, ver punto 3 de la Fase 1) — uno apenas registrado y sin
+  // pagar todavía no lo ocupa. Si ya no hay cupo, el equipo entra a lista de
+  // espera: sin cuenta de Auth ni plan de pagos (nada de "botón de cobro"),
+  // solo su dato de contacto guardado y un aviso al super admin.
+  const { count: validadosCount, error: countError } = await admin
+    .from("teams")
+    .select("id", { count: "exact", head: true })
+    .eq("estado_inscripcion", "validado");
+
+  const numeroEquiposTorneo = config.numero_equipos_torneo as number;
+  const cupoLleno = !countError && (validadosCount ?? 0) >= numeroEquiposTorneo;
+
+  if (cupoLleno) {
+    const { data: team, error: teamError } = await admin
+      .from("teams")
+      .insert({
+        nombre_equipo: nombreEquipo,
+        anio_fundacion: anioFundacion,
+        ciudad_barrio: ciudadBarrio || null,
+        descripcion: descripcion || null,
+        estado_inscripcion: "lista_espera",
+      })
+      .select("id")
+      .single();
+
+    if (teamError || !team) {
+      return {
+        success: false,
+        error: "No se pudo registrar el equipo en la lista de espera. Intenta de nuevo.",
+      };
+    }
+
+    const teamId = team.id as string;
+
+    const { error: delegadoError } = await admin.from("team_delegado").insert({
+      team_id: teamId,
+      nombre: delegadoNombre,
+      apellido: delegadoApellido,
+      documento: delegadoDocumento,
+      contacto_principal: delegadoContactoPrincipal,
+      contacto_alterno: input.delegadoContactoAlterno.trim() || null,
+      correo,
+      whatsapp_notificaciones: input.delegadoWhatsapp.trim() || null,
+    });
+
+    if (delegadoError) {
+      await admin.from("teams").delete().eq("id", teamId);
+      return { success: false, error: "No se pudieron guardar los datos del delegado." };
+    }
+
+    const { error: notifError } = await admin.from("notificaciones_admin").insert({
+      tipo: "equipo_lista_espera",
+      mensaje: `${nombreEquipo} quedó en lista de espera (cupos llenos) — delegado ${delegadoNombre} ${delegadoApellido}, contacto ${delegadoContactoPrincipal}.`,
+    });
+    if (notifError) {
+      console.error("[lista_espera] No se pudo insertar notificación admin:", notifError);
+    }
+
+    // Aviso por correo al super admin — no bloqueante (ver ADMIN_NOTIFICATION_EMAIL).
+    const { subject, html, text } = correoEquipoListaEspera({
+      nombreEquipo,
+      delegadoNombre: `${delegadoNombre} ${delegadoApellido}`,
+      contacto: input.delegadoWhatsapp.trim() || delegadoContactoPrincipal,
+      correo,
+    });
+    await sendEmail({ to: ADMIN_NOTIFICATION_EMAIL, subject, html, text }).catch(() => {});
+
+    return { success: true, listaEspera: true, teamId, nombreEquipo };
+  }
+
+  // --- Flujo normal (hay cupo disponible): valida contraseña y uniforme antes de continuar ---
+  if (!input.password || input.password.length < 8)
+    return { success: false, error: "La contraseña debe tener al menos 8 caracteres." };
+  if (input.tieneUniformePropio === null)
+    return { success: false, error: "Indica si el equipo ya cuenta con uniforme propio." };
 
   const montoInscripcion = Number(config.monto_inscripcion);
   const precioUniforme = Number(config.precio_uniforme);
@@ -295,6 +412,7 @@ export async function registrarEquipo(
 
   return {
     success: true,
+    listaEspera: false,
     teamId,
     correo,
     montoTotal,
