@@ -6,6 +6,10 @@ import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
+import { AgregarCalendarioBoton } from "@/components/partido/agregar-calendario-boton";
+import { calcularJornada } from "@/lib/jornada";
+
+const NOMBRE_TORNEO = "Copa Muñeca e'Burro";
 
 const ESTADO_LABEL: Record<string, string> = {
   programado: "Programado",
@@ -58,7 +62,7 @@ export default async function PartidoPage({
   const { data: partido } = await supabase
     .from("matches")
     .select(
-      "id, fase, cancha, fecha_hora_programada, estado, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url)"
+      "id, fase, cancha, fecha_hora_programada, estado, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, arbitros_confirmados_at, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url)"
     )
     .eq("id", matchId)
     .maybeSingle();
@@ -71,23 +75,33 @@ export default async function PartidoPage({
   const esProgramado = partido.estado === "programado";
   const esFinalizado = partido.estado === "finalizado";
 
-  const [{ data: eventosRaw }, mvpResult] = await Promise.all([
-    esProgramado
-      ? Promise.resolve({ data: [] as EventoRow[] })
-      : supabase
-          .from("match_events")
-          .select("id, tipo, minuto, equipo_id, jugador_id")
-          .eq("match_id", matchId)
-          .eq("anulado", false)
-          .order("minuto", { ascending: true }),
-    esFinalizado
-      ? supabase
-          .from("v_mvp_resultado_partido")
-          .select("player_id, votos, total_votos, porcentaje")
-          .eq("match_id", matchId)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const [{ data: eventosRaw }, mvpResult, { data: todasLasFechasRaw }, { data: config }] =
+    await Promise.all([
+      esProgramado
+        ? Promise.resolve({ data: [] as EventoRow[] })
+        : supabase
+            .from("match_events")
+            .select("id, tipo, minuto, equipo_id, jugador_id")
+            .eq("match_id", matchId)
+            .eq("anulado", false)
+            .order("minuto", { ascending: true }),
+      esFinalizado
+        ? supabase
+            .from("v_mvp_resultado_partido")
+            .select("player_id, votos, total_votos, porcentaje")
+            .eq("match_id", matchId)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      // Fechas de todos los partidos del torneo, para poder ubicar este
+      // partido dentro de su "jornada" (semana de calendario) — ver
+      // `calcularJornada`.
+      supabase.from("matches").select("fecha_hora_programada"),
+      supabase
+        .from("torneo_config")
+        .select("duracion_tiempo_minutos, duracion_descanso_minutos")
+        .eq("id", 1)
+        .maybeSingle(),
+    ]);
 
   const eventos = eventosRaw ?? [];
   const jugadorIds = Array.from(
@@ -141,6 +155,14 @@ export default async function PartidoPage({
   const nombreLocal = local?.nombre_equipo ?? "Por definir";
   const nombreVisitante = visitante?.nombre_equipo ?? "Por definir";
 
+  const todasLasFechas = (todasLasFechasRaw ?? []).map((m) => m.fecha_hora_programada as string);
+  const jornada = calcularJornada(partido.fecha_hora_programada, todasLasFechas);
+
+  const duracionMinutos =
+    (config?.duracion_tiempo_minutos ?? 25) * 2 + (config?.duracion_descanso_minutos ?? 5);
+
+  const equipoArbitralLabel = partido.arbitros_confirmados_at ? "Asignado" : "Por confirmar";
+
   const breadcrumbs: Crumb[] = [
     { label: "Inicio", href: "/" },
     { label: "Partidos", href: "/#partidos" },
@@ -165,26 +187,30 @@ export default async function PartidoPage({
           <div className="relative mx-auto max-w-4xl px-4 sm:px-6">
             <Breadcrumbs items={breadcrumbs} tone="light" />
 
-            {esProgramado ? (
-              <>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-muneca-yellow">
-                  Cancha {partido.cancha}
-                </p>
-                <p className="mt-1 text-sm capitalize text-white/70">
-                  {fechaLabel} · {horaLabel}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-muneca-yellow">
-                  {partido.fase} · Cancha {partido.cancha} ·{" "}
-                  {ESTADO_LABEL[partido.estado] ?? partido.estado}
-                </p>
-                <p className="mt-1 text-sm capitalize text-white/70">
-                  {fechaLabel} · {horaLabel}
-                </p>
-              </>
+            <h1 className="font-display mt-3 text-2xl uppercase leading-tight sm:text-4xl">
+              {nombreLocal} <span className="text-muneca-yellow">vs</span> {nombreVisitante}
+            </h1>
+
+            {!esProgramado && (
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-muneca-yellow">
+                {partido.fase} · {ESTADO_LABEL[partido.estado] ?? partido.estado}
+              </p>
             )}
+
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-white">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 capitalize backdrop-blur">
+                📅 {fechaLabel}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
+                🕐 {horaLabel}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
+                🏟️ Cancha {partido.cancha}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muneca-purple px-3 py-1.5">
+                Jornada {jornada}
+              </span>
+            </div>
 
             <div className="mt-6 flex items-center justify-between gap-3 sm:gap-6">
               <div className="flex flex-1 flex-col items-center gap-2 text-center">
@@ -206,6 +232,35 @@ export default async function PartidoPage({
               </div>
             </div>
           </div>
+
+          <div className="relative mt-8 border-t border-white/10">
+            <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 px-4 py-4 text-center sm:grid-cols-4 sm:px-6">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                  Equipo arbitral
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">{equipoArbitralLabel}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                  Cancha
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">Cancha {partido.cancha}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                  Jornada
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">Jornada {jornada}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                  Torneo
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">{NOMBRE_TORNEO}</p>
+              </div>
+            </div>
+          </div>
         </section>
 
         <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
@@ -215,6 +270,12 @@ export default async function PartidoPage({
                 Este partido todavía no se ha jugado. Vuelve por aquí el día del encuentro para ver
                 el resultado, los goles y el MVP elegido por los aficionados.
               </p>
+              <AgregarCalendarioBoton
+                titulo={`${nombreLocal} vs ${nombreVisitante} — ${NOMBRE_TORNEO}`}
+                inicioIso={partido.fecha_hora_programada}
+                duracionMinutos={duracionMinutos}
+                ubicacion={`Cancha ${partido.cancha} · ${NOMBRE_TORNEO}`}
+              />
             </div>
           ) : (
             <>

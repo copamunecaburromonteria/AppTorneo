@@ -130,8 +130,8 @@ export function SiteHeader({
           <Image
             src="/brand/logo-horizontal.png"
             alt="Copa Muñeca e'Burro Montería"
-            width={1841}
-            height={707}
+            width={1983}
+            height={793}
             priority
             className="h-14 w-auto object-contain sm:h-20 lg:h-[100px]"
           />
