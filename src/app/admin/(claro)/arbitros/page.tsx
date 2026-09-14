@@ -14,22 +14,45 @@ function formatFecha(fecha: string) {
   });
 }
 
+type HistorialArbitro = {
+  partidos_dirigidos: number;
+  calificacion_promedio: number | null;
+  total_calificaciones: number;
+};
+
 export default async function AdminArbitrosPage() {
   const supabase = await createClient();
 
-  const [{ data: escuelas, error: escuelasError }, { data: arbitros, error: arbitrosError }] =
-    await Promise.all([
-      supabase
-        .from("escuelas_arbitrales")
-        .select("id, nombre, representante, telefono, correo, notas, created_at")
-        .order("nombre", { ascending: true }),
-      supabase
-        .from("arbitros")
-        .select(
-          "id, nombre, numero_documento, telefono, correo, activo, notas, created_at, escuelas_arbitrales(id, nombre)"
-        )
-        .order("nombre", { ascending: true }),
-    ]);
+  const [
+    { data: escuelas, error: escuelasError },
+    { data: arbitros, error: arbitrosError },
+    { data: historial },
+  ] = await Promise.all([
+    supabase
+      .from("escuelas_arbitrales")
+      .select("id, nombre, representante, telefono, correo, notas, created_at")
+      .order("nombre", { ascending: true }),
+    supabase
+      .from("arbitros")
+      .select(
+        "id, nombre, numero_documento, telefono, correo, activo, notas, created_at, escuelas_arbitrales(id, nombre)"
+      )
+      .order("nombre", { ascending: true }),
+    supabase
+      .from("v_arbitro_historial")
+      .select("arbitro_id, partidos_dirigidos, calificacion_promedio, total_calificaciones"),
+  ]);
+
+  const historialPorArbitro = new Map<string, HistorialArbitro>(
+    (historial ?? []).map((h) => [
+      h.arbitro_id as string,
+      {
+        partidos_dirigidos: (h.partidos_dirigidos as number) ?? 0,
+        calificacion_promedio: h.calificacion_promedio as number | null,
+        total_calificaciones: (h.total_calificaciones as number) ?? 0,
+      },
+    ])
+  );
 
   return (
     <div className="space-y-10">
@@ -41,7 +64,9 @@ export default async function AdminArbitrosPage() {
           Registro de escuelas arbitrales y la planilla de árbitros del torneo. La
           coordinación de quién dirige cada partido sigue siendo manual por WhatsApp por
           ahora — la asignación puntual a cada partido se hace desde el panel de Líder de
-          Árbitros.
+          Árbitros. Cada árbitro muestra su hoja de vida (partidos dirigidos y calificación
+          promedio de los aficionados vía QR) — esto es información interna, nunca se
+          publica en el sitio.
         </p>
       </div>
 
@@ -118,6 +143,7 @@ export default async function AdminArbitrosPage() {
               const escuela = Array.isArray(escuelaRaw)
                 ? (escuelaRaw[0] as EscuelaConArbitro)
                 : escuelaRaw;
+              const h = historialPorArbitro.get(arbitro.id);
 
               return (
                 <div
@@ -150,6 +176,15 @@ export default async function AdminArbitrosPage() {
                     )}
                     <p className="text-xs text-muneca-black/40">
                       Registrado el {formatFecha(arbitro.created_at)}
+                    </p>
+                    <p className="mt-1.5 text-xs font-semibold text-muneca-purple">
+                      {h && h.partidos_dirigidos > 0
+                        ? `${h.partidos_dirigidos} partido${h.partidos_dirigidos === 1 ? "" : "s"} dirigido${h.partidos_dirigidos === 1 ? "" : "s"}${
+                            h.calificacion_promedio != null
+                              ? ` · ⭐ ${h.calificacion_promedio.toFixed(1)} (${h.total_calificaciones} voto${h.total_calificaciones === 1 ? "" : "s"})`
+                              : " · sin calificaciones aún"
+                          }`
+                        : "Todavía no ha dirigido partidos confirmados"}
                     </p>
                   </div>
                   <ArbitroAcciones arbitroId={arbitro.id} activo={arbitro.activo} />
