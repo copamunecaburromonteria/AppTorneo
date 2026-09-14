@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   InstagramLogo,
   FacebookLogo,
@@ -7,23 +8,59 @@ import {
   WhatsappLogo,
 } from "@phosphor-icons/react/dist/ssr";
 
-// TODO: reemplazar por los handles/URLs reales de cada red social.
 const SOCIAL_LINKS = [
-  { href: "#", label: "Instagram", Icon: InstagramLogo },
-  { href: "#", label: "Facebook", Icon: FacebookLogo },
-  { href: "#", label: "TikTok", Icon: TiktokLogo },
-  { href: "#", label: "YouTube", Icon: YoutubeLogo },
+  { href: "https://www.instagram.com/copamunecaburromonteria", label: "Instagram", Icon: InstagramLogo },
+  { href: "https://www.facebook.com/copamunecaburromonteria", label: "Facebook", Icon: FacebookLogo },
+  { href: "https://www.tiktok.com/@copamunecaburromonteria", label: "TikTok", Icon: TiktokLogo },
+  { href: "https://www.youtube.com/@copamunecaburromonteria", label: "YouTube", Icon: YoutubeLogo },
 ];
 
-const FOOTER_LINKS = [
-  "Inicio",
-  "Torneo",
-  "Equipos",
-  "Resultados",
-  "Posiciones",
-  "Estadísticas",
-  "Galería",
-  "Patrocinadores",
+// TODO: reemplazar por el número/enlace real de WhatsApp.
+const WHATSAPP_HREF = "#";
+
+type FooterLink = { label: string; href: string };
+type FooterColumn = { title: string; links: FooterLink[] };
+
+// Mismo criterio que el menú del header (src/components/site-header.tsx):
+// los links a páginas/secciones que ya existen apuntan directo; los que
+// todavía no tienen página propia quedan en "#" hasta que se construyan.
+const FOOTER_COLUMNS: FooterColumn[] = [
+  {
+    title: "Torneo",
+    links: [
+      { label: "Inicio", href: "/#inicio" },
+      { label: "Sobre la Copa", href: "/#torneo" },
+      { label: "Cómo funciona", href: "#" },
+      { label: "Reglamento", href: "#" },
+      { label: "Premios", href: "#" },
+    ],
+  },
+  {
+    title: "Equipos y partidos",
+    links: [
+      { label: "Equipos participantes", href: "/equipos" },
+      { label: "Calendario y resultados", href: "/partidos" },
+      { label: "Tabla de posiciones", href: "/posiciones" },
+      { label: "Estadísticas", href: "/estadisticas" },
+    ],
+  },
+  {
+    title: "Contenido",
+    links: [
+      { label: "Vota el MVP", href: "/votar" },
+      { label: "Galería", href: "/#galeria" },
+      { label: "Patrocinadores", href: "/#patrocinadores" },
+      { label: "Noticias", href: "#" },
+    ],
+  },
+  {
+    title: "Más",
+    links: [
+      { label: "Inscribe tu equipo", href: "/inscripcion" },
+      { label: "Preguntas frecuentes", href: "#" },
+      { label: "Contacto", href: "#" },
+    ],
+  },
 ];
 
 export function SiteFooter() {
@@ -40,45 +77,68 @@ export function SiteFooter() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-end">
-          <div className="flex items-center gap-3">
-            {SOCIAL_LINKS.map(({ label, href, Icon }) => (
-              <a
-                key={label}
-                href={href}
-                aria-label={label}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
-              >
-                <Icon size={16} weight="regular" aria-hidden="true" />
-              </a>
-            ))}
+        {/* Logo + redes/WhatsApp */}
+        <div className="flex flex-col items-center gap-5 pb-8 sm:flex-row sm:items-start sm:justify-between">
+          <Link href="/#inicio" className="shrink-0">
+            <Image
+              src="/brand/logo-footer.png"
+              alt="Copa Muñeca e'Burro Montería"
+              width={1170}
+              height={1186}
+              className="h-24 w-auto object-contain sm:h-28"
+            />
+          </Link>
+
+          <div className="flex flex-col items-center gap-3 sm:items-end">
+            <div className="flex items-center gap-3">
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
+                >
+                  <Icon size={16} weight="regular" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+            <a
+              href={WHATSAPP_HREF}
+              className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
+            >
+              <WhatsappLogo size={18} weight="fill" aria-hidden="true" />
+              Contáctanos
+            </a>
           </div>
-          {/* TODO: reemplazar por el número/enlace real de WhatsApp. */}
-          <a
-            href="#"
-            className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
-          >
-            <WhatsappLogo size={18} weight="fill" aria-hidden="true" />
-            Contáctanos
-          </a>
         </div>
 
-        <div className="mt-8 flex flex-col items-center gap-6 border-b border-white/10 pb-8 text-center lg:flex-row lg:justify-between lg:text-left">
-          <Image
-            src="/brand/logo-footer.png"
-            alt="Copa Muñeca e'Burro Montería"
-            width={1170}
-            height={1186}
-            className="h-36 w-auto object-contain sm:h-40"
-          />
-          <nav className="font-display flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-base uppercase tracking-wide text-white/70 sm:text-lg">
-            {FOOTER_LINKS.map((label) => (
-              <a key={label} href="/#inicio" className="hover:text-muneca-yellow">
-                {label}
-              </a>
-            ))}
-          </nav>
-        </div>
+        {/* Menú del sitio, por columnas */}
+        <nav
+          aria-label="Mapa del sitio"
+          className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-white/10 py-8 sm:grid-cols-4 sm:gap-x-8"
+        >
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.title}>
+              <p className="font-display text-sm uppercase tracking-wider text-muneca-yellow">
+                {column.title}
+              </p>
+              <ul className="mt-3 space-y-2">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-white/65 transition-colors hover:text-white"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
         <div className="flex flex-col items-center gap-1 pt-6 text-center text-xs text-white/50 lg:flex-row lg:justify-between lg:text-left">
           <p>
