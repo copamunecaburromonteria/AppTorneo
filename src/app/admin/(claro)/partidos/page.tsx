@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { DIA_LABEL, SLOTS_POR_DIA, fechaYmdBogota, horaBogota } from "@/lib/franjas-horario";
 import { PartidoAdminCard } from "./partido-admin-card";
+import { IniciarTorneoForm } from "./iniciar-torneo-form";
 
 type EquipoRel = { nombre_equipo: string } | { nombre_equipo: string }[] | null;
 
@@ -59,13 +60,78 @@ export default async function AdminPartidosPage() {
   const matches = (data ?? []) as unknown as MatchRow[];
 
   if (matches.length === 0) {
+    const { data: config } = await supabase
+      .from("torneo_config")
+      .select("numero_equipos_torneo")
+      .eq("id", 1)
+      .maybeSingle();
+    const cupoTorneo = config?.numero_equipos_torneo ?? 24;
+
+    const { data: equiposValidados } = await supabase
+      .from("teams")
+      .select("id")
+      .eq("estado_inscripcion", "validado");
+    const teamIds = (equiposValidados ?? []).map((e) => e.id);
+    const cantidadListos = teamIds.length;
+
+    let cuotasPendientes = 0;
+    if (teamIds.length > 0) {
+      const { count } = await supabase
+        .from("payment_installments")
+        .select("id", { count: "exact", head: true })
+        .in("team_id", teamIds)
+        .neq("estado", "pagada");
+      cuotasPendientes = count ?? 0;
+    }
+
+    const equiposListos = cantidadListos >= cupoTorneo;
+    const pagosCompletos = cuotasPendientes === 0;
+    const listoParaIniciar = equiposListos && pagosCompletos;
+
     return (
       <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm sm:p-10">
-        <h2 className="font-display text-2xl text-muneca-black">Todavía no hay partidos para organizar</h2>
+        <h2 className="font-display text-2xl text-muneca-black">Iniciar torneo</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-black/60">
-          En cuanto exista el calendario del torneo (sorteo + generador de la primera ronda), los
-          partidos aparecerán aquí para poder verificarlos y reprogramarlos.
+          Sortea los 4 grupos automáticamente y genera las 60 fechas de la fase de grupos. Octavos,
+          cuartos y semifinal se generan aparte, más adelante.
         </p>
+
+        <div className="mx-auto mt-6 max-w-sm space-y-2 text-left">
+          <div
+            className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+              equiposListos
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                : "border-black/10 bg-black/[0.02] text-black/60"
+            }`}
+          >
+            <span>{equiposListos ? "✅" : "⬜"}</span>
+            <span>
+              {cantidadListos} / {cupoTorneo} equipos inscritos y validados
+            </span>
+          </div>
+          <div
+            className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+              pagosCompletos
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                : "border-black/10 bg-black/[0.02] text-black/60"
+            }`}
+          >
+            <span>{pagosCompletos ? "✅" : "⬜"}</span>
+            <span>
+              {pagosCompletos
+                ? "Todos los equipos validados tienen su pago completo"
+                : `${cuotasPendientes} cuota(s) pendiente(s) entre los equipos validados`}
+            </span>
+          </div>
+        </div>
+
+        {listoParaIniciar ? (
+          <IniciarTorneoForm />
+        ) : (
+          <p className="mx-auto mt-6 max-w-sm text-xs text-black/40">
+            El botón &ldquo;Iniciar torneo&rdquo; aparece en cuanto el checklist de arriba esté completo.
+          </p>
+        )}
       </div>
     );
   }
