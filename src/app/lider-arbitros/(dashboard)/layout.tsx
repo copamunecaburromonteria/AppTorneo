@@ -30,8 +30,8 @@ export default async function LiderArbitrosDashboardLayout({
   if (profile?.rol !== "lider_arbitros") {
     return (
       <div className="flex flex-1 flex-col">
-        <SiteHeader forceSolid />
-        <main className="flex flex-1 flex-col bg-muneca-white px-4 pt-36 text-muneca-black sm:px-6 sm:pt-32 lg:pt-32">
+        <SiteHeader />
+        <main className="flex flex-1 flex-col bg-muneca-white px-4 pt-32 text-muneca-black sm:px-6 sm:pt-28 lg:pt-24">
           <Breadcrumbs items={[{ label: "Inicio", href: "/" }, { label: "Líder de Árbitros" }]} />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
             <p>Esta cuenta no tiene acceso al panel de árbitros.</p>
@@ -52,9 +52,9 @@ export default async function LiderArbitrosDashboardLayout({
 
   return (
     <div className="flex flex-1 flex-col">
-      <SiteHeader forceSolid />
+      <SiteHeader />
       <main className="flex-1 bg-muneca-white">
-        <div className="border-b border-black/10 bg-black/[0.02] px-4 pb-5 pt-36 sm:px-6 sm:pt-32 lg:pt-32">
+        <div className="border-b border-black/10 bg-black/[0.02] px-4 pb-5 pt-32 sm:px-6 sm:pt-28 lg:pt-24">
           <div className="mx-auto max-w-6xl">
             <Breadcrumbs items={[{ label: "Inicio", href: "/" }, { label: "Líder de Árbitros" }]} />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">

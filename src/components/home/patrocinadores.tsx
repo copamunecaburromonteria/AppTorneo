@@ -1,4 +1,7 @@
+import Image from "next/image";
+import Link from "next/link";
 import { patrocinadoresPlaceholder } from "@/lib/mock-data";
+import { patrocinadoresReales, NIVEL_LABEL } from "@/lib/patrocinadores-reales";
 
 export function Patrocinadores() {
   return (
@@ -11,7 +14,42 @@ export function Patrocinadores() {
           Ellos hacen esta Copa posible.
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
+        {patrocinadoresReales.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            {patrocinadoresReales.map((p) => {
+              const logo = (
+                <Image
+                  src={p.logoUrl}
+                  alt={p.nombre}
+                  width={160}
+                  height={160}
+                  className="h-full w-full object-contain"
+                />
+              );
+              return (
+                <div key={p.logoUrl} className="flex flex-col items-center gap-1.5">
+                  <div className="flex h-20 w-32 items-center justify-center rounded-lg bg-white/5 p-2 sm:h-24 sm:w-36">
+                    {p.url ? (
+                      <Link href={p.url} target="_blank" rel="noopener noreferrer" className="h-full w-full">
+                        {logo}
+                      </Link>
+                    ) : (
+                      logo
+                    )}
+                  </div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-white/40">
+                    {NIVEL_LABEL[p.nivel]}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <p className="mt-6 pl-3 text-[11px] font-semibold uppercase tracking-wide text-white/30">
+          Espacios disponibles
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
           {patrocinadoresPlaceholder.map((nombre) => (
             <div
               key={nombre}
