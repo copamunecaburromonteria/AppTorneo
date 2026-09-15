@@ -32,4 +32,25 @@ export const patrocinadoresReales: PatrocinadorReal[] = [
     nivel: "oficial",
     logoUrl: "/brand/patrocinadores/patrocinador-01.png",
   },
+  {
+    nombre: "SST Asesorías y Consultorías",
+    nivel: "oficial",
+    logoUrl: "/brand/patrocinadores/sst.png",
+  },
+  {
+    nombre: "Hakunna Fit",
+    nivel: "oficial",
+    logoUrl: "/brand/patrocinadores/hakunna-fit.png",
+  },
+  {
+    nombre: "Hakunna Fotografía",
+    nivel: "oficial",
+    logoUrl: "/brand/patrocinadores/hakunna-fotografia.png",
+  },
+  {
+    // Nombre asumido: el logo no trae texto, se infiere de la marca de Fernando (Hakunna Digital) — confirmar.
+    nombre: "Hakunna Digital",
+    nivel: "oficial",
+    logoUrl: "/brand/patrocinadores/hakunna-digital.png",
+  },
 ];

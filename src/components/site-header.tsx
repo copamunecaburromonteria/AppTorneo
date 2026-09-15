@@ -9,6 +9,8 @@ import {
   TiktokLogo,
   YoutubeLogo,
   CaretDown,
+  List,
+  X,
 } from "@phosphor-icons/react";
 import { NavDropdown } from "@/components/nav-dropdown";
 import { cerrarSesionEquipo } from "@/app/portal/actions";
@@ -103,6 +105,7 @@ export function SiteHeader({
   forceSolid?: boolean;
 }) {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     function onScroll() {
@@ -112,6 +115,25 @@ export function SiteHeader({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Menú móvil: el <nav> principal solo se ve desde el punto de quiebre `lg`
+  // (ver más abajo, `hidden lg:flex`) — antes de este cambio no existía
+  // ningún equivalente en celular/tablet, así que el menú era imposible de
+  // abrir por debajo de esa resolución. Bloquea el scroll del fondo mientras
+  // está abierto y se cierra con Escape o al elegir un link.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setMobileOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
 
   const solid = forceSolid || scrolled;
   const tone = solid ? "dark" : "light";
@@ -197,7 +219,116 @@ export function SiteHeader({
             </a>
           </>
         )}
+
+        <button
+          type="button"
+          aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((v) => !v)}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors lg:hidden ${
+            tone === "light" ? "text-white" : "text-muneca-black"
+          }`}
+        >
+          {mobileOpen ? (
+            <X size={22} weight="bold" aria-hidden="true" />
+          ) : (
+            <List size={22} weight="bold" aria-hidden="true" />
+          )}
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className="absolute inset-x-0 top-full z-50 max-h-[80vh] overflow-y-auto border-b border-white/10 bg-muneca-black/98 backdrop-blur lg:hidden">
+          <nav className="font-display flex flex-col gap-0.5 px-4 py-5 uppercase tracking-wide text-white/90">
+            <a
+              href="/#inicio"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg px-3 py-3 text-base transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+            >
+              Inicio
+            </a>
+
+            <p className="mt-2 px-3 text-xs font-semibold tracking-widest text-white/40">Torneo</p>
+            {TORNEO_LINKS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm normal-case tracking-normal text-white/75 transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+              >
+                {item.label}
+              </a>
+            ))}
+
+            <a
+              href="/#equipos"
+              onClick={() => setMobileOpen(false)}
+              className="mt-2 rounded-lg px-3 py-3 text-base transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+            >
+              Equipos
+            </a>
+
+            <p className="mt-2 px-3 text-xs font-semibold tracking-widest text-white/40">Partidos</p>
+            {PARTIDOS_LINKS.map((item) => (
+              <a
+                key={item.href + item.label}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm normal-case tracking-normal text-white/75 transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+              >
+                {item.label}
+              </a>
+            ))}
+
+            <p className="mt-2 px-3 text-xs font-semibold tracking-widest text-white/40">Contenido</p>
+            {CONTENIDO_LINKS.map((item) => (
+              <a
+                key={item.href + item.label}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm normal-case tracking-normal text-white/75 transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+              >
+                {item.label}
+              </a>
+            ))}
+
+            <a
+              href="/#patrocinadores"
+              onClick={() => setMobileOpen(false)}
+              className="mt-2 rounded-lg px-3 py-3 text-base transition-colors hover:bg-white/5 hover:text-muneca-yellow"
+            >
+              Patrocinadores
+            </a>
+          </nav>
+
+          <div className="border-t border-white/10 px-4 py-5">
+            <div className="flex items-center gap-3">
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
+                >
+                  <Icon size={17} weight="regular" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+
+            {!userChip && (
+              <a
+                href="/inscripcion"
+                onClick={() => setMobileOpen(false)}
+                className="mt-4 block rounded-md bg-muneca-yellow px-4 py-3 text-center text-sm font-bold uppercase text-muneca-black shadow-sm"
+              >
+                Inscribe tu equipo →
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

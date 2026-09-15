@@ -5,7 +5,7 @@ import { StatsBar } from "@/components/home/stats-bar";
 import { TorneoIntro } from "@/components/home/torneo-intro";
 import { Numeros } from "@/components/home/numeros";
 import { ProximosPartidos } from "@/components/home/proximos-partidos";
-import { TablaPosiciones } from "@/components/home/tabla-posiciones";
+import { PartidosEnVivo } from "@/components/home/partidos-en-vivo";
 import { AppPromo } from "@/components/home/app-promo";
 import { EstadisticasDestacadas } from "@/components/home/estadisticas-destacadas";
 import { Equipos } from "@/components/home/equipos";
@@ -22,7 +22,7 @@ export default function Home() {
         <TorneoIntro />
         <Numeros />
         <ProximosPartidos />
-        <TablaPosiciones />
+        <PartidosEnVivo />
         <AppPromo />
         <EstadisticasDestacadas />
         <Equipos />
