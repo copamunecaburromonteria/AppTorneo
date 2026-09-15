@@ -63,7 +63,9 @@ export type TablaGrupoHome = { groupId: string; letra: string; filas: FilaTablaH
 
 export type EstadoEnVivoHome = {
   enVivo: PartidoEnVivo[];
-  proximoPartido: ProximoPartidoResumen | null;
+  // Hasta 2 (uno por cancha, como los partidos en vivo) — solo se llenan
+  // cuando no hay ningún partido en vivo, ver `obtenerEstadoEnVivoHome`.
+  proximosPartidos: ProximoPartidoResumen[];
   tablas: TablaGrupoHome[];
 };
 
@@ -82,7 +84,16 @@ function unwrapGroupLetra(rel: GroupRel): string | null {
 }
 
 const SELECT_PARTIDO =
-  "id, fase, group_id, cancha, fecha_hora_programada, estado, hora_inicio_real, marcador_local, marcador_visitante, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url), groups:group_id(letra)";
+  "id, fase, group_id, cancha, fecha_hora_programada, estado, hora_inicio_real, marcador_local, marcador_visitante, jornada, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url), groups:group_id(letra)";
+
+/** Jornada real del partido (columna `matches.jornada`, generada junto con
+ * el partido). Si por algún motivo un partido no la tiene (dato viejo),
+ * se cae de vuelta al cálculo por semana de calendario — nunca queda en
+ * blanco. */
+function jornadaDelPartido(m: Record<string, unknown>, todasLasFechas: string[]): number {
+  const guardada = m.jornada as number | null;
+  return guardada ?? calcularJornada(m.fecha_hora_programada as string, todasLasFechas);
+}
 
 export async function obtenerEstadoEnVivoHome(): Promise<EstadoEnVivoHome> {
   const supabase = await createClient();
@@ -98,16 +109,17 @@ export async function obtenerEstadoEnVivoHome(): Promise<EstadoEnVivoHome> {
 
   const todasLasFechas = (todasFechasRaw ?? []).map((r) => r.fecha_hora_programada as string);
 
-  let proximoRaw: Record<string, unknown> | null = null;
+  // Hasta 2 próximos partidos (uno por cancha, igual que los de en vivo) —
+  // solo se buscan si no hay nada en vivo ahora mismo.
+  let proximosRaw: Record<string, unknown>[] = [];
   if (!enVivoRaw || enVivoRaw.length === 0) {
     const { data } = await supabase
       .from("matches")
       .select(SELECT_PARTIDO)
       .eq("estado", "programado")
       .order("fecha_hora_programada", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    proximoRaw = data;
+      .limit(2);
+    proximosRaw = data ?? [];
   }
 
   const matchIds = (enVivoRaw ?? []).map((m) => m.id as string);
@@ -149,7 +161,7 @@ export async function obtenerEstadoEnVivoHome(): Promise<EstadoEnVivoHome> {
       groupLetra: unwrapGroupLetra(m.groups as GroupRel),
       fase: m.fase as string,
       cancha: m.cancha as number,
-      jornada: calcularJornada(m.fecha_hora_programada as string, todasLasFechas),
+      jornada: jornadaDelPartido(m, todasLasFechas),
       estado: m.estado as "en_curso" | "entretiempo",
       horaInicioReal: (m.hora_inicio_real as string) ?? null,
       equipoLocal: local,
@@ -163,30 +175,31 @@ export async function obtenerEstadoEnVivoHome(): Promise<EstadoEnVivoHome> {
     };
   });
 
-  const proximoPartido: ProximoPartidoResumen | null = proximoRaw
-    ? {
-        matchId: proximoRaw.id as string,
-        groupId: (proximoRaw.group_id as string) ?? null,
-        groupLetra: unwrapGroupLetra(proximoRaw.groups as GroupRel),
-        fase: proximoRaw.fase as string,
-        cancha: proximoRaw.cancha as number,
-        jornada: calcularJornada(proximoRaw.fecha_hora_programada as string, todasLasFechas),
-        fechaHoraProgramada: proximoRaw.fecha_hora_programada as string,
-        equipoLocal: unwrapTeam(proximoRaw.equipo_local as TeamRel),
-        equipoVisitante: unwrapTeam(proximoRaw.equipo_visitante as TeamRel),
-      }
-    : null;
+  const proximosPartidos: ProximoPartidoResumen[] = proximosRaw.map((m) => ({
+    matchId: m.id as string,
+    groupId: (m.group_id as string) ?? null,
+    groupLetra: unwrapGroupLetra(m.groups as GroupRel),
+    fase: m.fase as string,
+    cancha: m.cancha as number,
+    jornada: jornadaDelPartido(m, todasLasFechas),
+    fechaHoraProgramada: m.fecha_hora_programada as string,
+    equipoLocal: unwrapTeam(m.equipo_local as TeamRel),
+    equipoVisitante: unwrapTeam(m.equipo_visitante as TeamRel),
+  }));
 
   // Qué grupo(s) mostrar: los de los partidos en vivo (sin duplicar si los
-  // 2 partidos son del mismo grupo), o si no hay ninguno en vivo, el del
-  // próximo partido programado. Se ordenan por cancha para que la tabla del
-  // partido de Cancha 1 quede primero, igual que los widgets de arriba.
+  // 2 partidos son del mismo grupo), o si no hay ninguno en vivo, los de los
+  // próximos partidos (también sin duplicar). Se ordenan por cancha/orden de
+  // aparición para que la tabla del partido de Cancha 1 quede primero, igual
+  // que los widgets de arriba.
   const groupIdsOrdenados: string[] = [];
   for (const p of enVivo) {
     if (p.groupId && !groupIdsOrdenados.includes(p.groupId)) groupIdsOrdenados.push(p.groupId);
   }
-  if (groupIdsOrdenados.length === 0 && proximoPartido?.groupId) {
-    groupIdsOrdenados.push(proximoPartido.groupId);
+  if (groupIdsOrdenados.length === 0) {
+    for (const p of proximosPartidos) {
+      if (p.groupId && !groupIdsOrdenados.includes(p.groupId)) groupIdsOrdenados.push(p.groupId);
+    }
   }
 
   let tablas: TablaGrupoHome[] = [];
@@ -232,5 +245,5 @@ export async function obtenerEstadoEnVivoHome(): Promise<EstadoEnVivoHome> {
     });
   }
 
-  return { enVivo, proximoPartido, tablas };
+  return { enVivo, proximosPartidos, tablas };
 }

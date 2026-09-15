@@ -62,7 +62,7 @@ export default async function PartidoPage({
   const { data: partido } = await supabase
     .from("matches")
     .select(
-      "id, fase, cancha, fecha_hora_programada, estado, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, arbitros_confirmados_at, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url)"
+      "id, fase, cancha, fecha_hora_programada, estado, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, arbitros_confirmados_at, jornada, equipo_local:equipo_local_id(id, nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(id, nombre_equipo, escudo_url)"
     )
     .eq("id", matchId)
     .maybeSingle();
@@ -156,7 +156,9 @@ export default async function PartidoPage({
   const nombreVisitante = visitante?.nombre_equipo ?? "Por definir";
 
   const todasLasFechas = (todasLasFechasRaw ?? []).map((m) => m.fecha_hora_programada as string);
-  const jornada = calcularJornada(partido.fecha_hora_programada, todasLasFechas);
+  // Jornada real (`matches.jornada`, generada junto con el partido); si
+  // faltara en algún dato viejo, se cae de vuelta al cálculo por semana.
+  const jornada = (partido.jornada as number | null) ?? calcularJornada(partido.fecha_hora_programada, todasLasFechas);
 
   const duracionMinutos =
     (config?.duracion_tiempo_minutos ?? 25) * 2 + (config?.duracion_descanso_minutos ?? 5);

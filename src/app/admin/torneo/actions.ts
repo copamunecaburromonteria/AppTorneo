@@ -137,6 +137,7 @@ export async function iniciarTorneo(fechaInicioYmd: string): Promise<ResultadoAc
     cancha: p.cancha,
     fecha_hora_programada: construirFechaHoraBogota(p.fechaYmd, p.hora),
     estado: "programado",
+    jornada: p.jornada,
   }));
 
   const { error: matchesError } = await admin.from("matches").insert(matchRows);

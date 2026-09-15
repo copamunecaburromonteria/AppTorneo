@@ -18,7 +18,7 @@ export const DIA_LABEL: Record<number, string> = { 4: "Jueves", 5: "Viernes", 6:
 export const SLOTS_POR_DIA: Record<number, number[]> = {
   4: [19, 20, 21], // jueves: kickoffs 7, 8, 9pm
   5: [19, 20, 21], // viernes: kickoffs 7, 8, 9pm
-  6: [18, 19, 20, 21], // sábado: kickoffs 6, 7, 8, 9pm
+  6: [17, 18, 19, 20, 21], // sábado: kickoffs 5, 6, 7, 8, 9pm (confirmado 2026-09-15)
 };
 
 /** getDay(): 0=domingo ... 4=jueves, 5=viernes, 6=sábado. */

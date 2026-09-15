@@ -20,12 +20,37 @@ function unwrapTeam(rel: TeamRel): TeamInfo | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel;
 }
 
+/** Las 9 jornadas del torneo completo: 1-5 fase de grupos, 6-9 fase
+ * final. El título de cada una se usa tanto en las pestañas como en el
+ * panel — ver `claude/formato-torneo.md`. */
+const TITULO_JORNADA: Record<number, string> = {
+  1: "Jornada 1",
+  2: "Jornada 2",
+  3: "Jornada 3",
+  4: "Jornada 4",
+  5: "Jornada 5",
+  6: "Octavos de Final",
+  7: "Cuartos de Final",
+  8: "Semifinal",
+  9: "Gran Final",
+};
+
+const TEXTO_PENDIENTE: Record<number, string> = {
+  6: "Se define al cerrar la fase de grupos, con los 4 primeros de cada grupo.",
+  7: "Se define al cerrar los octavos de final.",
+  8: "Se define al cerrar los cuartos de final.",
+  9: "Un solo partido, un solo campeón — se define al cerrar la semifinal.",
+};
+
 /**
  * Calendario completo del torneo — todos los partidos agrupados por
- * Jornada (semana de calendario, ver `src/lib/jornada.ts`) y, dentro de
- * cada jornada, por día (jueves/viernes/sábado). Reemplaza el enlace
- * "Ver calendario completo" de la sección "Próximos partidos" del home,
- * que hasta ahora apuntaba a un placeholder (`href="#"`).
+ * jornada real (`matches.jornada`, ver `src/lib/torneo/generador-calendario.ts`)
+ * y, dentro de cada jornada, por día (jueves/viernes/sábado). Muestra las
+ * 9 jornadas del torneo (1-5 fase de grupos, 6-9 fase final) aunque los
+ * partidos de la fase final todavía no existan — esas se generan aparte,
+ * cada una con su propio botón, cuando se cierra la fase anterior. Página
+ * enlazada desde "Ver calendario completo" en la sección "Próximos
+ * partidos" del home.
  */
 export default async function PartidosPage() {
   const supabase = await createClient();
@@ -33,7 +58,7 @@ export default async function PartidosPage() {
   const { data: matchesRaw } = await supabase
     .from("matches")
     .select(
-      "id, cancha, fecha_hora_programada, estado, equipo_local:equipo_local_id(nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(nombre_equipo, escudo_url)"
+      "id, cancha, fecha_hora_programada, estado, jornada, equipo_local:equipo_local_id(nombre_equipo, escudo_url), equipo_visitante:equipo_visitante_id(nombre_equipo, escudo_url)"
     )
     .order("fecha_hora_programada", { ascending: true });
 
@@ -43,7 +68,9 @@ export default async function PartidosPage() {
   const porJornada = new Map<number, PartidoCalendario[]>();
   for (const m of matches) {
     const fecha = m.fecha_hora_programada as string;
-    const jornadaNumero = calcularJornada(fecha, todasLasFechas);
+    // Jornada real guardada en el partido; si faltara en algún dato viejo,
+    // se cae de vuelta al cálculo por semana de calendario.
+    const jornadaNumero = (m.jornada as number | null) ?? calcularJornada(fecha, todasLasFechas);
     const partido: PartidoCalendario = {
       id: m.id as string,
       cancha: m.cancha as number,
@@ -57,7 +84,7 @@ export default async function PartidosPage() {
     porJornada.set(jornadaNumero, lista);
   }
 
-  const jornadas: JornadaData[] = Array.from(porJornada.entries())
+  const jornadasGeneradas: JornadaData[] = Array.from(porJornada.entries())
     .sort(([a], [b]) => a - b)
     .map(([numero, partidos]) => {
       const porDia = new Map<string, PartidoCalendario[]>();
@@ -97,12 +124,35 @@ export default async function PartidosPage() {
 
       return {
         numero,
+        titulo: TITULO_JORNADA[numero] ?? `Jornada ${numero}`,
         rangoLabel,
         dias,
         totalPartidos: partidos.length,
         diasDeFutbol: dias.length,
       };
     });
+
+  // Las 9 jornadas del torneo siempre aparecen, aunque la fase final
+  // todavía no se haya generado — se completan con una tarjeta "por
+  // definir" las que no tienen partidos todavía.
+  const numerosGenerados = new Set(jornadasGeneradas.map((j) => j.numero));
+  const placeholders: JornadaData[] = [];
+  for (let numero = 1; numero <= 9; numero++) {
+    if (numerosGenerados.has(numero)) continue;
+    placeholders.push({
+      numero,
+      titulo: TITULO_JORNADA[numero] ?? `Jornada ${numero}`,
+      rangoLabel: "",
+      dias: [],
+      totalPartidos: 0,
+      diasDeFutbol: 0,
+      pendiente: true,
+      pendienteTexto: TEXTO_PENDIENTE[numero],
+    });
+  }
+  const jornadas: JornadaData[] = [...jornadasGeneradas, ...placeholders].sort(
+    (a, b) => a.numero - b.numero
+  );
 
   return (
     <div className="flex flex-1 flex-col">

@@ -21,10 +21,18 @@ export type DiaData = {
 
 export type JornadaData = {
   numero: number;
+  /** "Jornada 3" para la fase de grupos, o el nombre de la fase para la
+   * fase final ("Octavos de Final", "Gran Final", etc). */
+  titulo: string;
   rangoLabel: string;
   dias: DiaData[];
   totalPartidos: number;
   diasDeFutbol: number;
+  /** true cuando esta fase todavía no se generó (fase final antes de que
+   * se cierre la fase anterior) — se muestra como "por definir" en vez de
+   * partidos vacíos. */
+  pendiente?: boolean;
+  pendienteTexto?: string;
 };
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -117,12 +125,14 @@ export function CalendarioTabs({ jornadas }: { jornadas: JornadaData[] }) {
                 className={`shrink-0 rounded-xl border px-4 py-2 text-left transition-colors ${
                   activo
                     ? "border-muneca-purple bg-muneca-purple text-white"
-                    : "border-white/10 text-white/60 hover:border-white/25 hover:text-white"
+                    : j.pendiente
+                      ? "border-white/5 text-white/30 hover:border-white/15 hover:text-white/50"
+                      : "border-white/10 text-white/60 hover:border-white/25 hover:text-white"
                 }`}
               >
-                <span className="block text-sm font-bold uppercase tracking-wide">Jornada {j.numero}</span>
+                <span className="block text-sm font-bold uppercase tracking-wide">{j.titulo}</span>
                 <span className={`block text-[11px] ${activo ? "text-white/70" : "text-white/35"}`}>
-                  {j.rangoLabel}
+                  {j.pendiente ? "Por definir" : j.rangoLabel}
                 </span>
               </button>
             );
@@ -149,17 +159,27 @@ export function CalendarioTabs({ jornadas }: { jornadas: JornadaData[] }) {
               <IconoCalendario />
             </span>
             <div>
-              <p className="font-display text-lg uppercase tracking-wide">Jornada {jornada.numero}</p>
-              <p className="text-xs text-white/40">{jornada.rangoLabel}</p>
+              <p className="font-display text-lg uppercase tracking-wide">{jornada.titulo}</p>
+              <p className="text-xs text-white/40">{jornada.pendiente ? "Por definir" : jornada.rangoLabel}</p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2.5">
-            <InfoPill icon={<IconoCalendario />} etiqueta="Partidos" valor={String(jornada.totalPartidos)} />
-            <InfoPill icon={<IconoReloj />} etiqueta="Días de fútbol" valor={String(jornada.diasDeFutbol)} />
-            <InfoPill icon={<IconoUbicacion />} etiqueta="Sede" valor="Montería" />
-          </div>
+          {!jornada.pendiente && (
+            <div className="flex flex-wrap gap-2.5">
+              <InfoPill icon={<IconoCalendario />} etiqueta="Partidos" valor={String(jornada.totalPartidos)} />
+              <InfoPill icon={<IconoReloj />} etiqueta="Días de fútbol" valor={String(jornada.diasDeFutbol)} />
+              <InfoPill icon={<IconoUbicacion />} etiqueta="Sede" valor="Montería" />
+            </div>
+          )}
         </div>
 
+        {jornada.pendiente ? (
+          <div className="px-6 py-16 text-center">
+            <p className="font-display text-xl text-white">{jornada.titulo}</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-white/50">
+              {jornada.pendienteTexto ?? "Esta fase todavía no se ha generado."}
+            </p>
+          </div>
+        ) : (
         <div className="divide-y divide-white/10">
           {jornada.dias.map((dia) => (
             <div key={dia.key}>
@@ -214,6 +234,7 @@ export function CalendarioTabs({ jornadas }: { jornadas: JornadaData[] }) {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

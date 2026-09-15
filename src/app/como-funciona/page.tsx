@@ -164,6 +164,21 @@ export default function ComoFuncionaPage() {
             </div>
           </div>
 
+          {/* 5 partidos garantizados */}
+          <div className="mt-14 overflow-hidden rounded-2xl border border-muneca-yellow/30 bg-gradient-to-br from-muneca-purple/20 via-muneca-black to-muneca-black p-8 text-center sm:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-muneca-yellow">
+              El torneo donde vienes a competir
+            </p>
+            <p className="font-display mt-2 text-4xl text-white sm:text-5xl">
+              5 PARTIDOS <span className="text-muneca-yellow">GARANTIZADOS</span>
+            </p>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-white/70 sm:text-base">
+              Cada equipo disputa 5 partidos en la fase de grupos, enfrentando una vez a cada rival
+              de su grupo — una fase de grupos diseñada para que todos jueguen, compitan y disfruten
+              la Copa.
+            </p>
+          </div>
+
           {/* Fase de grupos */}
           <div className="mt-14 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
