@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Trophy } from "@phosphor-icons/react/dist/ssr";
 import { TeamCrest } from "@/components/team-crest";
-import type { EstadoEnVivoHome, PartidoEnVivo } from "@/lib/home/en-vivo";
+import type { EstadoEnVivoHome, PartidoEnVivo, ProximoPartidoResumen } from "@/lib/home/en-vivo";
 
 const INTERVALO_MS = 15_000;
 const DURACION_TOAST_MS = 6_000;
@@ -78,28 +78,49 @@ function TarjetaPartidoEnVivo({ partido, mostrarGol }: { partido: PartidoEnVivo;
   );
 }
 
-function TarjetaProximoPartido({ estado }: { estado: EstadoEnVivoHome }) {
-  const p = estado.proximoPartido;
-  if (!p) return null;
+function TarjetaProximoPartido({ partido }: { partido: ProximoPartidoResumen }) {
+  const fecha = new Date(partido.fechaHoraProgramada);
+  const fechaLabel = new Intl.DateTimeFormat("es-CO", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    timeZone: "America/Bogota",
+  }).format(fecha);
+  const horaLabel = new Intl.DateTimeFormat("es-CO", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Bogota",
+  }).format(fecha);
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-      <p className="text-center text-sm text-white/60">
-        No hay partidos en juego ahora mismo — próximo partido:
-      </p>
-      <p className="mt-1 text-center text-xs font-bold uppercase tracking-wide text-muneca-yellow">
-        {p.groupLetra ? `Grupo ${p.groupLetra}` : p.fase} · Jornada {p.jornada}
-      </p>
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <EquipoColumna nombre={p.equipoLocal.nombre} escudoUrl={p.equipoLocal.escudoUrl} />
-        <span className="font-display shrink-0 px-2 text-lg text-white/40">VS</span>
-        <EquipoColumna nombre={p.equipoVisitante.nombre} escudoUrl={p.equipoVisitante.escudoUrl} />
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
+      <div className="flex items-center justify-between bg-gradient-to-r from-muneca-purple-dark to-muneca-black px-4 py-2.5">
+        <span className="text-xs font-bold uppercase tracking-wide text-white">
+          {partido.groupLetra ? `Grupo ${partido.groupLetra}` : partido.fase}
+        </span>
+        <span className="text-xs text-white/60">
+          Jornada {partido.jornada} · Cancha {partido.cancha}
+        </span>
       </div>
-      <Link
-        href={`/partidos/${p.matchId}`}
-        className="mt-4 block rounded-md bg-muneca-yellow py-2 text-center text-xs font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02]"
-      >
-        Ver partido
-      </Link>
+
+      <div className="p-5">
+        <div className="flex items-center justify-between gap-2">
+          <EquipoColumna nombre={partido.equipoLocal.nombre} escudoUrl={partido.equipoLocal.escudoUrl} />
+          <span className="font-display shrink-0 px-2 text-lg text-white/40">VS</span>
+          <EquipoColumna nombre={partido.equipoVisitante.nombre} escudoUrl={partido.equipoVisitante.escudoUrl} />
+        </div>
+
+        <p className="mt-4 text-center text-xs font-semibold uppercase tracking-wide text-white/50">
+          {fechaLabel} · {horaLabel}
+        </p>
+
+        <Link
+          href={`/partidos/${partido.matchId}`}
+          className="mt-4 block rounded-md bg-muneca-yellow py-2 text-center text-xs font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02]"
+        >
+          Ver partido
+        </Link>
+      </div>
     </div>
   );
 }
@@ -223,7 +244,8 @@ export function PartidosEnVivoClient({ inicial }: { inicial: EstadoEnVivoHome })
   }, []);
 
   const hayEnVivo = estado.enVivo.length > 0;
-  const vacio = !hayEnVivo && !estado.proximoPartido && estado.tablas.length === 0;
+  const hayProximos = estado.proximosPartidos.length > 0;
+  const vacio = !hayEnVivo && !hayProximos && estado.tablas.length === 0;
 
   return (
     <section id="partidos-en-vivo" className="bg-black">
@@ -231,12 +253,12 @@ export function PartidosEnVivoClient({ inicial }: { inicial: EstadoEnVivoHome })
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className="border-l-4 border-muneca-yellow pl-3 text-sm font-bold uppercase tracking-widest text-muneca-yellow">
-              {hayEnVivo ? "Partidos en vivo" : "Tabla de posiciones"}
+              {hayEnVivo ? "Partidos en vivo" : "Próximos partidos"}
             </p>
             <p className="mt-1 pl-3 text-xs text-white/50">
               {hayEnVivo
                 ? "Sigue aquí los partidos que se están jugando ahora"
-                : "Tabla de posiciones presentada por [Patrocinador]"}
+                : "No hay partidos en juego ahora mismo — estos son los próximos que se van a jugar"}
             </p>
           </div>
           {hayEnVivo && (
@@ -263,9 +285,11 @@ export function PartidosEnVivoClient({ inicial }: { inicial: EstadoEnVivoHome })
               </div>
             )}
 
-            {!hayEnVivo && estado.proximoPartido && (
+            {!hayEnVivo && hayProximos && (
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <TarjetaProximoPartido estado={estado} />
+                {estado.proximosPartidos.map((p) => (
+                  <TarjetaProximoPartido key={p.matchId} partido={p} />
+                ))}
               </div>
             )}
 
@@ -277,7 +301,8 @@ export function PartidosEnVivoClient({ inicial }: { inicial: EstadoEnVivoHome })
                 <p className="mt-1 pl-3 text-xs text-white/50">
                   {hayEnVivo
                     ? "Grupos de los partidos en juego"
-                    : "Grupo del próximo partido"}
+                    : "Grupos de los próximos partidos"}{" "}
+                  · Presentada por [Patrocinador]
                 </p>
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
                   {estado.tablas.map((t) => (
