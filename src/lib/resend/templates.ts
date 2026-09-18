@@ -273,36 +273,42 @@ Ver en el panel admin: ${SITE_URL}/admin/preinscripciones`;
 /**
  * Confirmación de preinscripción (nueva modalidad, 2026-09-17): el equipo
  * solo dejó sus datos para hacer fila — todavía no tiene cuenta ni plan de
- * pagos. Se le avisa su número de orden de llegada y que se le contactará
- * cuando le toque completar la inscripción oficial (ver
- * `claude/plan-fases-tareas.md`).
+ * pagos. Se le avisa que quedó preinscrito y que se le contactará cuando le
+ * toque completar la inscripción oficial (ver `claude/plan-fases-tareas.md`).
+ *
+ * No menciona el número de orden en la fila (decisión de Fernando,
+ * 2026-09-18): como la invitación es manual y no estrictamente por orden de
+ * llegada, mostrarle el número a cada equipo podía generar reclamos si a
+ * alguien con un número más alto le toca el turno antes.
  */
 export function correoPreinscripcion(params: {
   nombreEquipo: string;
   delegadoNombre: string;
-  ordenPreinscripcion: number;
 }): EmailContent {
   const html = layout(
     `${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro`,
     `
     <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">Preinscripción recibida</p>
     <p>Hola ${params.delegadoNombre},</p>
-    <p><strong>${params.nombreEquipo}</strong> quedó preinscrito en la Copa Muñeca e&apos;Burro — eres el equipo <strong>#${params.ordenPreinscripcion}</strong> en la fila.</p>
-    <p style="margin-top:16px;">Esto todavía no es la inscripción oficial: no hay cuenta ni cobro por ahora. Te contactaremos por WhatsApp o correo cuando te toque completar la inscripción oficial y activar tu cupo.</p>
-    <p style="margin-top:24px;">¡Nos vemos en la cancha!</p>
+    <p>Te escribimos de la Copa Muñeca e&apos;Burro para confirmarte que <strong>${params.nombreEquipo}</strong> quedó preinscrito.</p>
+    <p style="margin-top:16px;">🟡 Importante: esta es solo la preinscripción. Aún no es la inscripción oficial, por lo que en este momento no tienes que realizar ningún pago ni crear una cuenta.</p>
+    <p style="margin-top:16px;">Cuando llegue el momento de formalizar la inscripción y activar tu cupo, te estaremos contactando por WhatsApp o por correo con toda la información.</p>
+    <p style="margin-top:24px;">¡Gracias por querer ser parte de la Copa! Nos vemos en la cancha.</p>
     `
   );
 
   const text = `Hola ${params.delegadoNombre},
 
-${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro — eres el equipo #${params.ordenPreinscripcion} en la fila.
+Te escribimos de la Copa Muñeca e'Burro para confirmarte que ${params.nombreEquipo} quedó preinscrito.
 
-Esto todavía no es la inscripción oficial: no hay cuenta ni cobro por ahora. Te contactaremos por WhatsApp o correo cuando te toque completar la inscripción oficial y activar tu cupo.
+Importante: esta es solo la preinscripción. Aún no es la inscripción oficial, por lo que en este momento no tienes que realizar ningún pago ni crear una cuenta.
 
-¡Nos vemos en la cancha!
+Cuando llegue el momento de formalizar la inscripción y activar tu cupo, te estaremos contactando por WhatsApp o por correo con toda la información.
+
+¡Gracias por querer ser parte de la Copa! Nos vemos en la cancha.
 Copa Muñeca e'Burro — Montería, Córdoba`;
 
-  return { subject: `${params.nombreEquipo} quedó preinscrito — eres el #${params.ordenPreinscripcion}`, html, text };
+  return { subject: `${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro`, html, text };
 }
 
 /**

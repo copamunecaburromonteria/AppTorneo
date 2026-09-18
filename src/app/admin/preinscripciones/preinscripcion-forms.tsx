@@ -14,8 +14,8 @@ type EstadoForm = { success: boolean; error: string };
 const estadoInicial: EstadoForm = { success: false, error: "" };
 
 /**
- * Reenvía la confirmación de preinscripción (número de orden en la fila) —
- * para cuando el delegado dice que no le llegó o no encuentra su #.
+ * Reenvía la confirmación de preinscripción — para cuando el delegado dice
+ * que no le llegó.
  */
 export function ReenviarPreinscripcionForm({ teamId }: { teamId: string }) {
   const accionConId = reenviarCorreoPreinscripcion.bind(null, teamId);

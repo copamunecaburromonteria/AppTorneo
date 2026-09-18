@@ -117,8 +117,7 @@ export function PreinscripcionForm() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center sm:p-10">
           <p className="font-display text-2xl text-white sm:text-3xl">¡Quedaste preinscrito!</p>
           <p className="mx-auto mt-3 max-w-lg text-sm text-white/70 sm:text-base">
-            <strong>{resultado.nombreEquipo}</strong> es el equipo{" "}
-            <span className="text-muneca-yellow">#{resultado.ordenPreinscripcion}</span> en la fila.
+            <strong>{resultado.nombreEquipo}</strong> quedó preinscrito en la Copa Muñeca e&apos;Burro.
             Todavía no hay cuenta ni cobro — te contactaremos por WhatsApp o correo cuando te toque
             completar la inscripción oficial y activar tu cupo.
           </p>

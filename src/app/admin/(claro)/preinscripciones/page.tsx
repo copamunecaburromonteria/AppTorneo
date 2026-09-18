@@ -194,7 +194,6 @@ export default async function AdminPreinscripcionesPage() {
               const mensajeWhatsApp = mensajeWhatsAppPreinscripcion({
                 nombreEquipo: equipo.nombre_equipo,
                 delegadoNombre: delegado?.nombre ?? "",
-                ordenPreinscripcion: equipo.orden_preinscripcion ?? 0,
               });
               const linkWhatsApp = armarLinkWhatsApp(numeroContacto, mensajeWhatsApp);
 

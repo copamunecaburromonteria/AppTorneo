@@ -39,19 +39,23 @@ const SITE_URL = "https://xn--copamuecaburro-vnb.com";
  * como texto precargado en los botones de WhatsApp del panel admin
  * (`armarLinkWhatsApp`), para que el delegado reciba el mismo aviso por los
  * dos canales.
+ *
+ * `mensajeWhatsAppPreinscripcion` no menciona el número de orden en la fila
+ * (decisión de Fernando, 2026-09-18): como la invitación es manual y no
+ * estrictamente por orden de llegada, mostrarle el número a cada equipo
+ * podía generar reclamos si a alguien con un número más alto le toca el
+ * turno antes. Texto acordado con Fernando, tal cual.
  */
 export function mensajeWhatsAppPreinscripcion(params: {
   nombreEquipo: string;
   delegadoNombre: string;
-  ordenPreinscripcion: number;
 }): string {
-  return `Hola ${params.delegadoNombre}, te escribimos de la Copa Muñeca e'Burro ⚽
-
-${params.nombreEquipo} quedó preinscrito — eres el equipo #${params.ordenPreinscripcion} en la fila.
-
-Esto todavía no es la inscripción oficial: no hay cuenta ni cobro por ahora. Te contactaremos por aquí o por correo cuando te toque completar la inscripción oficial y activar tu cupo.
-
-¡Nos vemos en la cancha!`;
+  return `¡Hola, ${params.delegadoNombre}! 👋🐴⚽
+Te escribimos de la Copa Muñeca e'Burro para confirmarte que ${params.nombreEquipo} quedó preinscrito.
+🟡 Importante: esta es solo la preinscripción. Aún no es la inscripción oficial, por lo que en este momento no tienes que realizar ningún pago ni crear una cuenta.
+Cuando llegue el momento de formalizar la inscripción y activar tu cupo, te estaremos contactando por este medio o por correo con toda la información.
+¡Gracias por querer ser parte de la Copa! 💜💛
+¡Nos vemos en la cancha! ⚽🔥`;
 }
 
 export function mensajeWhatsAppInvitacionOficial(params: {

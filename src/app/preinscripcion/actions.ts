@@ -122,7 +122,6 @@ export async function preinscribirEquipo(
   const { subject, html, text } = correoPreinscripcion({
     nombreEquipo,
     delegadoNombre,
-    ordenPreinscripcion,
   });
   await sendEmail({ to: correo, subject, html, text }).catch(() => {});
 

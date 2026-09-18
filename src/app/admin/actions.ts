@@ -263,7 +263,7 @@ export async function reenviarConfirmacionPago(cuotaId: string): Promise<Resulta
 /**
  * Reenvía la confirmación de preinscripción (la que sale automáticamente al
  * completar `/preinscripcion`) — para cuando el delegado dice que no le
- * llegó o no encuentra su número de orden en la fila.
+ * llegó.
  */
 export async function reenviarCorreoPreinscripcion(teamId: string): Promise<ResultadoAccion> {
   const supabase = await createClient();
@@ -277,7 +277,7 @@ export async function reenviarCorreoPreinscripcion(teamId: string): Promise<Resu
 
   const { data: equipo, error: equipoError } = await supabase
     .from("teams")
-    .select("nombre_equipo, estado_inscripcion, orden_preinscripcion, team_delegado(nombre, correo)")
+    .select("nombre_equipo, estado_inscripcion, team_delegado(nombre, correo)")
     .eq("id", teamId)
     .single();
 
@@ -299,7 +299,6 @@ export async function reenviarCorreoPreinscripcion(teamId: string): Promise<Resu
   const correo = correoPreinscripcion({
     nombreEquipo: equipo.nombre_equipo,
     delegadoNombre: delegado.nombre ?? "",
-    ordenPreinscripcion: equipo.orden_preinscripcion ?? 0,
   });
 
   const resultado = await sendEmail({
