@@ -121,7 +121,7 @@ export default async function EquipoPage({
       .order("fecha_hora_programada", { ascending: true }),
     supabase
       .from("v_fair_play")
-      .select("amarillas, rojas, puntos_fair_play")
+      .select("amarillas, azules, rojas, puntos_fair_play")
       .eq("team_id", teamId)
       .maybeSingle(),
   ]);
@@ -186,6 +186,7 @@ export default async function EquipoPage({
 
   const goleadosPorEquipo = miFila?.gf ?? 0;
   const amarillas = fairPlayRaw?.amarillas ?? 0;
+  const azules = fairPlayRaw?.azules ?? 0;
   const rojas = fairPlayRaw?.rojas ?? 0;
 
   const estadoBadge = ESTADO_BADGE[team.estado_inscripcion] ?? ESTADO_BADGE.pendiente;
@@ -457,6 +458,10 @@ export default async function EquipoPage({
                   <div className="rounded-xl bg-white/5 p-3">
                     <p className="text-xs text-white/40">🟨 Tarjetas amarillas</p>
                     <p className="font-display mt-1 text-2xl text-white">{amarillas}</p>
+                  </div>
+                  <div className="rounded-xl bg-white/5 p-3">
+                    <p className="text-xs text-white/40">🟦 Tarjetas azules</p>
+                    <p className="font-display mt-1 text-2xl text-white">{azules}</p>
                   </div>
                   <div className="rounded-xl bg-white/5 p-3">
                     <p className="text-xs text-white/40">🟥 Tarjetas rojas</p>

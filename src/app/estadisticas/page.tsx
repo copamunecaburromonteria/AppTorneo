@@ -70,9 +70,9 @@ export default async function EstadisticasPage() {
     { data: teamGroupRaw },
   ] = await Promise.all([
     supabase.from("v_goleadores").select("player_id, team_id, goles"),
-    supabase.from("v_tarjetas").select("player_id, team_id, amarillas, rojas"),
+    supabase.from("v_tarjetas").select("player_id, team_id, amarillas, azules, rojas"),
     supabase.from("v_ranking_mvp").select("player_id, mvp_count"),
-    supabase.from("v_fair_play").select("team_id, amarillas, rojas, puntos_fair_play"),
+    supabase.from("v_fair_play").select("team_id, amarillas, azules, rojas, puntos_fair_play"),
     supabase.from("v_standings").select("team_id, pj, gc"),
     supabase.from("team_group").select("team_id, teams:team_id(id, nombre_equipo, escudo_url)"),
   ]);
@@ -96,7 +96,10 @@ export default async function EstadisticasPage() {
   const tarjetas = (tarjetasRaw ?? [])
     .slice()
     .sort(
-      (a, b) => b.rojas - a.rojas || b.amarillas + b.rojas - (a.amarillas + a.rojas)
+      (a, b) =>
+        b.rojas - a.rojas ||
+        b.azules - a.azules ||
+        b.amarillas + b.azules + b.rojas - (a.amarillas + a.azules + a.rojas)
     )
     .slice(0, TOP_JUGADORES);
 
@@ -132,6 +135,7 @@ export default async function EstadisticasPage() {
       return {
         equipo: t,
         amarillas: f?.amarillas ?? 0,
+        azules: f?.azules ?? 0,
         rojas: f?.rojas ?? 0,
         puntos: f?.puntos_fair_play ?? 0,
       };
@@ -203,7 +207,7 @@ export default async function EstadisticasPage() {
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
-                🟨🟥 Tarjetas
+                🟨🟦🟥 Tarjetas
               </p>
               <div className="mt-2">
                 {tarjetas.length === 0 && (
@@ -220,6 +224,8 @@ export default async function EstadisticasPage() {
                     valor={
                       <span className="font-display text-lg text-white">
                         {t.amarillas}
+                        <span className="mx-1 text-sm text-white/30">/</span>
+                        {t.azules}
                         <span className="mx-1 text-sm text-white/30">/</span>
                         {t.rojas}
                       </span>
@@ -261,7 +267,7 @@ export default async function EstadisticasPage() {
                 🛡️ Fair Play
               </p>
               <p className="mt-0.5 text-[11px] text-white/40">
-                Amarilla = 1 pt · Roja = 3 pts. Gana el equipo con menor puntaje.
+                Amarilla = 1 pt · Azul = 2 pts · Roja = 3 pts. Gana el equipo con menor puntaje.
               </p>
               <div className="mt-2">
                 {fairPlay.map((f, i) => (

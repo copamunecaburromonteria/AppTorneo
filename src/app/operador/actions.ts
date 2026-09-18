@@ -7,7 +7,14 @@ import { obtenerSesionOperador, borrarCookieSesion } from "@/lib/operador/sesion
 
 type ResultadoAccion = { success: true } | { success: false; error: string };
 
-const TIPOS_EVENTO = new Set(["gol", "autogol", "tarjeta_amarilla", "tarjeta_roja", "cambio"]);
+const TIPOS_EVENTO = new Set([
+  "gol",
+  "autogol",
+  "tarjeta_amarilla",
+  "tarjeta_azul",
+  "tarjeta_roja",
+  "cambio",
+]);
 
 async function requireOperador() {
   const sesion = await obtenerSesionOperador();

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 export type AdminNavCounts = {
   equipos?: number;
+  preinscritos?: number;
   partidos?: number;
   arbitros?: number;
   operadores?: number;
@@ -16,6 +17,7 @@ const ADMIN_NAV: {
   contador?: keyof AdminNavCounts;
 }[] = [
   { href: "/admin", label: "Equipos y pagos", contador: "equipos" },
+  { href: "/admin/preinscripciones", label: "Preinscripciones", contador: "preinscritos" },
   { href: "/admin/partidos", label: "Partidos", contador: "partidos" },
   { href: "/admin/arbitros", label: "Árbitros", contador: "arbitros" },
   { href: "/admin/operadores", label: "Operadores", contador: "operadores" },

@@ -3,18 +3,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend/client";
-import { correoRegistroEquipo, correoEquipoListaEspera } from "@/lib/resend/templates";
-
-/**
- * Correo del super admin al que llega el aviso cuando un equipo entra a
- * lista de espera. Sujeto a la misma limitación de Resend en modo de
- * prueba que el resto de los correos (ver `lib/resend/client.ts`) — la fila
- * en `notificaciones_admin` y la sección "Equipos en espera" del panel
- * admin no dependen de que el correo llegue.
- */
-const ADMIN_NOTIFICATION_EMAIL = "copamunecaburromonteria@gmail.com";
+import { correoRegistroEquipo } from "@/lib/resend/templates";
 
 export type RegistroEquipoInput = {
+  preinscripcionTeamId: string;
   nombreEquipo: string;
   anioFundacion: string;
   ciudadBarrio: string;
@@ -44,7 +36,6 @@ export type CuotaPlan = {
 export type RegistroEquipoResult =
   | {
       success: true;
-      listaEspera: false;
       teamId: string;
       correo: string;
       montoTotal: number;
@@ -53,16 +44,27 @@ export type RegistroEquipoResult =
       cantidadUniformes: number;
       cuotas: CuotaPlan[];
     }
-  | {
-      // El equipo quedó registrado en lista de espera (cupos llenos): no se
-      // le creó cuenta de Auth ni plan de pagos, así que no hay "botón de
-      // cobro" que mostrarle — solo se le avisa que quedó en espera.
-      success: true;
-      listaEspera: true;
-      teamId: string;
-      nombreEquipo: string;
-    }
   | { success: false; error: string };
+
+/**
+ * Datos de un equipo preinscrito que ya fue invitado a completar la
+ * inscripción oficial — lo que `/inscripcion` usa para prellenar el wizard
+ * en vez de pedir todo desde cero. Ver `verificarInvitacion` más abajo.
+ */
+export type InvitacionEncontrada = {
+  teamId: string;
+  nombreEquipo: string;
+  anioFundacion: string;
+  ciudadBarrio: string;
+  descripcion: string;
+  correo: string;
+  delegadoNombre: string;
+  delegadoApellido: string;
+  delegadoDocumento: string;
+  delegadoContactoPrincipal: string;
+  delegadoContactoAlterno: string;
+  delegadoWhatsapp: string;
+};
 
 /**
  * Reparte `total` en `partes` montos enteros que suman exactamente `total`.
@@ -83,26 +85,57 @@ function sumarDias(fecha: Date, dias: number): string {
 }
 
 /**
- * Para que `/inscripcion` sepa, antes de mostrar el formulario, si debe
- * mostrar el flujo normal de pago o el de lista de espera (ver
- * `registrarEquipo` para el criterio de cupo). Se usa solo para decidir qué
- * formulario mostrar — `registrarEquipo` vuelve a verificar el cupo por su
- * cuenta al momento de guardar, así que no hay forma de saltarse la lista
- * de espera manipulando el formulario del navegador.
+ * `/inscripcion` ya no es de acceso libre (2026-09-17, ver
+ * `claude/plan-fases-tareas.md`): el punto de entrada por defecto ahora es
+ * `/preinscripcion` (sin cuenta ni cobro), y solo pasa a `/inscripcion`
+ * (donde sí se cobra) el equipo que el admin invitó explícitamente desde
+ * `/admin/preinscripciones`. Como no mandamos un link único por equipo (se
+ * manda el mismo link de `/inscripcion` a todos — decisión de Fernando),
+ * reconocemos al equipo por el correo que ya usó al preinscribirse.
  */
-export async function verificarCupoDisponible(): Promise<{ cupoLleno: boolean }> {
+export async function verificarInvitacion(
+  correoInput: string
+): Promise<{ found: true; data: InvitacionEncontrada } | { found: false }> {
+  const correo = correoInput.trim().toLowerCase();
+  if (!correo || !correo.includes("@")) return { found: false };
+
   try {
     const admin = createAdminClient();
-    const [{ count: validadosCount }, { data: config }] = await Promise.all([
-      admin.from("teams").select("id", { count: "exact", head: true }).eq("estado_inscripcion", "validado"),
-      admin.from("torneo_config").select("numero_equipos_torneo").eq("id", 1).single(),
-    ]);
-    const numeroEquiposTorneo = (config?.numero_equipos_torneo as number | undefined) ?? 24;
-    return { cupoLleno: (validadosCount ?? 0) >= numeroEquiposTorneo };
+    const { data, error } = await admin
+      .from("teams")
+      .select(
+        `id, nombre_equipo, anio_fundacion, ciudad_barrio, descripcion, estado_inscripcion,
+         team_delegado!inner(nombre, apellido, documento, contacto_principal, contacto_alterno, correo, whatsapp_notificaciones)`
+      )
+      .eq("estado_inscripcion", "invitado")
+      .eq("team_delegado.correo", correo)
+      .maybeSingle();
+
+    if (error || !data) return { found: false };
+
+    const delegadoRaw = data.team_delegado;
+    const delegado = Array.isArray(delegadoRaw) ? delegadoRaw[0] : delegadoRaw;
+    if (!delegado) return { found: false };
+
+    return {
+      found: true,
+      data: {
+        teamId: data.id as string,
+        nombreEquipo: data.nombre_equipo as string,
+        anioFundacion: data.anio_fundacion != null ? String(data.anio_fundacion) : "",
+        ciudadBarrio: (data.ciudad_barrio as string | null) ?? "",
+        descripcion: (data.descripcion as string | null) ?? "",
+        correo: delegado.correo as string,
+        delegadoNombre: delegado.nombre as string,
+        delegadoApellido: delegado.apellido as string,
+        delegadoDocumento: delegado.documento as string,
+        delegadoContactoPrincipal: delegado.contacto_principal as string,
+        delegadoContactoAlterno: (delegado.contacto_alterno as string | null) ?? "",
+        delegadoWhatsapp: (delegado.whatsapp_notificaciones as string | null) ?? "",
+      },
+    };
   } catch {
-    // Si algo falla acá, no bloqueamos la inscripción — se deja pasar al
-    // flujo normal, que vuelve a verificar el cupo de todas formas.
-    return { cupoLleno: false };
+    return { found: false };
   }
 }
 
@@ -129,12 +162,21 @@ export async function registrarEquipo(
     anioFundacion = parsed;
   }
 
-  // --- Validaciones comunes a ambos flujos (inscripción normal y lista de espera) ---
+  if (!input.preinscripcionTeamId) {
+    return {
+      success: false,
+      error: "Falta completar primero la preinscripción con el correo correspondiente.",
+    };
+  }
   if (!nombreEquipo) return { success: false, error: "Falta el nombre del equipo." };
   if (!correo || !correo.includes("@"))
     return { success: false, error: "El correo no es válido." };
   if (!delegadoNombre || !delegadoApellido || !delegadoDocumento || !delegadoContactoPrincipal)
     return { success: false, error: "Faltan datos obligatorios del delegado." };
+  if (!input.password || input.password.length < 8)
+    return { success: false, error: "La contraseña debe tener al menos 8 caracteres." };
+  if (input.tieneUniformePropio === null)
+    return { success: false, error: "Indica si el equipo ya cuenta con uniforme propio." };
 
   let admin;
   try {
@@ -146,11 +188,30 @@ export async function registrarEquipo(
     };
   }
 
-  // --- Precios, plan de pagos y cupo vigentes (torneo_config es la única fuente de verdad) ---
+  // --- El equipo debe tener una invitación activa (ver `verificarInvitacion`) ---
+  // Se vuelve a validar acá, del lado del servidor, en vez de confiar en que
+  // el navegador llegó hasta este paso honestamente.
+  const { data: equipoInvitado, error: invitacionError } = await admin
+    .from("teams")
+    .select("id, estado_inscripcion")
+    .eq("id", input.preinscripcionTeamId)
+    .maybeSingle();
+
+  if (invitacionError || !equipoInvitado || equipoInvitado.estado_inscripcion !== "invitado") {
+    return {
+      success: false,
+      error:
+        "Tu equipo no tiene una invitación activa a la inscripción oficial. Verifica el correo o contáctanos por WhatsApp.",
+    };
+  }
+
+  const teamId = input.preinscripcionTeamId;
+
+  // --- Precios y plan de pagos vigentes (torneo_config es la única fuente de verdad) ---
   const { data: config, error: configError } = await admin
     .from("torneo_config")
     .select(
-      "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo, numero_equipos_torneo"
+      "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo"
     )
     .eq("id", 1)
     .single();
@@ -158,83 +219,6 @@ export async function registrarEquipo(
   if (configError || !config) {
     return { success: false, error: "No se pudo leer la configuración del torneo." };
   }
-
-  // --- ¿Hay cupo? Un equipo ocupa cupo real cuando queda VALIDADO (1a
-  // partida pagada, ver punto 3 de la Fase 1) — uno apenas registrado y sin
-  // pagar todavía no lo ocupa. Si ya no hay cupo, el equipo entra a lista de
-  // espera: sin cuenta de Auth ni plan de pagos (nada de "botón de cobro"),
-  // solo su dato de contacto guardado y un aviso al super admin.
-  const { count: validadosCount, error: countError } = await admin
-    .from("teams")
-    .select("id", { count: "exact", head: true })
-    .eq("estado_inscripcion", "validado");
-
-  const numeroEquiposTorneo = config.numero_equipos_torneo as number;
-  const cupoLleno = !countError && (validadosCount ?? 0) >= numeroEquiposTorneo;
-
-  if (cupoLleno) {
-    const { data: team, error: teamError } = await admin
-      .from("teams")
-      .insert({
-        nombre_equipo: nombreEquipo,
-        anio_fundacion: anioFundacion,
-        ciudad_barrio: ciudadBarrio || null,
-        descripcion: descripcion || null,
-        estado_inscripcion: "lista_espera",
-      })
-      .select("id")
-      .single();
-
-    if (teamError || !team) {
-      return {
-        success: false,
-        error: "No se pudo registrar el equipo en la lista de espera. Intenta de nuevo.",
-      };
-    }
-
-    const teamId = team.id as string;
-
-    const { error: delegadoError } = await admin.from("team_delegado").insert({
-      team_id: teamId,
-      nombre: delegadoNombre,
-      apellido: delegadoApellido,
-      documento: delegadoDocumento,
-      contacto_principal: delegadoContactoPrincipal,
-      contacto_alterno: input.delegadoContactoAlterno.trim() || null,
-      correo,
-      whatsapp_notificaciones: input.delegadoWhatsapp.trim() || null,
-    });
-
-    if (delegadoError) {
-      await admin.from("teams").delete().eq("id", teamId);
-      return { success: false, error: "No se pudieron guardar los datos del delegado." };
-    }
-
-    const { error: notifError } = await admin.from("notificaciones_admin").insert({
-      tipo: "equipo_lista_espera",
-      mensaje: `${nombreEquipo} quedó en lista de espera (cupos llenos) — delegado ${delegadoNombre} ${delegadoApellido}, contacto ${delegadoContactoPrincipal}.`,
-    });
-    if (notifError) {
-      console.error("[lista_espera] No se pudo insertar notificación admin:", notifError);
-    }
-
-    // Aviso por correo al super admin — no bloqueante (ver ADMIN_NOTIFICATION_EMAIL).
-    const { subject, html, text } = correoEquipoListaEspera({
-      nombreEquipo,
-      delegadoNombre: `${delegadoNombre} ${delegadoApellido}`,
-      contacto: input.delegadoWhatsapp.trim() || delegadoContactoPrincipal,
-      correo,
-    });
-    await sendEmail({ to: ADMIN_NOTIFICATION_EMAIL, subject, html, text }).catch(() => {});
-
-    return { success: true, listaEspera: true, teamId, nombreEquipo };
-  }
-
-  // --- Flujo normal (hay cupo disponible): valida contraseña y uniforme antes de continuar ---
-  if (!input.password || input.password.length < 8)
-    return { success: false, error: "La contraseña debe tener al menos 8 caracteres." };
-  if (input.tieneUniformePropio === null)
-    return { success: false, error: "Indica si el equipo ya cuenta con uniforme propio." };
 
   const montoInscripcion = Number(config.monto_inscripcion);
   const precioUniforme = Number(config.precio_uniforme);
@@ -281,26 +265,29 @@ export async function registrarEquipo(
     await admin.auth.admin.deleteUser(userId).catch(() => {});
   };
 
-  // --- 2. Equipo ---
-  const { data: team, error: teamError } = await admin
+  // --- 2. Equipo: ACTUALIZA la fila que ya existía desde la preinscripción
+  // (no se inserta una nueva) — conserva el mismo id, y por lo tanto el
+  // mismo `orden_preinscripcion`, historial de invitación, etc. Pasa de
+  // `invitado` a `pendiente_validacion` (mismo estado inicial que ya tenía
+  // este flujo antes del cambio de modalidad); `validado` sigue llegando
+  // solo al confirmar la 1a partida (ver admin/actions.ts, marcarCuotaPagada).
+  const { error: teamError } = await admin
     .from("teams")
-    .insert({
+    .update({
       nombre_equipo: nombreEquipo,
       anio_fundacion: anioFundacion,
       ciudad_barrio: ciudadBarrio || null,
       descripcion: descripcion || null,
       tiene_uniforme_propio: input.tieneUniformePropio,
       compra_uniforme_copa: compraUniforme,
+      estado_inscripcion: "pendiente_validacion",
     })
-    .select("id")
-    .single();
+    .eq("id", teamId);
 
-  if (teamError || !team) {
+  if (teamError) {
     await rollbackAuthUser();
-    return { success: false, error: "No se pudo crear el equipo. Intenta de nuevo." };
+    return { success: false, error: "No se pudo actualizar el equipo. Intenta de nuevo." };
   }
-
-  const teamId = team.id as string;
 
   // --- 3. Perfil (vincula el usuario de Auth con el equipo) ---
   const { error: profileError } = await admin
@@ -308,13 +295,14 @@ export async function registrarEquipo(
     .insert({ id: userId, rol: "equipo", team_id: teamId });
 
   if (profileError) {
-    await admin.from("teams").delete().eq("id", teamId);
     await rollbackAuthUser();
     return { success: false, error: "No se pudo vincular la cuenta con el equipo." };
   }
 
-  // --- 4. Delegado ---
-  const { error: delegadoError } = await admin.from("team_delegado").insert({
+  // --- 4. Delegado: ACTUALIZA la fila ya creada en la preinscripción (upsert
+  // por si por algún motivo no existiera) con los datos completos + correo
+  // de acceso definitivo. ---
+  const { error: delegadoError } = await admin.from("team_delegado").upsert({
     team_id: teamId,
     nombre: delegadoNombre,
     apellido: delegadoApellido,
@@ -327,7 +315,6 @@ export async function registrarEquipo(
 
   if (delegadoError) {
     await admin.from("profiles").delete().eq("id", userId);
-    await admin.from("teams").delete().eq("id", teamId);
     await rollbackAuthUser();
     return { success: false, error: "No se pudieron guardar los datos del delegado." };
   }
@@ -412,7 +399,6 @@ export async function registrarEquipo(
 
   return {
     success: true,
-    listaEspera: false,
     teamId,
     correo,
     montoTotal,

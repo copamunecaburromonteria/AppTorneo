@@ -23,6 +23,7 @@ const TIPO_ICONO: Record<string, string> = {
   gol: "⚽",
   autogol: "⚽ (autogol)",
   tarjeta_amarilla: "🟨",
+  tarjeta_azul: "🟦",
   tarjeta_roja: "🟥",
   cambio: "🔁",
 };
@@ -134,7 +135,7 @@ export default async function PartidoPage({
 
   const goles = eventosConNombre.filter((e) => e.tipo === "gol" || e.tipo === "autogol");
   const tarjetas = eventosConNombre.filter(
-    (e) => e.tipo === "tarjeta_amarilla" || e.tipo === "tarjeta_roja"
+    (e) => e.tipo === "tarjeta_amarilla" || e.tipo === "tarjeta_azul" || e.tipo === "tarjeta_roja"
   );
 
   const mvp = mvpResult.data

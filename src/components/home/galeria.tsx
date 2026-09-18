@@ -1,5 +1,9 @@
-const PLACEHOLDERS = ["Jugada", "Gol", "Hinchada", "Trofeo"];
-
+/**
+ * Antes mostraba 4 recuadros de relleno ("Jugada", "Gol", "Hinchada",
+ * "Trofeo") sin fotos ni videos reales. El torneo todavía no arranca, así
+ * que en vez de simular contenido mostramos un mensaje claro — retirado el
+ * 2026-09-17, ver `claude/plan-fases-tareas.md`.
+ */
 export function Galeria() {
   return (
     <section id="galeria" className="bg-black">
@@ -11,21 +15,17 @@ export function Galeria() {
           Momentos que también cuentan.
         </p>
 
-        <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
-          {PLACEHOLDERS.map((label) => (
-            <div
-              key={label}
-              className="flex h-32 w-48 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-muneca-purple-dark to-muneca-black text-xs font-semibold uppercase tracking-wide text-white/70"
-            >
-              {label}
-            </div>
-          ))}
-          <a
-            href="#"
-            className="flex h-32 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-muneca-yellow/40 text-muneca-yellow"
-          >
-            →
-          </a>
+        <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-12 text-center">
+          <span className="text-3xl" aria-hidden="true">
+            📸
+          </span>
+          <p className="font-display text-xl text-white sm:text-2xl">
+            Todavía no hay nada que mostrar.
+          </p>
+          <p className="max-w-md text-sm text-white/50">
+            La cámara entra en acción desde la primera jornada — fotos, goles
+            y jugadas van a ir apareciendo acá.
+          </p>
         </div>
       </div>
     </section>

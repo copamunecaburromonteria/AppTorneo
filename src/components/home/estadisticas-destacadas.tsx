@@ -1,11 +1,10 @@
-import { estadisticasDestacadas } from "@/lib/mock-data";
-
-const CARDS = [
-  { icon: "⚽", label: "Goleadores", ...estadisticasDestacadas.goleador, cta: "Ver ranking" },
-  { icon: "🧤", label: "Mejores arqueros", ...estadisticasDestacadas.arquero, cta: "Ver ranking" },
-  { icon: "⭐", label: "MVP de la jornada", ...estadisticasDestacadas.mvp, cta: "Ver más" },
-];
-
+/**
+ * Antes mostraba 3 tarjetas con datos inventados (goleador/arquero/MVP de
+ * ejemplo, ver `src/lib/mock-data.ts`). El torneo todavía no arranca, así
+ * que en vez de simular resultados mostramos un mensaje claro de que esto
+ * se llena solo apenas haya partidos — retirado el 2026-09-17, ver
+ * `claude/plan-fases-tareas.md`.
+ */
 export function EstadisticasDestacadas() {
   return (
     <section id="estadisticas" className="bg-muneca-black">
@@ -17,28 +16,23 @@ export function EstadisticasDestacadas() {
           El talento también cuenta.
         </p>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {CARDS.map((card) => (
-            <div
-              key={card.label}
-              className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-4"
-            >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muneca-purple/20 text-xl">
-                {card.icon}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-wide text-white/50">
-                  {card.label}
-                </p>
-                <p className="truncate font-semibold text-white">{card.nombre}</p>
-                <p className="text-xs text-white/50">{card.equipo}</p>
-                <p className="text-xs font-bold text-muneca-yellow">{card.valor}</p>
-                <a href="/estadisticas" className="mt-1 inline-block text-xs font-bold text-white/60 hover:text-muneca-yellow">
-                  {card.cta} →
-                </a>
-              </div>
-            </div>
-          ))}
+        <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-12 text-center">
+          <span className="text-3xl" aria-hidden="true">
+            😌
+          </span>
+          <p className="font-display text-xl text-white sm:text-2xl">
+            Ey, cálmate que ya viene el torneo.
+          </p>
+          <p className="max-w-md text-sm text-white/50">
+            Todavía no hay goleadores, arqueros ni MVP porque el balón aún no
+            rueda. En cuanto arranquen los partidos, esto se llena solo.
+          </p>
+          <a
+            href="/preinscripcion"
+            className="mt-1 text-xs font-bold uppercase tracking-wide text-muneca-yellow hover:text-white"
+          >
+            Preinscribe tu equipo →
+          </a>
         </div>
       </div>
     </section>

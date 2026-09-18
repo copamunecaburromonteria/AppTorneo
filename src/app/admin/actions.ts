@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend/client";
-import { correoPagoConfirmado } from "@/lib/resend/templates";
+import { correoPagoConfirmado, correoInvitacionInscripcionOficial } from "@/lib/resend/templates";
 
 export async function cerrarSesion() {
   const supabase = await createClient();
@@ -143,5 +143,109 @@ export async function marcarCuotaPagada(
   }
 
   revalidatePath("/admin");
+  return { success: true };
+}
+
+/**
+ * Invita a un equipo preinscrito a completar la inscripción oficial (decisión
+ * manual del admin, no automática — ver `claude/plan-fases-tareas.md`). Pasa
+ * `estado_inscripcion` de `preinscrito` a `invitado` y le manda el correo con
+ * instrucciones; el equipo se reconoce en `/inscripcion` por el correo que ya
+ * dejó al preinscribirse (`verificarInvitacion` en `inscripcion/actions.ts`).
+ */
+export async function invitarAInscripcionOficial(teamId: string): Promise<ResultadoAccion> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: "No hay sesión activa." };
+  }
+
+  const { data: equipo, error: equipoError } = await supabase
+    .from("teams")
+    .select("id, nombre_equipo, estado_inscripcion, team_delegado(nombre, correo)")
+    .eq("id", teamId)
+    .single();
+
+  if (equipoError || !equipo) {
+    return { success: false, error: "No se encontró el equipo." };
+  }
+
+  if (equipo.estado_inscripcion !== "preinscrito") {
+    return { success: false, error: "Este equipo ya no está en estado de preinscrito." };
+  }
+
+  const delegadoRaw = equipo.team_delegado;
+  const delegado = Array.isArray(delegadoRaw) ? delegadoRaw[0] : delegadoRaw;
+
+  const { error: updateError } = await supabase
+    .from("teams")
+    .update({ estado_inscripcion: "invitado", fecha_invitado: new Date().toISOString() })
+    .eq("id", teamId);
+
+  if (updateError) {
+    return { success: false, error: `No se pudo invitar al equipo: ${updateError.message}` };
+  }
+
+  if (delegado?.correo) {
+    const correo = correoInvitacionInscripcionOficial({
+      nombreEquipo: equipo.nombre_equipo,
+      delegadoNombre: delegado.nombre ?? "",
+      correo: delegado.correo,
+    });
+    await sendEmail({
+      to: delegado.correo,
+      subject: correo.subject,
+      html: correo.html,
+      text: correo.text,
+    }).catch(() => {});
+  }
+
+  revalidatePath("/admin/preinscripciones");
+  return { success: true };
+}
+
+/**
+ * Revierte una invitación (por ejemplo, si el equipo no completó el pago en
+ * el plazo esperado y el admin decide pasar al siguiente de la fila — la
+ * decisión de a quién invitar después sigue siendo manual). Vuelve el equipo
+ * a `preinscrito`, conservando su `orden_preinscripcion` original.
+ */
+export async function revertirInvitacion(teamId: string): Promise<ResultadoAccion> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: "No hay sesión activa." };
+  }
+
+  const { data: equipo, error: equipoError } = await supabase
+    .from("teams")
+    .select("id, estado_inscripcion")
+    .eq("id", teamId)
+    .single();
+
+  if (equipoError || !equipo) {
+    return { success: false, error: "No se encontró el equipo." };
+  }
+
+  if (equipo.estado_inscripcion !== "invitado") {
+    return { success: false, error: "Este equipo ya no está en estado de invitado." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("teams")
+    .update({ estado_inscripcion: "preinscrito", fecha_invitado: null })
+    .eq("id", teamId);
+
+  if (updateError) {
+    return { success: false, error: `No se pudo revertir la invitación: ${updateError.message}` };
+  }
+
+  revalidatePath("/admin/preinscripciones");
   return { success: true };
 }

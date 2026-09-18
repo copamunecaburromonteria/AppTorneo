@@ -56,7 +56,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: "Más",
     links: [
-      { label: "Inscribe tu equipo", href: "/inscripcion" },
+      { label: "Preinscribe tu equipo", href: "/preinscripcion" },
       { label: "Galería", href: "/#galeria" },
       { label: "Patrocinadores", href: "/#patrocinadores" },
       { label: "Noticias", href: "#" },

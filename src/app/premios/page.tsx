@@ -147,10 +147,10 @@ export default function PremiosPage() {
           <div className="mt-16 flex flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center">
             <p className="font-display text-2xl text-white sm:text-3xl">Aquí se juega grande.</p>
             <Link
-              href="/inscripcion"
+              href="/preinscripcion"
               className="rounded-md bg-muneca-yellow px-6 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
             >
-              Inscribe tu equipo →
+              Preinscribe tu equipo →
             </Link>
           </div>
         </div>

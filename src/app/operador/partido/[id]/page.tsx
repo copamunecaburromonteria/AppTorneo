@@ -19,6 +19,7 @@ const TIPO_ICONO: Record<string, string> = {
   gol: "⚽",
   autogol: "⚽ (autogol)",
   tarjeta_amarilla: "🟨",
+  tarjeta_azul: "🟦",
   tarjeta_roja: "🟥",
   cambio: "🔁",
 };

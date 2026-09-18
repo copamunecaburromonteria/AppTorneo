@@ -175,6 +175,74 @@ Puedes verlo y contactarlo desde el panel admin, sección "Equipos en espera".`;
   return { subject: `Lista de espera: ${params.nombreEquipo}`, html, text };
 }
 
+/**
+ * Confirmación de preinscripción (nueva modalidad, 2026-09-17): el equipo
+ * solo dejó sus datos para hacer fila — todavía no tiene cuenta ni plan de
+ * pagos. Se le avisa su número de orden de llegada y que se le contactará
+ * cuando le toque completar la inscripción oficial (ver
+ * `claude/plan-fases-tareas.md`).
+ */
+export function correoPreinscripcion(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  ordenPreinscripcion: number;
+}): EmailContent {
+  const html = layout(
+    `${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro`,
+    `
+    <p>Hola ${params.delegadoNombre},</p>
+    <p><strong>${params.nombreEquipo}</strong> quedó preinscrito en la Copa Muñeca e&apos;Burro — eres el equipo <strong>#${params.ordenPreinscripcion}</strong> en la fila.</p>
+    <p style="margin-top:16px;">Esto todavía no es la inscripción oficial: no hay cuenta ni cobro por ahora. Te contactaremos por WhatsApp o correo cuando te toque completar la inscripción oficial y activar tu cupo.</p>
+    <p style="margin-top:24px;">¡Nos vemos en la cancha!</p>
+    `
+  );
+
+  const text = `Hola ${params.delegadoNombre},
+
+${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro — eres el equipo #${params.ordenPreinscripcion} en la fila.
+
+Esto todavía no es la inscripción oficial: no hay cuenta ni cobro por ahora. Te contactaremos por WhatsApp o correo cuando te toque completar la inscripción oficial y activar tu cupo.
+
+¡Nos vemos en la cancha!
+Copa Muñeca e'Burro — Montería, Córdoba`;
+
+  return { subject: `${params.nombreEquipo} quedó preinscrito — eres el #${params.ordenPreinscripcion}`, html, text };
+}
+
+/**
+ * Invitación a completar la inscripción oficial: se envía cuando el admin
+ * decide (manualmente, desde `/admin/preinscripciones`) que le toca a este
+ * equipo preinscrito pasar a pagar y activar su cupo. El link es genérico
+ * (el mismo /inscripcion para todos) — el sistema reconoce al equipo por el
+ * correo que ya usó al preinscribirse, no por un token en la URL.
+ */
+export function correoInvitacionInscripcionOficial(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  correo: string;
+}): EmailContent {
+  const html = layout(
+    `¡Le llegó el turno a ${params.nombreEquipo}!`,
+    `
+    <p>Hola ${params.delegadoNombre},</p>
+    <p>¡Buenas noticias! Le llegó el turno a <strong>${params.nombreEquipo}</strong> para completar la inscripción oficial y activar su cupo en la Copa Muñeca e&apos;Burro.</p>
+    <p style="margin-top:16px;">Entra a la página de <strong>inscripción oficial</strong> (el mismo link de siempre, sección "Inscribe tu equipo") e ingresa con el mismo correo que usaste para preinscribirte (<strong>${params.correo}</strong>). Ahí vas a crear tu cuenta, definir si necesitas uniforme y ver el plan de pagos.</p>
+    <p style="margin-top:24px;">Cualquier duda, escríbenos por WhatsApp.</p>
+    `
+  );
+
+  const text = `Hola ${params.delegadoNombre},
+
+¡Buenas noticias! Le llegó el turno a ${params.nombreEquipo} para completar la inscripción oficial y activar su cupo en la Copa Muñeca e'Burro.
+
+Entra a la página de inscripción oficial (el mismo link de siempre, sección "Inscribe tu equipo") e ingresa con el mismo correo que usaste para preinscribirte (${params.correo}). Ahí vas a crear tu cuenta, definir si necesitas uniforme y ver el plan de pagos.
+
+Cualquier duda, escríbenos por WhatsApp.
+Copa Muñeca e'Burro — Montería, Córdoba`;
+
+  return { subject: `¡Le llegó el turno a ${params.nombreEquipo}! Completa tu inscripción`, html, text };
+}
+
 export function correoPagoConfirmado(params: {
   nombreEquipo: string;
   delegadoNombre: string;

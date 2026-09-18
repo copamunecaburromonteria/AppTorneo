@@ -102,8 +102,9 @@ const SECCIONES: Seccion[] = [
     titulo: "Sanciones deportivas por tarjetas",
     items: [
       "2 tarjetas amarillas acumuladas **en todo el torneo** (no solo en un partido) = 1 partido de sanción.",
+      "Tarjeta azul = expulsión del jugador **solo por lo que resta del partido en curso** — no genera sanción para partidos futuros ni se acumula con otras tarjetas azules.",
       "Tarjeta roja directa = 1 partido de sanción aparte (no depende de la acumulación de amarillas).",
-      "Ambas reglas conviven: un jugador puede acumular sanción por cualquiera de las dos vías.",
+      "Las 3 reglas conviven: un jugador puede acumular sanción por cualquiera de las vías que aplican (amarilla acumulada o roja) — la azul solo saca al jugador del partido actual.",
     ],
   },
   {
@@ -111,6 +112,7 @@ const SECCIONES: Seccion[] = [
     titulo: "Cargo económico por tarjeta (al equipo)",
     items: [
       "Tarjeta amarilla: **$5.000 COP**, cargado al equipo (no al jugador), desglosado por jugador y tarjeta.",
+      "Tarjeta azul: **$7.000 COP**, mismo mecanismo.",
       "Tarjeta roja: **$10.000 COP**, mismo mecanismo.",
       "Es un cargo aparte de la cuota de inscripción — se genera automáticamente en el portal del equipo y se notifica al delegado.",
     ],
@@ -273,10 +275,10 @@ export default function ReglamentoPage() {
               Vienes a competir.
             </p>
             <Link
-              href="/inscripcion"
+              href="/preinscripcion"
               className="rounded-md bg-muneca-yellow px-6 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
             >
-              Inscribe tu equipo →
+              Preinscribe tu equipo →
             </Link>
           </div>
         </div>

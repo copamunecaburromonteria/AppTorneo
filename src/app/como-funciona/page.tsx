@@ -258,11 +258,12 @@ export default function ComoFuncionaPage() {
               </ul>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="font-display text-lg text-white">🟨🟥 Sanciones por tarjetas</p>
+              <p className="font-display text-lg text-white">🟨🟦🟥 Sanciones por tarjetas</p>
               <ul className="mt-3 space-y-1.5 text-sm text-white/70">
                 <li>2 amarillas acumuladas en todo el torneo = 1 partido de sanción.</li>
+                <li>Azul = expulsión solo por el partido en curso, sin sanción futura.</li>
                 <li>Roja directa = 1 partido de sanción aparte.</li>
-                <li>Ambas reglas conviven — un jugador puede acumular por cualquiera de las dos vías.</li>
+                <li>Amarilla acumulada y roja se acumulan entre sí — la azul solo afecta el partido actual.</li>
               </ul>
             </div>
           </div>
@@ -286,10 +287,10 @@ export default function ComoFuncionaPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/inscripcion"
+                href="/preinscripcion"
                 className="rounded-md bg-muneca-yellow px-6 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
               >
-                Inscribe tu equipo →
+                Preinscribe tu equipo →
               </Link>
               <Link
                 href="/reglamento"

@@ -212,10 +212,10 @@ export function SiteHeader({
             </div>
 
             <a
-              href="/inscripcion"
+              href="/preinscripcion"
               className="shrink-0 rounded-md bg-muneca-yellow px-4 py-2 text-sm font-bold uppercase text-muneca-black shadow-sm transition-transform hover:scale-[1.03]"
             >
-              Inscribe tu equipo →
+              Preinscribe tu equipo →
             </a>
           </>
         )}
@@ -319,11 +319,11 @@ export function SiteHeader({
 
             {!userChip && (
               <a
-                href="/inscripcion"
+                href="/preinscripcion"
                 onClick={() => setMobileOpen(false)}
                 className="mt-4 block rounded-md bg-muneca-yellow px-4 py-3 text-center text-sm font-bold uppercase text-muneca-black shadow-sm"
               >
-                Inscribe tu equipo →
+                Preinscribe tu equipo →
               </a>
             )}
           </div>

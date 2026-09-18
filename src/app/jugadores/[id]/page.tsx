@@ -61,7 +61,7 @@ export default async function JugadorPage({
       supabase.from("v_goleadores").select("goles").eq("player_id", playerId).maybeSingle(),
       supabase
         .from("v_tarjetas")
-        .select("amarillas, rojas")
+        .select("amarillas, azules, rojas")
         .eq("player_id", playerId)
         .maybeSingle(),
       supabase
@@ -73,6 +73,7 @@ export default async function JugadorPage({
 
   const goles = golesRow?.goles ?? 0;
   const amarillas = tarjetasRow?.amarillas ?? 0;
+  const azules = tarjetasRow?.azules ?? 0;
   const rojas = tarjetasRow?.rojas ?? 0;
   const mvpCount = mvpRow?.mvp_count ?? 0;
 
@@ -136,10 +137,12 @@ export default async function JugadorPage({
               <p className="font-display text-3xl text-white">
                 {amarillas}
                 <span className="mx-1 text-lg text-white/30">/</span>
+                {azules}
+                <span className="mx-1 text-lg text-white/30">/</span>
                 {rojas}
               </p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/50">
-                🟨/🟥 Tarjetas
+                🟨/🟦/🟥 Tarjetas
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center">

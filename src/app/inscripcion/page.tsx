@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { InscripcionWizard } from "./inscripcion-wizard";
+import { InscripcionGate } from "./inscripcion-gate";
 import { createClient } from "@/lib/supabase/server";
-import { verificarCupoDisponible } from "./actions";
 
 export const metadata: Metadata = {
   title: "Inscribe tu equipo | Copa Muñeca e'Burro",
@@ -46,11 +45,14 @@ async function getPricing() {
   }
 }
 
+/**
+ * Ya no verifica cupo acá (`verificarCupoDisponible` se eliminó junto con la
+ * modalidad de inscripción inmediata): ahora el acceso se controla por
+ * invitación, dentro de `InscripcionGate` (ver `claude/plan-fases-tareas.md`).
+ */
 export default async function InscripcionPage() {
-  const [pricing, { cupoLleno }] = await Promise.all([getPricing(), verificarCupoDisponible()]);
+  const pricing = await getPricing();
   const montoUniformeKit = pricing.precioUniforme * pricing.maxJugadoresPorEquipo;
 
-  return (
-    <InscripcionWizard pricing={pricing} montoUniformeKit={montoUniformeKit} cupoLleno={cupoLleno} />
-  );
+  return <InscripcionGate pricing={pricing} montoUniformeKit={montoUniformeKit} />;
 }

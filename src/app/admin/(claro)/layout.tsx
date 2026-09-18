@@ -58,6 +58,7 @@ export default async function AdminClaroLayout({
 
   const [
     { count: equiposCount },
+    { count: preinscritosCount },
     { count: partidosCount },
     { count: arbitrosCount },
     { count: operadoresCount },
@@ -65,7 +66,13 @@ export default async function AdminClaroLayout({
     supabase
       .from("teams")
       .select("*", { count: "exact", head: true })
-      .neq("estado_inscripcion", "lista_espera"),
+      .neq("estado_inscripcion", "lista_espera")
+      .neq("estado_inscripcion", "preinscrito")
+      .neq("estado_inscripcion", "invitado"),
+    supabase
+      .from("teams")
+      .select("*", { count: "exact", head: true })
+      .in("estado_inscripcion", ["preinscrito", "invitado"]),
     supabase.from("matches").select("*", { count: "exact", head: true }),
     supabase.from("arbitros").select("*", { count: "exact", head: true }),
     supabase.from("operadores").select("*", { count: "exact", head: true }),
@@ -73,6 +80,7 @@ export default async function AdminClaroLayout({
 
   const navCounts = {
     equipos: equiposCount ?? 0,
+    preinscritos: preinscritosCount ?? 0,
     partidos: partidosCount ?? 0,
     arbitros: arbitrosCount ?? 0,
     operadores: operadoresCount ?? 0,

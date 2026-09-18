@@ -12,6 +12,7 @@ const TIPOS = [
   { value: "gol", label: "⚽ Gol" },
   { value: "autogol", label: "⚽ Autogol" },
   { value: "tarjeta_amarilla", label: "🟨 Tarjeta amarilla" },
+  { value: "tarjeta_azul", label: "🟦 Tarjeta azul" },
   { value: "tarjeta_roja", label: "🟥 Tarjeta roja" },
   { value: "cambio", label: "🔁 Cambio (entra)" },
 ];

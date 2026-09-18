@@ -68,10 +68,10 @@ export default async function EquiposPage() {
                 Todavía no hay equipos confirmados — sé de los primeros en hacer parte de la Copa.
               </p>
               <Link
-                href="/inscripcion"
+                href="/preinscripcion"
                 className="mt-7 rounded-md bg-muneca-yellow px-8 py-3.5 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
               >
-                Inscribe tu equipo →
+                Preinscribe tu equipo →
               </Link>
             </div>
           ) : (

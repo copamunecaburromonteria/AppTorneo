@@ -27,7 +27,7 @@ const SLIDES: Slide[] = [
     id: "jugador",
     image: "/brand/hero-slide-jugador.jpg",
     alt: "Jugador de la Copa Muñeca e'Burro de espaldas, balón bajo el brazo, bajo las luces de la cancha",
-    kicker: "32 equipos · categoría libre",
+    kicker: "24 equipos · categoría libre",
     headline: "AQUÍ TAMBIÉN SE JUEGA GRANDE",
     subheadline: "El torneo donde vienes a competir, no a jugar tres partidos y empacar.",
     ctaSecondariaLabel: "Conoce el torneo →",
@@ -128,10 +128,10 @@ export function Hero() {
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4 sm:justify-start">
             <a
-              href="/inscripcion"
+              href="/preinscripcion"
               className="rounded-md bg-muneca-yellow px-8 py-4 text-base font-bold uppercase text-muneca-black transition-transform hover:scale-[1.03]"
             >
-              Inscribe tu equipo →
+              Preinscribe tu equipo →
             </a>
             <a
               href={slide.ctaSecondariaHref}
@@ -142,7 +142,7 @@ export function Hero() {
           </div>
 
           <p className="mt-7 text-base uppercase tracking-[0.2em] text-donkey-gray">
-            24 equipos · Categoría Libre · Montería
+            Preinscripciones abiertas · Categoría Libre · Montería
           </p>
         </div>
       </div>
