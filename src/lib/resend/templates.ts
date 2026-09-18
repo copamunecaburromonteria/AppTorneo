@@ -343,6 +343,56 @@ Copa Muñeca e'Burro — Montería, Córdoba`;
   return { subject: `¡Le llegó el turno a ${params.nombreEquipo}! Completa tu inscripción`, html, text };
 }
 
+/**
+ * Notificación interna al admin cuando un pago llega por un medio
+ * automático (checkout de Wompi) — nunca por validación manual, porque ahí
+ * el admin es quien acaba de registrarlo. Responde directamente a "¿quién
+ * pagó la inscripción de mi equipo?": una notificación bancaria (Nequi,
+ * transferencia) solo trae el monto, nunca el equipo ni el delegado — este
+ * correo es la única forma confiable de saberlo de inmediato. Ver
+ * `aplicarPagoCuota` en `src/lib/pagos/confirmar-cuota.ts`.
+ */
+export function correoNotificacionPagoAdmin(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  delegadoCorreo: string;
+  numeroCuota: number;
+  monto: number;
+  metodoPago: string;
+  referencia: string;
+}): EmailContent {
+  const html = layout(
+    `Pago recibido: ${params.nombreEquipo} — partida ${params.numeroCuota}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">💰 Pago recibido por Wompi</p>
+    <p><strong>${params.nombreEquipo}</strong> pagó la <strong>partida ${params.numeroCuota}</strong> en línea.</p>
+    ${montoDestacado(`Partida ${params.numeroCuota}`, params.monto)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;background-color:#FAFAFA;border-radius:12px;">
+      <tr><td style="padding:10px 16px 4px;color:${COLOR.grayText};">Delegado</td><td style="padding:10px 16px 4px;font-weight:bold;text-align:right;">${params.delegadoNombre}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px;text-align:right;">${params.delegadoCorreo}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Medio de pago</td><td style="padding:4px 16px;text-align:right;">${params.metodoPago}</td></tr>
+      <tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Referencia Wompi</td><td style="padding:4px 16px 10px;text-align:right;">${params.referencia}</td></tr>
+    </table>
+    ${boton(`${SITE_URL}/admin`, "Ver en el panel admin")}
+    `
+  );
+
+  const text = `${params.nombreEquipo} pagó la partida ${params.numeroCuota} en línea por ${formatCOP(params.monto)}.
+
+Delegado: ${params.delegadoNombre}
+Correo: ${params.delegadoCorreo}
+Medio de pago: ${params.metodoPago}
+Referencia Wompi: ${params.referencia}
+
+Ver en el panel admin: ${SITE_URL}/admin`;
+
+  return {
+    subject: `💰 Pago recibido: ${params.nombreEquipo} — partida ${params.numeroCuota} (${formatCOP(params.monto)})`,
+    html,
+    text,
+  };
+}
+
 export function correoPagoConfirmado(params: {
   nombreEquipo: string;
   delegadoNombre: string;

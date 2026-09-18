@@ -10,6 +10,7 @@ import {
   editarJugador,
   eliminarJugador,
 } from "@/app/portal/actions";
+import { PagarWompiButton } from "@/app/portal/inscripcion/pagar-wompi-button";
 
 function formatCOP(valor: number) {
   return new Intl.NumberFormat("es-CO", {
@@ -129,7 +130,7 @@ export default async function PortalPage({
     supabase.from("players").select("*").eq("team_id", teamId).order("created_at"),
     supabase
       .from("payments")
-      .select("monto_total, monto_pagado, tipo_pago, payment_installments(numero_cuota, monto, fecha_limite, estado)")
+      .select("monto_total, monto_pagado, tipo_pago, payment_installments(id, numero_cuota, monto, fecha_limite, estado)")
       .eq("team_id", teamId)
       .maybeSingle(),
     supabase.from("torneo_config").select("max_jugadores_por_equipo").eq("id", 1).single(),
@@ -140,6 +141,8 @@ export default async function PortalPage({
   const cuotas = (pago?.payment_installments ?? []).slice().sort(
     (a: { numero_cuota: number }, b: { numero_cuota: number }) => a.numero_cuota - b.numero_cuota
   );
+  // Se paga en orden — ver la misma nota en `portal/inscripcion/page.tsx`.
+  const proximaCuotaPendiente = cuotas.find((c: { estado: string }) => c.estado === "pendiente");
   const compraUniformeCopa = Boolean(team?.compra_uniforme_copa);
   const inscripcionIncompleta = (players ?? []).length === 0;
 
@@ -190,18 +193,22 @@ export default async function PortalPage({
         {cuotas.length > 0 && (
           <ul className="mt-4 divide-y divide-white/10 rounded-xl bg-white/5">
             {cuotas.map(
-              (c: { numero_cuota: number; monto: number; fecha_limite: string; estado: string }) => (
+              (c: { id: string; numero_cuota: number; monto: number; fecha_limite: string; estado: string }) => (
                 <li
                   key={c.numero_cuota}
-                  className="flex items-center justify-between px-4 py-2.5 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-sm"
                 >
                   <span className="text-white/80">
                     Partida {c.numero_cuota} — {formatCOP(Number(c.monto))} · vence{" "}
                     {formatFecha(c.fecha_limite)}
                   </span>
-                  <span className="text-white/50">
-                    {ESTADO_CUOTA_LABEL[c.estado] ?? c.estado}
-                  </span>
+                  {c.id === proximaCuotaPendiente?.id ? (
+                    <PagarWompiButton cuotaId={c.id} />
+                  ) : (
+                    <span className="text-white/50">
+                      {ESTADO_CUOTA_LABEL[c.estado] ?? c.estado}
+                    </span>
+                  )}
                 </li>
               )
             )}

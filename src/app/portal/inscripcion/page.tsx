@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { evaluarEstadoPlantilla } from "@/lib/portal/plantilla";
 import { agregarJugador, editarJugador, eliminarJugador } from "@/app/portal/actions";
 import { WizardShell } from "@/components/wizard/wizard-shell";
+import { PagarWompiButton } from "./pagar-wompi-button";
 
 const inputClass =
   "w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-muneca-black outline-none transition-colors focus:border-muneca-purple focus:ring-2 focus:ring-muneca-purple/20 disabled:bg-black/[0.03] disabled:opacity-60";
@@ -98,7 +99,7 @@ export default async function PortalInscripcionPage({
       supabase.from("torneo_config").select("max_jugadores_por_equipo").eq("id", 1).single(),
       supabase
         .from("payments")
-        .select("monto_total, monto_pagado, payment_installments(numero_cuota, monto, fecha_limite, estado)")
+        .select("monto_total, monto_pagado, payment_installments(id, numero_cuota, monto, fecha_limite, estado)")
         .eq("team_id", teamId)
         .maybeSingle(),
       evaluarEstadoPlantilla(supabase, teamId),
@@ -110,6 +111,11 @@ export default async function PortalInscripcionPage({
   const cuotas = (pago?.payment_installments ?? []).slice().sort(
     (a: { numero_cuota: number }, b: { numero_cuota: number }) => a.numero_cuota - b.numero_cuota
   );
+  // Se paga en orden: solo se ofrece el botón de pago en línea para la
+  // primera partida todavía pendiente, para no dejar pagar una partida
+  // posterior antes que la que valida el cupo del equipo (ver
+  // `aplicarPagoCuota`, que solo activa el cupo cuando se paga la partida 1).
+  const proximaCuotaPendiente = cuotas.find((c: { estado: string }) => c.estado === "pendiente");
 
   return (
     <WizardShell
@@ -241,19 +247,23 @@ export default async function PortalInscripcionPage({
                 </div>
                 {cuotas.length > 0 && (
                   <ul className="mt-4 divide-y divide-black/10 rounded-xl border border-black/10">
-                    {cuotas.map((c: { numero_cuota: number; monto: number; fecha_limite: string; estado: string }) => (
-                      <li key={c.numero_cuota} className="flex items-center justify-between px-4 py-3 text-sm">
+                    {cuotas.map((c: { id: string; numero_cuota: number; monto: number; fecha_limite: string; estado: string }) => (
+                      <li key={c.numero_cuota} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
                         <span className="text-black/70">
                           Partida {c.numero_cuota} — {formatCOP(Number(c.monto))} · vence {formatFecha(c.fecha_limite)}
                         </span>
-                        <span className="font-semibold text-muneca-black">{ESTADO_CUOTA_LABEL[c.estado] ?? c.estado}</span>
+                        {c.id === proximaCuotaPendiente?.id ? (
+                          <PagarWompiButton cuotaId={c.id} />
+                        ) : (
+                          <span className="font-semibold text-muneca-black">{ESTADO_CUOTA_LABEL[c.estado] ?? c.estado}</span>
+                        )}
                       </li>
                     ))}
                   </ul>
                 )}
                 <p className="mt-4 text-sm text-black/60">
-                  El pago en línea con Wompi se habilita muy pronto — te avisaremos por correo y
-                  WhatsApp apenas esté listo para pagar la primera partida.
+                  Paga cada partida en línea con tarjeta, PSE o Nequi. Apenas Wompi confirme el pago,
+                  se refleja aquí y te llega la confirmación por correo.
                 </p>
               </>
             ) : (
