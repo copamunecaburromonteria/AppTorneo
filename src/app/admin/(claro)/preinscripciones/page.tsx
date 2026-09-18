@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { armarLinkWhatsApp } from "@/lib/whatsapp";
-import { InvitarForm, RevertirForm } from "@/app/admin/preinscripciones/preinscripcion-forms";
+import {
+  InvitarForm,
+  ReenviarForm,
+  ReenviarPreinscripcionForm,
+  RevertirForm,
+} from "@/app/admin/preinscripciones/preinscripcion-forms";
 
 function formatFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString("es-CO", {
@@ -133,6 +138,7 @@ export default async function AdminPreinscripcionesPage() {
                         Contactar
                       </a>
                     )}
+                    <ReenviarForm teamId={equipo.id} />
                     <RevertirForm teamId={equipo.id} />
                   </div>
                 </div>
@@ -214,6 +220,7 @@ export default async function AdminPreinscripcionesPage() {
                         Contactar
                       </a>
                     )}
+                    <ReenviarPreinscripcionForm teamId={equipo.id} />
                     <InvitarForm teamId={equipo.id} />
                   </div>
                 </div>

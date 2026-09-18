@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { MarcarPagadaForm } from "@/app/admin/marcar-pagada-form";
+import {
+  ReenviarRegistroForm,
+  ReenviarRecordatorioForm,
+  ReenviarConfirmacionForm,
+} from "@/app/admin/reenvio-forms";
 import { armarLinkWhatsApp } from "@/lib/whatsapp";
 
 function formatCOP(valor: number) {
@@ -211,13 +216,16 @@ export default async function AdminPagosPage() {
                     Inscrito el {formatFecha(equipo.created_at)}
                   </p>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                    ESTADO_EQUIPO_CLASE[equipo.estado_inscripcion] ?? "bg-black/5 text-muneca-black/50"
-                  }`}
-                >
-                  {ESTADO_EQUIPO_LABEL[equipo.estado_inscripcion] ?? equipo.estado_inscripcion}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      ESTADO_EQUIPO_CLASE[equipo.estado_inscripcion] ?? "bg-black/5 text-muneca-black/50"
+                    }`}
+                  >
+                    {ESTADO_EQUIPO_LABEL[equipo.estado_inscripcion] ?? equipo.estado_inscripcion}
+                  </span>
+                  {pago && <ReenviarRegistroForm teamId={equipo.id} />}
+                </div>
               </div>
 
               {pago && (
@@ -265,7 +273,13 @@ export default async function AdminPagosPage() {
                         >
                           {ESTADO_CUOTA_LABEL[cuota.estado] ?? cuota.estado}
                         </span>
-                        {cuota.estado !== "pagada" && <MarcarPagadaForm cuotaId={cuota.id} />}
+                        {cuota.estado !== "pagada" && (
+                          <>
+                            <ReenviarRecordatorioForm cuotaId={cuota.id} />
+                            <MarcarPagadaForm cuotaId={cuota.id} />
+                          </>
+                        )}
+                        {cuota.estado === "pagada" && <ReenviarConfirmacionForm cuotaId={cuota.id} />}
                       </div>
                     </div>
                   )
