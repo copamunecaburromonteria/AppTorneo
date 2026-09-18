@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { META_EQUIPOS, META_JUGADORES, META_PARTIDOS } from "@/lib/home/metas-torneo";
 
 /**
  * El premio al campeón todavía no vive en `torneo_config` — no es un dato
@@ -51,10 +52,25 @@ export async function Numeros() {
     partidosMax = partidosDeGrupo + rondasEliminacion;
   }
 
+  // Mientras no haya ningún equipo validado todavía (recién arrancó la
+  // preinscripción, ver punto 9z de plan-fases-tareas.md), se muestran las
+  // metas previstas del torneo en vez de puros ceros — apenas se valide el
+  // primer equipo, estos 3 números pasan a ser el conteo real en vivo.
+  const hayEquiposValidados = (totalEquipos ?? 0) > 0;
+
   const ITEMS = [
-    { valor: `${totalEquipos ?? 0}`, label: "Equipos" },
-    { valor: `${totalJugadores ?? 0}`, label: "Jugadores" },
-    { valor: `${totalPartidos ?? 0}`, label: "Partidos" },
+    {
+      valor: hayEquiposValidados ? `${totalEquipos}` : `${META_EQUIPOS}`,
+      label: "Equipos",
+    },
+    {
+      valor: hayEquiposValidados ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
+      label: "Jugadores",
+    },
+    {
+      valor: hayEquiposValidados ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
+      label: "Partidos",
+    },
     { valor: partidosMax !== null ? `${partidosMax}` : "—", label: "Partidos máximo por equipo" },
     { valor: PREMIO_CAMPEON_REFERENCIA, label: "En premios" },
   ];

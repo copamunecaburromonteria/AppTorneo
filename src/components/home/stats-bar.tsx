@@ -1,5 +1,6 @@
 import { UsersThree, User, SoccerBall, Trophy, Heart } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
+import { META_EQUIPOS, META_JUGADORES, META_PARTIDOS } from "@/lib/home/metas-torneo";
 
 export async function StatsBar() {
   const supabase = await createClient();
@@ -18,10 +19,26 @@ export async function StatsBar() {
       supabase.from("matches").select("*", { count: "exact", head: true }),
     ]);
 
+  // Mismo criterio que numeros.tsx: mientras no haya ningún equipo validado
+  // todavía, se muestran las metas previstas del torneo en vez de ceros.
+  const hayEquiposValidados = (totalEquipos ?? 0) > 0;
+
   const ITEMS = [
-    { Icon: UsersThree, valor: `${totalEquipos ?? 0}`, label: "Equipos" },
-    { Icon: User, valor: `${totalJugadores ?? 0}`, label: "Jugadores" },
-    { Icon: SoccerBall, valor: `${totalPartidos ?? 0}`, label: "Partidos" },
+    {
+      Icon: UsersThree,
+      valor: hayEquiposValidados ? `${totalEquipos}` : `${META_EQUIPOS}`,
+      label: "Equipos",
+    },
+    {
+      Icon: User,
+      valor: hayEquiposValidados ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
+      label: "Jugadores",
+    },
+    {
+      Icon: SoccerBall,
+      valor: hayEquiposValidados ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
+      label: "Partidos",
+    },
     { Icon: Trophy, valor: "1", label: "Campeón" },
     { Icon: Heart, valor: "Una", label: "Comunidad" },
   ];
