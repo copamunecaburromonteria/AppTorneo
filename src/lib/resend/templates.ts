@@ -6,15 +6,22 @@ type EmailContent = { subject: string; html: string; text: string };
 // clientes de correo viejos que no manejan bien dominios IDN en <img>/<a>).
 const SITE_URL = "https://xn--copamuecaburro-vnb.com";
 
+// Paleta acordada con Fernando el 2026-09-18 junto con el nuevo diseño de
+// `layout()` (ver más abajo) — reemplaza la paleta anterior en todos los
+// correos, ya que `boton()`/`montoDestacado()`/cada plantilla toman el color
+// de aquí en vez de tenerlo hardcodeado.
 const COLOR = {
-  purple: "#7B1FA2",
-  purpleDark: "#4A0B6B",
-  yellow: "#FFD900",
-  black: "#151515",
+  purple: "#56127D", // header, títulos, CTA de cierre
+  purpleLight: "#6B168F", // eyebrow / etiquetas pequeñas sobre fondo blanco
+  yellow: "#F4C400", // acento de marca y botones de acción
+  black: "#171717", // títulos sobre fondo blanco
+  bodyText: "#202020",
   white: "#FFFFFF",
-  gray: "#AAA69F",
-  grayText: "#71717A",
-  border: "#E4E4E7",
+  bgOuter: "#F3F3F5", // fondo gris claro alrededor de la tarjeta
+  footerBg: "#17131B",
+  gray: "#999999",
+  grayText: "#666666",
+  border: "#EEEEEE",
 };
 
 function formatCOP(valor: number): string {
@@ -64,70 +71,95 @@ function montoDestacado(label: string, valor: number): string {
 }
 
 /**
+ * Caja de aviso destacado (fondo amarillo pálido, borde izquierdo amarillo)
+ * — para lo que el delegado no se puede saltar de largo, como "esto todavía
+ * no es la inscripción oficial, no pagues nada". Mismo patrón visual en
+ * cualquier correo que necesite este tipo de advertencia.
+ */
+function cajaImportante(titulo: string, bodyHtml: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF9D9;border-left:5px solid ${COLOR.yellow};border-radius:8px;margin:25px 0;">
+      <tr>
+        <td style="padding:18px;">
+          <div style="font-size:14px;font-weight:bold;color:#4B3C00;margin-bottom:7px;">🟡 ${titulo}</div>
+          <div style="font-size:14px;line-height:1.6;color:#4A4A4A;">${bodyHtml}</div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+/**
+ * Una fila de una lista de pasos numerados ("¿Qué sigue?") — círculo con el
+ * número + título en negrita + descripción gris. `activo: true` resalta el
+ * paso en amarillo (para el que todavía falta / es el próximo), los demás
+ * quedan en morado.
+ */
+function pasoNumerado(numero: string, titulo: string, descripcion: string, activo = false): string {
+  const fondo = activo ? COLOR.yellow : COLOR.purple;
+  const texto = activo ? COLOR.black : COLOR.white;
+  return `
+    <tr>
+      <td width="42" valign="top">
+        <div style="width:32px;height:32px;line-height:32px;text-align:center;background-color:${fondo};color:${texto};border-radius:50%;font-weight:bold;font-size:13px;">${numero}</div>
+      </td>
+      <td style="padding-bottom:17px;">
+        <strong>${titulo}</strong><br>
+        <span style="font-size:14px;color:${COLOR.grayText};">${descripcion}</span>
+      </td>
+    </tr>`;
+}
+
+/**
  * Envoltorio HTML compartido por todos los correos de la Copa — basado en
  * tablas con estilos en línea (los clientes de correo no soportan bien
- * flexbox/grid ni <style> en <head>). Fondo oscuro por fuera + tarjeta
- * blanca al centro, igual que la identidad visual del sitio ("fondos
- * oscuros estratégicamente, blanco para aire y lectura"). El logo y el
- * mascote se cargan desde el dominio en producción — no van embebidos,
- * así el correo pesa poco y siempre usa la versión más reciente del logo.
+ * flexbox/grid ni <style> en <head>). Diseño acordado con Fernando
+ * (2026-09-18): tarjeta blanca centrada sobre fondo gris claro, header
+ * morado sólido con borde amarillo arriba, footer oscuro con el mismo
+ * borde. El logo se carga desde el dominio en producción — no va embebido,
+ * así el correo pesa poco y siempre usa la versión más reciente.
  */
 function layout(preheader: string, bodyHtml: string): string {
   return `<!doctype html>
 <html lang="es">
-  <body style="margin:0;padding:0;background-color:${COLOR.black};font-family:Arial,Helvetica,sans-serif;">
-    <span style="display:none;font-size:1px;color:${COLOR.black};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${COLOR.black};padding:32px 16px;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body style="margin:0;padding:0;background:${COLOR.bgOuter};font-family:Arial,Helvetica,sans-serif;color:${COLOR.bodyText};">
+    <span style="display:none;font-size:1px;color:${COLOR.bgOuter};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLOR.bgOuter};">
       <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:${COLOR.white};border-radius:16px;overflow:hidden;">
-
-            <!-- acento superior -->
-            <tr>
-              <td height="6" style="background-color:${COLOR.yellow};font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
+        <td align="center" style="padding:30px 15px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:${COLOR.white};border-radius:14px;overflow:hidden;">
 
             <!-- header -->
             <tr>
-              <td style="background-color:${COLOR.purpleDark};background:linear-gradient(135deg,${COLOR.purpleDark},${COLOR.purple});padding:28px 32px;text-align:center;">
+              <td align="center" style="background-color:${COLOR.purple};padding:28px 25px 24px;border-top:5px solid ${COLOR.yellow};">
                 <img
                   src="${SITE_URL}/brand/logo-horizontal.png"
-                  width="200"
+                  width="230"
                   alt="Copa Muñeca e'Burro"
-                  style="display:block;width:200px;max-width:60%;height:auto;margin:0 auto;border:0;"
+                  style="display:block;width:230px;max-width:80%;height:auto;margin:0 auto;border:0;"
                 />
               </td>
             </tr>
 
             <!-- body -->
             <tr>
-              <td style="padding:36px 32px 8px;color:${COLOR.black};font-size:15px;line-height:1.65;">
+              <td style="padding:38px 42px 30px;color:${COLOR.bodyText};font-size:16px;line-height:1.65;">
                 ${bodyHtml}
-              </td>
-            </tr>
-
-            <!-- separador -->
-            <tr>
-              <td style="padding:8px 32px 0;">
-                <div style="border-top:1px solid ${COLOR.border};"></div>
               </td>
             </tr>
 
             <!-- footer -->
             <tr>
-              <td style="background-color:${COLOR.black};padding:28px 32px;text-align:center;">
-                <img
-                  src="${SITE_URL}/brand/mascota-badge.png"
-                  width="48"
-                  alt=""
-                  style="display:block;width:48px;height:48px;margin:0 auto 12px;border:0;border-radius:50%;"
-                />
-                <p style="margin:0;color:${COLOR.yellow};font-size:14px;font-weight:bold;">Más que un torneo, es el parche.</p>
-                <p style="margin:6px 0 0;color:${COLOR.gray};font-size:12px;">Montería, Córdoba · Copa Muñeca e&apos;Burro</p>
-                <p style="margin:14px 0 0;color:${COLOR.gray};font-size:11px;">
-                  ¿Dudas? Escríbenos a
-                  <a href="mailto:info@copamuñecaburro.com" style="color:${COLOR.yellow};text-decoration:underline;">info@copamuñecaburro.com</a>
-                </p>
+              <td align="center" style="background-color:${COLOR.footerBg};padding:28px 25px;border-top:3px solid ${COLOR.yellow};">
+                <div style="font-size:17px;font-weight:bold;color:${COLOR.white};margin-bottom:7px;">COPA MUÑECA E&apos;BURRO</div>
+                <div style="font-size:12px;letter-spacing:1px;color:${COLOR.yellow};margin-bottom:15px;">FÚTBOL · GENTE · COMUNIDAD</div>
+                <div style="font-size:12px;color:${COLOR.gray};line-height:1.6;">Montería, Córdoba · Colombia</div>
+                <div style="font-size:12px;color:${COLOR.gray};margin-top:8px;">¿Tienes preguntas?</div>
+                <a href="mailto:info@copamuñecaburro.com" style="color:${COLOR.yellow};font-size:12px;text-decoration:none;font-weight:bold;">info@copamuñecaburro.com</a>
+                <div style="margin-top:18px;font-size:11px;color:${COLOR.grayText};">© ${new Date().getFullYear()} Copa Muñeca e&apos;Burro</div>
               </td>
             </tr>
 
@@ -285,15 +317,39 @@ export function correoPreinscripcion(params: {
   nombreEquipo: string;
   delegadoNombre: string;
 }): EmailContent {
+  const pasos = [
+    pasoNumerado("01", "Recibimos tu preinscripción", "Tu equipo ya está registrado en nuestra lista."),
+    pasoNumerado("02", "Te contactaremos", "Por WhatsApp o correo cuando llegue el momento."),
+    pasoNumerado(
+      "03",
+      "Activarás oficialmente tu cupo",
+      "Te enviaremos las instrucciones para completar la inscripción.",
+      true
+    ),
+  ].join("");
+
   const html = layout(
-    `${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro`,
+    `${params.nombreEquipo} quedó preinscrito — esta es solo la preinscripción, todavía no hay cobro`,
     `
-    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">Preinscripción recibida</p>
-    <p>Hola ${params.delegadoNombre},</p>
-    <p>Te escribimos de la Copa Muñeca e&apos;Burro para confirmarte que <strong>${params.nombreEquipo}</strong> quedó preinscrito.</p>
-    <p style="margin-top:16px;">🟡 Importante: esta es solo la preinscripción. Aún no es la inscripción oficial, por lo que en este momento no tienes que realizar ningún pago ni crear una cuenta.</p>
-    <p style="margin-top:16px;">Cuando llegue el momento de formalizar la inscripción y activar tu cupo, te estaremos contactando por WhatsApp o por correo con toda la información.</p>
-    <p style="margin-top:24px;">¡Gracias por querer ser parte de la Copa! Nos vemos en la cancha.</p>
+    <div style="font-size:13px;font-weight:bold;letter-spacing:1.5px;color:${COLOR.purpleLight};margin-bottom:18px;">PREINSCRIPCIÓN RECIBIDA</div>
+    <h1 style="margin:0 0 18px;font-size:27px;line-height:1.25;color:${COLOR.black};">¡Ya estamos calentando motores! ⚽</h1>
+    <p style="margin:0 0 18px;">Hola <strong>${params.delegadoNombre}</strong>,</p>
+    <p style="margin:0 0 22px;">Te escribimos de la <strong>Copa Muñeca e&apos;Burro</strong> para confirmarte que <strong>${params.nombreEquipo}</strong> quedó preinscrito.</p>
+
+    ${cajaImportante(
+      "IMPORTANTE",
+      `Esta es únicamente la <strong>preinscripción</strong>. Por ahora <strong>no debes realizar ningún pago</strong> ni crear una cuenta.`
+    )}
+
+    <h2 style="font-size:19px;margin:30px 0 18px;color:${COLOR.purple};">¿Qué sigue?</h2>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${pasos}
+    </table>
+
+    <div style="margin-top:32px;padding-top:25px;border-top:1px solid ${COLOR.border};">
+      <p style="margin:0;">Gracias por querer ser parte de esta historia.</p>
+      <p style="margin:10px 0 0;font-size:18px;font-weight:bold;color:${COLOR.purple};">¡Nos vemos en la cancha! 🐴⚽</p>
+    </div>
     `
   );
 
@@ -301,14 +357,18 @@ export function correoPreinscripcion(params: {
 
 Te escribimos de la Copa Muñeca e'Burro para confirmarte que ${params.nombreEquipo} quedó preinscrito.
 
-Importante: esta es solo la preinscripción. Aún no es la inscripción oficial, por lo que en este momento no tienes que realizar ningún pago ni crear una cuenta.
+Importante: esta es únicamente la preinscripción. Por ahora no debes realizar ningún pago ni crear una cuenta.
 
-Cuando llegue el momento de formalizar la inscripción y activar tu cupo, te estaremos contactando por WhatsApp o por correo con toda la información.
+¿Qué sigue?
+1. Recibimos tu preinscripción — tu equipo ya está registrado en nuestra lista.
+2. Te contactaremos — por WhatsApp o correo cuando llegue el momento.
+3. Activarás oficialmente tu cupo — te enviaremos las instrucciones para completar la inscripción.
 
-¡Gracias por querer ser parte de la Copa! Nos vemos en la cancha.
+Gracias por querer ser parte de esta historia.
+¡Nos vemos en la cancha!
 Copa Muñeca e'Burro — Montería, Córdoba`;
 
-  return { subject: `${params.nombreEquipo} quedó preinscrito en la Copa Muñeca e'Burro`, html, text };
+  return { subject: `${params.nombreEquipo} quedó preinscrito — ¡ya estamos calentando motores!`, html, text };
 }
 
 /**
