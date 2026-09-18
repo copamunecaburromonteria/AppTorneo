@@ -225,6 +225,59 @@ Copa Muñeca e'Burro — Montería, Córdoba`;
   return { subject: `${params.nombreEquipo} quedó registrado en la Copa Muñeca e'Burro`, html, text };
 }
 
+/**
+ * Aviso al admin cada vez que un equipo completa la inscripción oficial
+ * (paga, o queda con su plan de cuotas generado) — antes de esto no llegaba
+ * ningún correo al admin en este flujo, solo al delegado (ver
+ * `correoRegistroEquipo` arriba). Se dispara desde `inscripcion/actions.ts`,
+ * justo después de mandar la confirmación al delegado. Reusa
+ * `WOMPI_ADMIN_NOTIFICATION_EMAIL` — el nombre viene de cuando solo se usaba
+ * para pagos de Wompi, pero hoy es la bandeja general del admin.
+ */
+export function correoNuevaInscripcionAdmin(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  delegadoCorreo: string;
+  contacto: string;
+  montoTotal: number;
+  cantidadUniformes: number;
+  numeroCuotas: number;
+}): EmailContent {
+  const html = layout(
+    `Nueva inscripción oficial: ${params.nombreEquipo}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">📋 Nueva inscripción oficial</p>
+    <p><strong>${params.nombreEquipo}</strong> completó la inscripción oficial y quedó con su plan de pagos generado.</p>
+    ${montoDestacado("Total a pagar", params.montoTotal)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;background-color:#FAFAFA;border-radius:12px;">
+      <tr><td style="padding:10px 16px 4px;color:${COLOR.grayText};">Delegado</td><td style="padding:10px 16px 4px;font-weight:bold;text-align:right;">${params.delegadoNombre}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px;text-align:right;">${params.delegadoCorreo}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Contacto</td><td style="padding:4px 16px;text-align:right;">${params.contacto}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Uniformes</td><td style="padding:4px 16px;text-align:right;">${params.cantidadUniformes > 0 ? `${params.cantidadUniformes} (con la Copa)` : "Uniforme propio"}</td></tr>
+      <tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Plan de pagos</td><td style="padding:4px 16px 10px;text-align:right;">${params.numeroCuotas} partida${params.numeroCuotas === 1 ? "" : "s"}</td></tr>
+    </table>
+    ${boton(`${SITE_URL}/admin`, "Ver en el panel admin")}
+    `
+  );
+
+  const text = `${params.nombreEquipo} completó la inscripción oficial y quedó con su plan de pagos generado.
+
+Total a pagar: ${formatCOP(params.montoTotal)}
+Delegado: ${params.delegadoNombre}
+Correo: ${params.delegadoCorreo}
+Contacto: ${params.contacto}
+Uniformes: ${params.cantidadUniformes > 0 ? `${params.cantidadUniformes} (con la Copa)` : "Uniforme propio"}
+Plan de pagos: ${params.numeroCuotas} partida${params.numeroCuotas === 1 ? "" : "s"}
+
+Ver en el panel admin: ${SITE_URL}/admin`;
+
+  return {
+    subject: `Nueva inscripción oficial: ${params.nombreEquipo} (${formatCOP(params.montoTotal)})`,
+    html,
+    text,
+  };
+}
+
 export function correoRecordatorioCuota(params: {
   nombreEquipo: string;
   delegadoNombre: string;
@@ -369,6 +422,50 @@ Gracias por querer ser parte de esta historia.
 Copa Muñeca e'Burro — Montería, Córdoba`;
 
   return { subject: `${params.nombreEquipo} quedó preinscrito — ¡ya estamos calentando motores!`, html, text };
+}
+
+/**
+ * Aviso al admin cada vez que un equipo nuevo se preinscribe — antes de
+ * esto no llegaba ningún correo al admin en este flujo, solo al delegado
+ * (ver `correoPreinscripcion` arriba). Se dispara desde
+ * `preinscripcion/actions.ts`, justo después de mandar la confirmación al
+ * delegado. Reusa `WOMPI_ADMIN_NOTIFICATION_EMAIL` — el nombre viene de
+ * cuando solo se usaba para pagos de Wompi, pero hoy es la bandeja general
+ * del admin.
+ */
+export function correoNuevaPreinscripcionAdmin(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  contacto: string;
+  correo: string;
+  ciudadBarrio: string | null;
+}): EmailContent {
+  const html = layout(
+    `Nueva preinscripción: ${params.nombreEquipo}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">📝 Nueva preinscripción</p>
+    <p>Un equipo nuevo se preinscribió a la Copa Muñeca e&apos;Burro.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:16px;background-color:#FAFAFA;border-radius:12px;">
+      <tr><td style="padding:10px 16px 4px;color:${COLOR.grayText};">Equipo</td><td style="padding:10px 16px 4px;font-weight:bold;text-align:right;">${params.nombreEquipo}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Delegado</td><td style="padding:4px 16px;text-align:right;">${params.delegadoNombre}</td></tr>
+      <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Contacto</td><td style="padding:4px 16px;text-align:right;">${params.contacto}</td></tr>
+      <tr><td style="padding:4px 16px${params.ciudadBarrio ? "" : " 10px"};color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px${params.ciudadBarrio ? "" : " 10px"};text-align:right;">${params.correo}</td></tr>
+      ${params.ciudadBarrio ? `<tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Ciudad / Barrio</td><td style="padding:4px 16px 10px;text-align:right;">${params.ciudadBarrio}</td></tr>` : ""}
+    </table>
+    ${boton(`${SITE_URL}/admin/preinscripciones`, "Ver en el panel admin")}
+    `
+  );
+
+  const text = `Un equipo nuevo se preinscribió a la Copa Muñeca e'Burro.
+
+Equipo: ${params.nombreEquipo}
+Delegado: ${params.delegadoNombre}
+Contacto: ${params.contacto}
+Correo: ${params.correo}${params.ciudadBarrio ? `\nCiudad / Barrio: ${params.ciudadBarrio}` : ""}
+
+Ver en el panel admin: ${SITE_URL}/admin/preinscripciones`;
+
+  return { subject: `Nueva preinscripción: ${params.nombreEquipo}`, html, text };
 }
 
 /**

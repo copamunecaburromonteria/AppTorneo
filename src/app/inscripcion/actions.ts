@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend/client";
-import { correoRegistroEquipo } from "@/lib/resend/templates";
+import { correoNuevaInscripcionAdmin, correoRegistroEquipo } from "@/lib/resend/templates";
 
 export type RegistroEquipoInput = {
   preinscripcionTeamId: string;
@@ -396,6 +396,29 @@ export async function registrarEquipo(
     cuotas,
   });
   await sendEmail({ to: correo, subject, html, text }).catch(() => {});
+
+  // Aviso interno al admin — no bloquea el resultado si falla ni si no hay
+  // correo de admin configurado (ver `correoNuevaInscripcionAdmin`).
+  const adminEmail = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
+  if (adminEmail) {
+    const correoAdmin = correoNuevaInscripcionAdmin({
+      nombreEquipo,
+      delegadoNombre,
+      delegadoCorreo: correo,
+      contacto: delegadoContactoPrincipal,
+      montoTotal,
+      cantidadUniformes,
+      numeroCuotas: cuotas.length,
+    });
+    await sendEmail({
+      to: adminEmail,
+      subject: correoAdmin.subject,
+      html: correoAdmin.html,
+      text: correoAdmin.text,
+    }).catch(() => {});
+  } else {
+    console.warn("[inscripcion] WOMPI_ADMIN_NOTIFICATION_EMAIL no configurada — no se avisó al admin.");
+  }
 
   return {
     success: true,

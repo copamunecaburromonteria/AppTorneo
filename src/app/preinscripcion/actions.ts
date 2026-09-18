@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/resend/client";
-import { correoPreinscripcion } from "@/lib/resend/templates";
+import { correoNuevaPreinscripcionAdmin, correoPreinscripcion } from "@/lib/resend/templates";
 
 /**
  * Nueva modalidad de entrada al torneo (2026-09-17, decisión de Fernando):
@@ -124,6 +124,27 @@ export async function preinscribirEquipo(
     delegadoNombre,
   });
   await sendEmail({ to: correo, subject, html, text }).catch(() => {});
+
+  // Aviso interno al admin — no bloquea el resultado si falla ni si no hay
+  // correo de admin configurado (ver `correoNuevaPreinscripcionAdmin`).
+  const adminEmail = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
+  if (adminEmail) {
+    const correoAdmin = correoNuevaPreinscripcionAdmin({
+      nombreEquipo,
+      delegadoNombre: `${delegadoNombre} ${delegadoApellido}`.trim(),
+      contacto: delegadoContactoPrincipal,
+      correo,
+      ciudadBarrio: ciudadBarrio || null,
+    });
+    await sendEmail({
+      to: adminEmail,
+      subject: correoAdmin.subject,
+      html: correoAdmin.html,
+      text: correoAdmin.text,
+    }).catch(() => {});
+  } else {
+    console.warn("[preinscripcion] WOMPI_ADMIN_NOTIFICATION_EMAIL no configurada — no se avisó al admin.");
+  }
 
   return { success: true, nombreEquipo, ordenPreinscripcion };
 }
