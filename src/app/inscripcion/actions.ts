@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendEmail } from "@/lib/resend/client";
+import { getAdminNotificationEmails, sendEmail } from "@/lib/resend/client";
 import { correoNuevaInscripcionAdmin, correoRegistroEquipo } from "@/lib/resend/templates";
 
 export type RegistroEquipoInput = {
@@ -399,8 +399,8 @@ export async function registrarEquipo(
 
   // Aviso interno al admin — no bloquea el resultado si falla ni si no hay
   // correo de admin configurado (ver `correoNuevaInscripcionAdmin`).
-  const adminEmail = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
-  if (adminEmail) {
+  const adminEmails = getAdminNotificationEmails();
+  if (adminEmails) {
     const correoAdmin = correoNuevaInscripcionAdmin({
       nombreEquipo,
       delegadoNombre,
@@ -411,7 +411,7 @@ export async function registrarEquipo(
       numeroCuotas: cuotas.length,
     });
     await sendEmail({
-      to: adminEmail,
+      to: adminEmails,
       subject: correoAdmin.subject,
       html: correoAdmin.html,
       text: correoAdmin.text,

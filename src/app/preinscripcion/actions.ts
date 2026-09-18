@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/resend/client";
+import { getAdminNotificationEmails, sendEmail } from "@/lib/resend/client";
 import { correoNuevaPreinscripcionAdmin, correoPreinscripcion } from "@/lib/resend/templates";
 
 /**
@@ -127,8 +127,8 @@ export async function preinscribirEquipo(
 
   // Aviso interno al admin — no bloquea el resultado si falla ni si no hay
   // correo de admin configurado (ver `correoNuevaPreinscripcionAdmin`).
-  const adminEmail = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
-  if (adminEmail) {
+  const adminEmails = getAdminNotificationEmails();
+  if (adminEmails) {
     const correoAdmin = correoNuevaPreinscripcionAdmin({
       nombreEquipo,
       delegadoNombre: `${delegadoNombre} ${delegadoApellido}`.trim(),
@@ -137,7 +137,7 @@ export async function preinscribirEquipo(
       ciudadBarrio: ciudadBarrio || null,
     });
     await sendEmail({
-      to: adminEmail,
+      to: adminEmails,
       subject: correoAdmin.subject,
       html: correoAdmin.html,
       text: correoAdmin.text,

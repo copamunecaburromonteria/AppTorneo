@@ -23,6 +23,26 @@ const DEFAULT_FROM = `Copa Muñeca e'Burro <noreply@${RESEND_VERIFIED_DOMAIN}>`;
 const DEFAULT_REPLY_TO = `info@${RESEND_VERIFIED_DOMAIN}`;
 
 /**
+ * Direcciones que reciben los avisos internos al admin (nueva
+ * preinscripción, nueva inscripción, pago por Wompi — ver
+ * `WOMPI_ADMIN_NOTIFICATION_EMAIL` en `preinscripcion/actions.ts`,
+ * `inscripcion/actions.ts` y `src/lib/pagos/confirmar-cuota.ts`). Acepta una
+ * o varias direcciones separadas por coma en la misma variable de entorno,
+ * para no tener que elegir un solo buzón — por ejemplo
+ * "copamunecaburromonteria@gmail.com,info@xn--copamuecaburro-vnb.com".
+ * Devuelve `null` si la variable no está configurada.
+ */
+export function getAdminNotificationEmails(): string[] | null {
+  const raw = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
+  if (!raw) return null;
+  const emails = raw
+    .split(",")
+    .map((email) => email.trim())
+    .filter(Boolean);
+  return emails.length > 0 ? emails : null;
+}
+
+/**
  * Envía un correo con la API de Resend usando fetch directo (sin el SDK, para
  * no depender de un paquete npm adicional). Si falta RESEND_API_KEY no lanza
  * error — solo lo registra, para no tumbar el flujo principal (registro de

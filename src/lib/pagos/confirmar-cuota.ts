@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { sendEmail } from "@/lib/resend/client";
+import { getAdminNotificationEmails, sendEmail } from "@/lib/resend/client";
 import { correoPagoConfirmado, correoNotificacionPagoAdmin } from "@/lib/resend/templates";
 
 export type ConfirmarCuotaResult = { success: true } | { success: false; error: string };
@@ -139,8 +139,8 @@ export async function aplicarPagoCuota(
   // pagó, cuánto y por cuál medio, para saber de inmediato sin tener que
   // revisar el panel.
   if (params.notificarAdmin) {
-    const adminEmail = process.env.WOMPI_ADMIN_NOTIFICATION_EMAIL;
-    if (adminEmail) {
+    const adminEmails = getAdminNotificationEmails();
+    if (adminEmails) {
       const correoAdmin = correoNotificacionPagoAdmin({
         nombreEquipo: equipo?.nombre_equipo ?? "",
         delegadoNombre: delegado?.nombre ?? "",
@@ -152,7 +152,7 @@ export async function aplicarPagoCuota(
       });
 
       await sendEmail({
-        to: adminEmail,
+        to: adminEmails,
         subject: correoAdmin.subject,
         html: correoAdmin.html,
         text: correoAdmin.text,
