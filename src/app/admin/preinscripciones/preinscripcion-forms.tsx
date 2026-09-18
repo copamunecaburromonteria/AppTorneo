@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import {
+  eliminarPreinscripcion,
   invitarAInscripcionOficial,
   reenviarInvitacionInscripcionOficial,
   reenviarCorreoPreinscripcion,
@@ -95,6 +96,54 @@ export function ReenviarForm({ teamId }: { teamId: string }) {
       </button>
       {state.error && <span className="text-xs text-rose-600">{state.error}</span>}
       {state.success && <span className="text-xs font-semibold text-emerald-600">Correo reenviado ✓</span>}
+    </form>
+  );
+}
+
+/**
+ * Elimina un equipo de la fila de preinscritos — para corregir errores de
+ * creación o quitar equipos de prueba antes de que avancen. Pide
+ * confirmación en el navegador porque no se puede deshacer.
+ */
+export function EliminarPreinscripcionForm({
+  teamId,
+  nombreEquipo,
+}: {
+  teamId: string;
+  nombreEquipo: string;
+}) {
+  const accionConId = eliminarPreinscripcion.bind(null, teamId);
+
+  async function accion(): Promise<EstadoForm> {
+    const result = await accionConId();
+    if (result.success) return { success: true, error: "" };
+    return { success: false, error: result.error };
+  }
+
+  const [state, formAction, pending] = useActionState(accion, estadoInicial);
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        if (
+          !window.confirm(
+            `¿Eliminar a "${nombreEquipo}" de la fila de preinscritos? Esta acción no se puede deshacer.`
+          )
+        ) {
+          event.preventDefault();
+        }
+      }}
+      className="flex items-center gap-2"
+    >
+      <button
+        type="submit"
+        disabled={pending}
+        className="shrink-0 rounded-md border border-rose-200 px-4 py-2 text-xs font-bold uppercase text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
+      >
+        {pending ? "Eliminando..." : "Eliminar"}
+      </button>
+      {state.error && <span className="text-xs text-rose-600">{state.error}</span>}
     </form>
   );
 }

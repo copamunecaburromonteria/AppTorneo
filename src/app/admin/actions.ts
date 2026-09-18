@@ -476,3 +476,51 @@ export async function revertirInvitacion(teamId: string): Promise<ResultadoAccio
   revalidatePath("/admin/preinscripciones");
   return { success: true };
 }
+
+/**
+ * Elimina un equipo de la fila de preinscritos — para corregir errores de
+ * creación (duplicados, equipos de prueba) antes de que avancen. Solo
+ * permite borrar equipos que siguen en estado `preinscrito`: uno que ya fue
+ * invitado, o que ya tiene cuenta/pagos, no se puede borrar desde aquí (hay
+ * que revertirlo primero) para no perder datos reales por accidente. El
+ * borrado de `teams` hace cascada sobre `team_delegado`, `payments`,
+ * `payment_installments`, `players`, `squad_changes` y `team_group` — pero
+ * un equipo en `preinscrito` nunca llega a tener nada de eso, así que en la
+ * práctica solo borra la fila del equipo y su delegado.
+ */
+export async function eliminarPreinscripcion(teamId: string): Promise<ResultadoAccion> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: "No hay sesión activa." };
+  }
+
+  const { data: equipo, error: equipoError } = await supabase
+    .from("teams")
+    .select("id, estado_inscripcion")
+    .eq("id", teamId)
+    .single();
+
+  if (equipoError || !equipo) {
+    return { success: false, error: "No se encontró el equipo." };
+  }
+
+  if (equipo.estado_inscripcion !== "preinscrito") {
+    return {
+      success: false,
+      error: "Solo se pueden eliminar equipos en estado de preinscrito. Si ya fue invitado, revierte la invitación primero.",
+    };
+  }
+
+  const { error: deleteError } = await supabase.from("teams").delete().eq("id", teamId);
+
+  if (deleteError) {
+    return { success: false, error: `No se pudo eliminar el equipo: ${deleteError.message}` };
+  }
+
+  revalidatePath("/admin/preinscripciones");
+  return { success: true };
+}

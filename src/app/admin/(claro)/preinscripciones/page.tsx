@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { armarLinkWhatsApp } from "@/lib/whatsapp";
 import {
+  armarLinkWhatsApp,
+  mensajeWhatsAppInvitacionOficial,
+  mensajeWhatsAppPreinscripcion,
+} from "@/lib/whatsapp";
+import {
+  EliminarPreinscripcionForm,
   InvitarForm,
   ReenviarForm,
   ReenviarPreinscripcionForm,
@@ -97,7 +102,12 @@ export default async function AdminPreinscripcionesPage() {
               const delegadoRaw = equipo.team_delegado;
               const delegado = Array.isArray(delegadoRaw) ? delegadoRaw[0] : delegadoRaw;
               const numeroContacto = delegado?.whatsapp_notificaciones || delegado?.contacto_principal;
-              const linkWhatsApp = armarLinkWhatsApp(numeroContacto);
+              const mensajeWhatsApp = mensajeWhatsAppInvitacionOficial({
+                nombreEquipo: equipo.nombre_equipo,
+                delegadoNombre: delegado?.nombre ?? "",
+                correo: delegado?.correo ?? "",
+              });
+              const linkWhatsApp = armarLinkWhatsApp(numeroContacto, mensajeWhatsApp);
 
               return (
                 <div
@@ -135,7 +145,7 @@ export default async function AdminPreinscripcionesPage() {
                         rel="noreferrer"
                         className="shrink-0 rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold uppercase text-white transition-transform hover:scale-[1.02]"
                       >
-                        Contactar
+                        Enviar WhatsApp
                       </a>
                     )}
                     <ReenviarForm teamId={equipo.id} />
@@ -181,7 +191,12 @@ export default async function AdminPreinscripcionesPage() {
               const delegadoRaw = equipo.team_delegado;
               const delegado = Array.isArray(delegadoRaw) ? delegadoRaw[0] : delegadoRaw;
               const numeroContacto = delegado?.whatsapp_notificaciones || delegado?.contacto_principal;
-              const linkWhatsApp = armarLinkWhatsApp(numeroContacto);
+              const mensajeWhatsApp = mensajeWhatsAppPreinscripcion({
+                nombreEquipo: equipo.nombre_equipo,
+                delegadoNombre: delegado?.nombre ?? "",
+                ordenPreinscripcion: equipo.orden_preinscripcion ?? 0,
+              });
+              const linkWhatsApp = armarLinkWhatsApp(numeroContacto, mensajeWhatsApp);
 
               return (
                 <div
@@ -217,11 +232,12 @@ export default async function AdminPreinscripcionesPage() {
                         rel="noreferrer"
                         className="shrink-0 rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold uppercase text-white transition-transform hover:scale-[1.02]"
                       >
-                        Contactar
+                        Enviar WhatsApp
                       </a>
                     )}
                     <ReenviarPreinscripcionForm teamId={equipo.id} />
                     <InvitarForm teamId={equipo.id} />
+                    <EliminarPreinscripcionForm teamId={equipo.id} nombreEquipo={equipo.nombre_equipo} />
                   </div>
                 </div>
               );
