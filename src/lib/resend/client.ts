@@ -7,19 +7,26 @@ type SendEmailInput = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const DEFAULT_FROM = "Copa Muñeca e'Burro <onboarding@resend.dev>";
+
+// Dominio verificado en Resend (2026-09-18). Resend lo registra en su forma
+// punycode/ASCII — se usa esa forma literal en las direcciones "from"/
+// "reply_to" porque los encabezados de correo son ASCII-only; los clientes
+// de correo (Gmail, Outlook, etc.) lo decodifican solos y lo muestran como
+// "copamuñecaburro.com" al destinatario.
+const RESEND_VERIFIED_DOMAIN = "xn--copamuecaburro-vnb.com";
+const DEFAULT_FROM = `Copa Muñeca e'Burro <noreply@${RESEND_VERIFIED_DOMAIN}>`;
+
+// info@ reenvía a copamunecaburromonteria@gmail.com vía ImprovMX (ver
+// plan-fases-tareas.md). Se usa como reply-to por defecto en todos los
+// correos salientes: quien responda a una notificación de noreply@ termina
+// en la bandeja real, sin que cada punto de llamada tenga que configurarlo.
+const DEFAULT_REPLY_TO = `info@${RESEND_VERIFIED_DOMAIN}`;
 
 /**
  * Envía un correo con la API de Resend usando fetch directo (sin el SDK, para
  * no depender de un paquete npm adicional). Si falta RESEND_API_KEY no lanza
  * error — solo lo registra, para no tumbar el flujo principal (registro de
  * equipo, etc.) por un problema de correo.
- *
- * NOTA: mientras no haya un dominio propio verificado en Resend, el remitente
- * por defecto (onboarding@resend.dev) solo puede entregar correos a la
- * dirección con la que se creó la cuenta de Resend — cualquier otro
- * destinatario se rechaza. Configurar RESEND_FROM_EMAIL con un dominio
- * verificado quita esa limitación.
  */
 export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -43,7 +50,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
         subject: input.subject,
         html: input.html,
         text: input.text,
-        reply_to: input.replyTo,
+        reply_to: input.replyTo || DEFAULT_REPLY_TO,
       }),
     });
 
