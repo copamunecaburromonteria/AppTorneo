@@ -33,6 +33,12 @@ function unwrap<T>(rel: T | T[] | null): T | null {
  * (mismo patrón que "Equipos y pagos", ver `marcar-pagados-form.tsx`). El
  * link de WhatsApp abre el chat con el mensaje ya armado — no hay envío
  * automático (no hay WhatsApp Business API conectada, ver `lib/whatsapp.ts`).
+ *
+ * Vive dentro del grupo de rutas `(claro)` (igual que arbitros/operadores/
+ * partidos/preinscripciones/accesos) para heredar el layout con
+ * SiteHeader/Footer, breadcrumbs y AdminNav — los archivos de soporte
+ * (actions.ts, marcar-pagados-form.tsx) se quedan en la carpeta plana
+ * `admin/cargos-tarjetas/`, mismo patrón que esas otras secciones.
  */
 export default async function AdminCargosTarjetasPage() {
   const supabase = await createClient();
