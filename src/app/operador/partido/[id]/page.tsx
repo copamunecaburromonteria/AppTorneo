@@ -40,7 +40,7 @@ export default async function PartidoOperadorPage({
   const { data: partido } = await admin
     .from("matches")
     .select(
-      "id, fase, cancha, fecha_hora_programada, estado, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)"
+      "id, fase, cancha, fecha_hora_programada, estado, jornada, marcador_local, marcador_visitante, equipo_local_id, equipo_visitante_id, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)"
     )
     .eq("id", matchId)
     .maybeSingle();
@@ -129,7 +129,13 @@ export default async function PartidoOperadorPage({
             </p>
           </div>
           <div className="mt-4">
-            <EstadoAcciones matchId={partido.id} estado={partido.estado} />
+            <EstadoAcciones
+              matchId={partido.id}
+              estado={partido.estado}
+              jornada={partido.jornada as number | null}
+              marcadorLocal={partido.marcador_local as number}
+              marcadorVisitante={partido.marcador_visitante as number}
+            />
           </div>
         </div>
 

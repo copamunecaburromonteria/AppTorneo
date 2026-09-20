@@ -120,12 +120,83 @@ export async function iniciarSegundoTiempo(matchId: string): Promise<ResultadoAc
   return { success: true };
 }
 
-export async function cerrarPartido(matchId: string): Promise<ResultadoAccion> {
+/**
+ * Cierra y oficializa un partido. Calcula `winner_team_id` a partir del
+ * marcador reglamentario cuando no hay empate. Un empate en fase de grupos
+ * (jornada 1-5) es válido y queda con `winner_team_id = null`, sin
+ * penales. Un empate en fase eliminatoria (jornada >= 6) exige
+ * `penalesLocal`/`penalesVisitante` (distintos entre sí) para poder
+ * definir el ganador — sin eso, se bloquea el cierre — porque la
+ * siguiente ronda del bracket (`iniciarCuartos`/`iniciarSemifinal`/
+ * `iniciarFinalYTercerPuesto`, ver `src/app/admin/torneo/actions.ts`)
+ * necesita un ganador para poder generarse.
+ */
+export async function cerrarPartido(
+  matchId: string,
+  penalesLocal?: number,
+  penalesVisitante?: number
+): Promise<ResultadoAccion> {
   const { admin } = await requireOperador();
+
+  const { data: partido, error: partidoError } = await admin
+    .from("matches")
+    .select("marcador_local, marcador_visitante, jornada, equipo_local_id, equipo_visitante_id")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (partidoError || !partido) {
+    return { success: false, error: "No se encontró el partido." };
+  }
+
+  const marcadorLocal = partido.marcador_local as number;
+  const marcadorVisitante = partido.marcador_visitante as number;
+  const jornada = partido.jornada as number | null;
+  const esFaseEliminatoria = jornada !== null && jornada >= 6;
+
+  let winnerTeamId: string | null = null;
+  let penalesParaGuardar: { penales_local: number | null; penales_visitante: number | null } = {
+    penales_local: null,
+    penales_visitante: null,
+  };
+
+  if (marcadorLocal !== marcadorVisitante) {
+    winnerTeamId =
+      marcadorLocal > marcadorVisitante
+        ? (partido.equipo_local_id as string)
+        : (partido.equipo_visitante_id as string);
+  } else if (esFaseEliminatoria) {
+    const penalesValidos =
+      penalesLocal !== undefined &&
+      penalesVisitante !== undefined &&
+      Number.isInteger(penalesLocal) &&
+      Number.isInteger(penalesVisitante) &&
+      penalesLocal >= 0 &&
+      penalesVisitante >= 0;
+    if (!penalesValidos) {
+      return {
+        success: false,
+        error: "Empate en fase eliminatoria: registra el marcador de penales para definir el ganador.",
+      };
+    }
+    if (penalesLocal === penalesVisitante) {
+      return { success: false, error: "El marcador de penales no puede quedar empatado." };
+    }
+    winnerTeamId =
+      (penalesLocal as number) > (penalesVisitante as number)
+        ? (partido.equipo_local_id as string)
+        : (partido.equipo_visitante_id as string);
+    penalesParaGuardar = { penales_local: penalesLocal as number, penales_visitante: penalesVisitante as number };
+  }
+  // Empate en fase de grupos: winnerTeamId queda null, empate válido, sin penales.
 
   const { error } = await admin
     .from("matches")
-    .update({ estado: "finalizado", hora_fin_real: new Date().toISOString() })
+    .update({
+      estado: "finalizado",
+      hora_fin_real: new Date().toISOString(),
+      winner_team_id: winnerTeamId,
+      ...penalesParaGuardar,
+    })
     .eq("id", matchId);
 
   if (error) return { success: false, error: `No se pudo cerrar el partido: ${error.message}` };

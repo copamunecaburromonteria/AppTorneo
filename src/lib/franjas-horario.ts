@@ -1,24 +1,33 @@
 /**
- * Franjas horarias fijas del torneo — jueves y viernes 7:00-10:00 p. m.,
- * sábado 5:00-9:00 p. m., un partido por hora por cancha (ver
- * `especificacion-funcional-ecosistema.md` §19.5, que es la misma grilla
- * ya usada en el calendario de `/lider-arbitros`). Colombia no tiene
+ * Franjas horarias fijas del torneo — jueves, viernes y sábado, siempre
+ * 7:00 p. m. y 8:00 p. m. (dos franjas, dos canchas = 4 partidos por día),
+ * NUNCA 6:00 p. m. ni 9:00 p. m. (pedido explícito de Fernando, 2026-09-18,
+ * ver "logica de los partidos y programacion" en `plan-fases-tareas.md`;
+ * reemplaza la grilla anterior de 3/5 franjas por día). Colombia no tiene
  * horario de verano: la hora de Bogotá es siempre UTC-5 todo el año, así
  * que se puede fijar ese offset sin necesidad de una tabla de husos.
  *
  * Estas utilidades leen/escriben fecha y hora ya ancladas a
  * `America/Bogota` (con `Intl.DateTimeFormat`, no con `Date.getHours()`
- * del servidor) para evitar que un partido de las 9-10 p. m. se "corra"
- * al día calendario siguiente si el servidor corre en UTC — mismo cuidado
+ * del servidor) para evitar que un partido de las 8 p. m. se "corra" al
+ * día calendario siguiente si el servidor corre en UTC — mismo cuidado
  * que ya se tomó en `src/lib/jornada.ts`.
+ *
+ * Estas constantes son el default compilado de la edición 2026 (coinciden
+ * con `torneo_config.horarios_permitidos` / `numero_canchas`, que son la
+ * fuente de verdad para la generación server-side de octavos en adelante —
+ * ver `src/lib/torneo/generador-eliminacion.ts`). Los formularios cliente
+ * (reprogramar partido, iniciar torneo) siguen leyendo estas constantes
+ * directamente por simplicidad; si una futura edición cambia los horarios,
+ * hay que mantener ambos en sincronía.
  */
 
 export const DIA_LABEL: Record<number, string> = { 4: "Jueves", 5: "Viernes", 6: "Sábado" };
 
 export const SLOTS_POR_DIA: Record<number, number[]> = {
-  4: [19, 20, 21], // jueves: kickoffs 7, 8, 9pm
-  5: [19, 20, 21], // viernes: kickoffs 7, 8, 9pm
-  6: [17, 18, 19, 20, 21], // sábado: kickoffs 5, 6, 7, 8, 9pm (confirmado 2026-09-15)
+  4: [19, 20], // jueves: kickoffs 7, 8pm
+  5: [19, 20], // viernes: kickoffs 7, 8pm
+  6: [19, 20], // sábado: kickoffs 7, 8pm (antes 5-9pm; unificado 2026-09-18)
 };
 
 /** getDay(): 0=domingo ... 4=jueves, 5=viernes, 6=sábado. */

@@ -5,6 +5,7 @@ import { ParallaxSectionBackground } from "@/components/parallax-section-backgro
 import { createClient } from "@/lib/supabase/server";
 import { calcularJornada } from "@/lib/jornada";
 import { DIA_LABEL, fechaYmdBogota } from "@/lib/franjas-horario";
+import { TITULO_JORNADA, TEXTO_PENDIENTE } from "@/lib/torneo/jornada-labels";
 import {
   CalendarioTabs,
   type JornadaData,
@@ -19,28 +20,6 @@ function unwrapTeam(rel: TeamRel): TeamInfo | null {
   if (!rel) return null;
   return Array.isArray(rel) ? rel[0] ?? null : rel;
 }
-
-/** Las 9 jornadas del torneo completo: 1-5 fase de grupos, 6-9 fase
- * final. El título de cada una se usa tanto en las pestañas como en el
- * panel — ver `claude/formato-torneo.md`. */
-const TITULO_JORNADA: Record<number, string> = {
-  1: "Jornada 1",
-  2: "Jornada 2",
-  3: "Jornada 3",
-  4: "Jornada 4",
-  5: "Jornada 5",
-  6: "Octavos de Final",
-  7: "Cuartos de Final",
-  8: "Semifinal",
-  9: "Gran Final",
-};
-
-const TEXTO_PENDIENTE: Record<number, string> = {
-  6: "Se define al cerrar la fase de grupos, con los 4 primeros de cada grupo.",
-  7: "Se define al cerrar los octavos de final.",
-  8: "Se define al cerrar los cuartos de final.",
-  9: "Un solo partido, un solo campeón — se define al cerrar la semifinal.",
-};
 
 /**
  * Calendario completo del torneo — todos los partidos agrupados por

@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/home/hero";
+import { CampeonBanner } from "@/components/home/campeon-banner";
 import { StatsBar } from "@/components/home/stats-bar";
 import { TorneoIntro } from "@/components/home/torneo-intro";
 import { Numeros } from "@/components/home/numeros";
@@ -18,6 +19,7 @@ export default function Home() {
       <SiteHeader />
       <main className="flex-1">
         <Hero />
+        <CampeonBanner />
         <StatsBar />
         <TorneoIntro />
         <Numeros />

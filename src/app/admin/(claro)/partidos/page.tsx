@@ -1,7 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { DIA_LABEL, SLOTS_POR_DIA, fechaYmdBogota, horaBogota } from "@/lib/franjas-horario";
+import { TITULO_JORNADA } from "@/lib/torneo/jornada-labels";
 import { PartidoAdminCard } from "./partido-admin-card";
 import { IniciarTorneoForm } from "./iniciar-torneo-form";
+import { IniciarOctavosForm } from "./iniciar-octavos-form";
+import { IniciarCuartosForm } from "./iniciar-cuartos-form";
+import { IniciarSemifinalForm } from "./iniciar-semifinal-form";
+import { IniciarFinalForm } from "./iniciar-final-form";
 
 type EquipoRel = { nombre_equipo: string } | { nombre_equipo: string }[] | null;
 
@@ -10,9 +15,18 @@ type MatchRow = {
   cancha: number;
   fecha_hora_programada: string;
   estado: string;
+  jornada: number | null;
   equipo_local: EquipoRel;
   equipo_visitante: EquipoRel;
 };
+
+/** ¿Están los `esperados` partidos de esta jornada generados y todos
+ * `finalizado`? Se usa para decidir cuándo mostrar el botón de la
+ * siguiente fase (cada una exige que la anterior esté 100% cerrada). */
+function faseCompleta(matches: MatchRow[], jornada: number, esperados: number): boolean {
+  const delaFase = matches.filter((m) => m.jornada === jornada);
+  return delaFase.length === esperados && delaFase.every((m) => m.estado === "finalizado");
+}
 
 function nombreEquipo(rel: EquipoRel): string {
   if (!rel) return "Por definir";
@@ -45,7 +59,7 @@ export default async function AdminPartidosPage() {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, cancha, fecha_hora_programada, estado, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)"
+      "id, cancha, fecha_hora_programada, estado, jornada, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)"
     )
     .order("fecha_hora_programada", { ascending: true });
 
@@ -148,6 +162,17 @@ export default async function AdminPartidosPage() {
   const totalProgramados = matches.filter((m) => m.estado === "programado").length;
   const totalFinalizados = matches.filter((m) => m.estado === "finalizado").length;
 
+  const partidosDeGrupos = matches.filter((m) => (m.jornada ?? 0) >= 1 && (m.jornada ?? 0) <= 5);
+  const faseGruposCompleta =
+    partidosDeGrupos.length === 60 && partidosDeGrupos.every((m) => m.estado === "finalizado");
+  const octavosExisten = matches.some((m) => m.jornada === 6);
+  const octavosCompletos = faseCompleta(matches, 6, 8);
+  const cuartosExisten = matches.some((m) => m.jornada === 7);
+  const cuartosCompletos = faseCompleta(matches, 7, 4);
+  const semifinalExisten = matches.some((m) => m.jornada === 8);
+  const semifinalCompletos = faseCompleta(matches, 8, 2);
+  const finalExisten = matches.some((m) => m.jornada === 9);
+
   return (
     <div className="space-y-8">
       <div>
@@ -173,12 +198,20 @@ export default async function AdminPartidosPage() {
           porHoraCancha.set(`${hora}-${m.cancha}`, m);
         }
 
+        const jornadaDelDia = partidosDelDia[0]?.jornada ?? null;
+        const tituloFase = jornadaDelDia !== null ? TITULO_JORNADA[jornadaDelDia] : null;
+
         return (
           <div key={fechaKey} className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
-            <div className="border-b border-black/10 px-5 py-3">
+            <div className="flex items-center justify-between gap-2 border-b border-black/10 px-5 py-3">
               <p className="font-display text-lg uppercase tracking-wide text-muneca-black">
                 {diaLabel} · {fechaLabel}
               </p>
+              {tituloFase && (
+                <span className="rounded-full bg-muneca-purple/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-muneca-purple">
+                  {tituloFase}
+                </span>
+              )}
             </div>
 
             {slots.length === 0 ? (
@@ -230,6 +263,49 @@ export default async function AdminPartidosPage() {
           </div>
         );
       })}
+
+      {faseGruposCompleta && !octavosExisten && (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm sm:p-10">
+          <h2 className="font-display text-2xl text-muneca-black">Fase de grupos cerrada</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-black/60">
+            Los 60 partidos de la fase de grupos ya están finalizados — cuando quieras, genera los
+            octavos de final.
+          </p>
+          <IniciarOctavosForm />
+        </div>
+      )}
+
+      {octavosCompletos && !cuartosExisten && (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm sm:p-10">
+          <h2 className="font-display text-2xl text-muneca-black">Octavos de final cerrados</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-black/60">
+            Los 8 partidos de octavos ya están finalizados — cuando quieras, genera los cuartos de
+            final.
+          </p>
+          <IniciarCuartosForm />
+        </div>
+      )}
+
+      {cuartosCompletos && !semifinalExisten && (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm sm:p-10">
+          <h2 className="font-display text-2xl text-muneca-black">Cuartos de final cerrados</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-black/60">
+            Los 4 partidos de cuartos ya están finalizados — cuando quieras, genera la semifinal.
+          </p>
+          <IniciarSemifinalForm />
+        </div>
+      )}
+
+      {semifinalCompletos && !finalExisten && (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm sm:p-10">
+          <h2 className="font-display text-2xl text-muneca-black">Semifinal cerrada</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-black/60">
+            Las 2 semifinales ya están finalizadas — cuando quieras, genera la gran final (y el tercer
+            puesto, si está habilitado).
+          </p>
+          <IniciarFinalForm />
+        </div>
+      )}
     </div>
   );
 }
