@@ -28,8 +28,8 @@ const ESTADOS_REPROGRAMABLES = ["programado", "suspendido"];
 
 /**
  * Reprograma un partido: cambia su fecha/hora y/o cancha, validando que
- * caiga dentro de la grilla fija de franjas del torneo (jueves y viernes
- * 7-10pm, sábado 5-9pm — ver `franjas-horario.ts`) y que no choque con
+ * caiga dentro de la grilla fija de franjas del torneo (jueves, viernes y
+ * sábado, 7pm y 8pm — ver `franjas-horario.ts`) y que no choque con
  * otro partido ya puesto en esa misma cancha+hora, ni con otro partido de
  * alguno de los dos equipos a esa misma hora (en la otra cancha).
  *

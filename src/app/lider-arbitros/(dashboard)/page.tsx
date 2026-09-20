@@ -70,7 +70,7 @@ export default async function LiderArbitrosCalendarioPage() {
       <div>
         <h1 className="font-display text-2xl uppercase tracking-wide text-muneca-black">Calendario</h1>
         <p className="mt-1 text-sm text-black/60">
-          Jueves y viernes 7:00–10:00 p.m., sábado 5:00–9:00 p.m. — un partido por hora, por cancha.
+          Jueves, viernes y sábado, 7:00 y 8:00 p.m. — un partido por hora, por cancha.
           Toca un partido para asignarle árbitros.
         </p>
       </div>

@@ -35,8 +35,8 @@ function nombreEquipo(rel: EquipoRel): string {
 
 /**
  * Panel para organizar, verificar y reprogramar partidos manualmente,
- * dentro de la grilla fija de franjas del torneo (jueves y viernes
- * 7:00-10:00 p. m., sábado 5:00-9:00 p. m., 2 canchas — ver
+ * dentro de la grilla fija de franjas del torneo (jueves, viernes y
+ * sábado, 7:00 y 8:00 p. m., 2 canchas — ver
  * `especificacion-funcional-ecosistema.md` §19.5).
  *
  * El calendario de la primera ronda se genera automáticamente al validar
@@ -178,8 +178,8 @@ export default async function AdminPartidosPage() {
       <div>
         <h1 className="font-display text-2xl uppercase tracking-wide text-muneca-black">Partidos</h1>
         <p className="mt-1 text-sm text-black/60">
-          Organiza, verifica y reprograma partidos dentro de las franjas fijas del torneo — jueves y
-          viernes 7:00-10:00 p. m., sábado 5:00-9:00 p. m., 2 canchas. {totalProgramados} programados ·{" "}
+          Organiza, verifica y reprograma partidos dentro de las franjas fijas del torneo — jueves,
+          viernes y sábado, 7:00 y 8:00 p. m., 2 canchas. {totalProgramados} programados ·{" "}
           {totalFinalizados} finalizados.
         </p>
       </div>

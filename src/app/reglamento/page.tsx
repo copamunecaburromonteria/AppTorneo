@@ -23,7 +23,7 @@ const SECCIONES: Seccion[] = [
       "Sede: Montería, Córdoba — dos canchas en el mismo complejo deportivo.",
       "24 equipos, máximo 15 jugadores por equipo.",
       "Todos los jugadores deben ser **mayores de 18 años**, con **cédula de ciudadanía** — no se aceptan menores de edad en ninguna categoría de esta edición.",
-      "Fecha tentativa de inicio: **29 de octubre**. Partidos jueves y viernes 7:00-10:00 p. m., sábado 5:00-9:00 p. m.",
+      "Fecha tentativa de inicio: **29 de octubre**. Partidos jueves, viernes y sábado, **7:00 y 8:00 p. m.**",
       "Un jugador solo puede estar inscrito en la plantilla de **un equipo** durante el torneo.",
     ],
   },

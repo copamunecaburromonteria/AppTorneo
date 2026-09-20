@@ -22,11 +22,9 @@
  *   reúne los 12 partidos de esa ronda en los 4 grupos (3 por grupo). Se
  *   reparte 1 partido de cada grupo por día para que los 4 grupos queden
  *   balanceados entre jueves/viernes/sábado en cada jornada.
- * - Horarios oficiales: jueves y viernes 7-8-9pm (3 franjas), sábado
- *   5-6-7-8-9pm (5 franjas) — ver `franjas-horario.ts`. 2 canchas. No hace
- *   falta usar todas las franjas disponibles: con 4 partidos/día y hasta
- *   6-10 franjas libres por día, sobra margen para rotar hora y cancha
- *   por equipo entre jornadas.
+ * - Horarios oficiales: jueves, viernes y sábado, 7pm y 8pm (2 franjas
+ *   cada día) — ver `franjas-horario.ts`. 2 canchas, 4 partidos/día
+ *   (2 franjas × 2 canchas), exactamente lo que necesita cada jornada.
  * - Como cada equipo juega una sola vez por jornada (una vez por semana),
  *   el "descanso" entre dos partidos consecutivos de un mismo equipo
  *   queda garantizado en ~7 días por el simple hecho de pertenecer a
