@@ -592,3 +592,207 @@ Copa Muñeca e'Burro — Montería, Córdoba`;
 
   return { subject: `Pago confirmado — ${params.nombreEquipo}`, html, text };
 }
+
+// --- Cargos por tarjetas (amarilla/azul/roja) — ver `cargos_tarjetas` y
+// `claude/reglamento.md` punto 12. Un jugador con cargos sin pagar no debe
+// jugar hasta saldarlos; el sistema no puede impedirlo técnicamente (no hay
+// alineación/titulares en la plataforma), así que estos correos son la forma
+// de presionar el pago antes del próximo partido.
+
+type ItemCargoTarjeta = { jugadorNombre: string; tipo: string; monto: number };
+
+function tablaCargos(items: ItemCargoTarjeta[]): string {
+  const filas = items
+    .map(
+      (i) => `
+      <tr>
+        <td style="padding:8px 16px;color:${COLOR.grayText};">${i.jugadorNombre}</td>
+        <td style="padding:8px 16px;color:${COLOR.grayText};">${i.tipo}</td>
+        <td style="padding:8px 16px;text-align:right;font-weight:bold;">${formatCOP(i.monto)}</td>
+      </tr>`
+    )
+    .join("");
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;background-color:#FAFAFA;border-radius:12px;">
+      ${filas}
+    </table>`;
+}
+
+function textoCargos(items: ItemCargoTarjeta[]): string {
+  return items.map((i) => `- ${i.jugadorNombre} · ${i.tipo} · ${formatCOP(i.monto)}`).join("\n");
+}
+
+/**
+ * Aviso al delegado el día después de que se registró una tarjeta cobrable —
+ * primer contacto, antes de que sea urgente. No es un recordatorio de
+ * partido próximo (ver `correoRecordatorioCargoTarjeta` para eso).
+ */
+export function correoCargoTarjetaGenerado(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  items: ItemCargoTarjeta[];
+  total: number;
+}): EmailContent {
+  const html = layout(
+    `${params.nombreEquipo} tiene tarjetas por pagar`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">🟨 Cargo por tarjeta</p>
+    <p>Hola ${params.delegadoNombre},</p>
+    <p>En el último partido de <strong>${params.nombreEquipo}</strong> se registraron tarjetas con cargo económico, según el reglamento del torneo:</p>
+    ${tablaCargos(params.items)}
+    ${montoDestacado("Total a pagar", params.total)}
+    ${cajaImportante(
+      "Importante",
+      "Un jugador con tarjetas sin pagar no debe jugar el próximo partido hasta saldar la deuda."
+    )}
+    ${boton(`${SITE_URL}/portal`, "Pagar desde el portal")}
+    <p style="margin-top:20px;font-size:13px;color:${COLOR.grayText};">También se puede pagar por jugador, individualmente, en ${SITE_URL}/pagos-tarjetas.</p>
+    `
+  );
+
+  const text = `Hola ${params.delegadoNombre},
+
+En el último partido de ${params.nombreEquipo} se registraron tarjetas con cargo económico:
+
+${textoCargos(params.items)}
+
+Total a pagar: ${formatCOP(params.total)}
+
+Importante: un jugador con tarjetas sin pagar no debe jugar el próximo partido hasta saldar la deuda.
+
+Pagar desde el portal: ${SITE_URL}/portal
+También se puede pagar por jugador, individualmente, en ${SITE_URL}/pagos-tarjetas.
+
+Copa Muñeca e'Burro — Montería, Córdoba`;
+
+  return {
+    subject: `🟨 ${params.nombreEquipo} tiene tarjetas por pagar (${formatCOP(params.total)})`,
+    html,
+    text,
+  };
+}
+
+/**
+ * Recordatorio urgente, 24 horas antes del próximo partido programado del
+ * equipo, mientras la deuda de tarjetas siga sin pagar.
+ */
+export function correoRecordatorioCargoTarjeta(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  items: ItemCargoTarjeta[];
+  total: number;
+  fechaProximoPartido: string;
+}): EmailContent {
+  const html = layout(
+    `${params.nombreEquipo} juega mañana y tiene tarjetas sin pagar`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">⚠️ Recordatorio urgente</p>
+    <p>Hola ${params.delegadoNombre},</p>
+    <p><strong>${params.nombreEquipo}</strong> juega mañana y todavía tiene tarjetas sin pagar:</p>
+    ${tablaCargos(params.items)}
+    ${montoDestacado("Total a pagar", params.total)}
+    ${cajaImportante(
+      "El jugador no debe jugar si no se paga",
+      "Según el reglamento, un jugador con tarjetas sin pagar no debe jugar hasta saldar la deuda. Paga antes del partido para evitar problemas en cancha."
+    )}
+    ${boton(`${SITE_URL}/portal`, "Pagar ahora")}
+    `
+  );
+
+  const text = `Hola ${params.delegadoNombre},
+
+${params.nombreEquipo} juega mañana y todavía tiene tarjetas sin pagar:
+
+${textoCargos(params.items)}
+
+Total a pagar: ${formatCOP(params.total)}
+
+Importante: un jugador con tarjetas sin pagar no debe jugar hasta saldar la deuda. Paga antes del partido para evitar problemas en cancha.
+
+Pagar ahora: ${SITE_URL}/portal
+
+Copa Muñeca e'Burro — Montería, Córdoba`;
+
+  return {
+    subject: `⚠️ ${params.nombreEquipo} juega mañana y debe tarjetas sin pagar`,
+    html,
+    text,
+  };
+}
+
+/** Confirmación al delegado cuando se paga un lote de cargos de tarjetas —
+ * ya sea desde el portal (pago grupal) o desde /pagos-tarjetas (un jugador
+ * pagando las suyas). */
+export function correoCargoTarjetaPagado(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  items: ItemCargoTarjeta[];
+  total: number;
+}): EmailContent {
+  const html = layout(
+    `Pago de tarjetas confirmado — ${params.nombreEquipo}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">✅ Pago confirmado</p>
+    <p>Hola ${params.delegadoNombre},</p>
+    <p>Recibimos el pago de estas tarjetas de <strong>${params.nombreEquipo}</strong>:</p>
+    ${tablaCargos(params.items)}
+    ${montoDestacado("Total pagado", params.total)}
+    <p>Los jugadores ya quedan habilitados para jugar.</p>
+    `
+  );
+
+  const text = `Hola ${params.delegadoNombre},
+
+Recibimos el pago de estas tarjetas de ${params.nombreEquipo}:
+
+${textoCargos(params.items)}
+
+Total pagado: ${formatCOP(params.total)}
+
+Los jugadores ya quedan habilitados para jugar.
+
+Copa Muñeca e'Burro — Montería, Córdoba`;
+
+  return { subject: `Pago de tarjetas confirmado — ${params.nombreEquipo}`, html, text };
+}
+
+/** Aviso interno al admin cuando se paga un lote de cargos de tarjetas por
+ * un medio automático (Wompi) — mismo patrón que `correoNotificacionPagoAdmin`. */
+export function correoNotificacionCargoTarjetaAdmin(params: {
+  nombreEquipo: string;
+  items: ItemCargoTarjeta[];
+  total: number;
+  metodoPago: string;
+  referencia: string;
+}): EmailContent {
+  const html = layout(
+    `Pago de tarjetas recibido: ${params.nombreEquipo}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">💰 Pago de tarjetas recibido por Wompi</p>
+    <p><strong>${params.nombreEquipo}</strong> pagó estas tarjetas en línea:</p>
+    ${tablaCargos(params.items)}
+    ${montoDestacado("Total", params.total)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;background-color:#FAFAFA;border-radius:12px;">
+      <tr><td style="padding:10px 16px;color:${COLOR.grayText};">Medio de pago</td><td style="padding:10px 16px;text-align:right;">${params.metodoPago}</td></tr>
+      <tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Referencia Wompi</td><td style="padding:4px 16px 10px;text-align:right;">${params.referencia}</td></tr>
+    </table>
+    ${boton(`${SITE_URL}/admin/cargos-tarjetas`, "Ver en el panel admin")}
+    `
+  );
+
+  const text = `${params.nombreEquipo} pagó estas tarjetas en línea:
+
+${textoCargos(params.items)}
+
+Total: ${formatCOP(params.total)}
+Medio de pago: ${params.metodoPago}
+Referencia Wompi: ${params.referencia}
+
+Ver en el panel admin: ${SITE_URL}/admin/cargos-tarjetas`;
+
+  return {
+    subject: `💰 Pago de tarjetas recibido: ${params.nombreEquipo} (${formatCOP(params.total)})`,
+    html,
+    text,
+  };
+}

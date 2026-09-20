@@ -24,7 +24,7 @@ const TIPO_ICONO: Record<string, string> = {
   cambio: "🔁",
 };
 
-type Jugador = { id: string; nombre: string; numero_camiseta: number | null };
+type Jugador = { id: string; nombre: string; numero_camiseta: number | null; tieneDeuda?: boolean };
 
 export default async function PartidoOperadorPage({
   params,
@@ -58,6 +58,7 @@ export default async function PartidoOperadorPage({
     { data: eventosRaw },
     { data: arbitrosAsignadosRaw },
     { data: arbitrosActivos },
+    { data: cargosPendientesRaw },
   ] = await Promise.all([
     admin
       .from("players")
@@ -85,7 +86,17 @@ export default async function PartidoOperadorPage({
       .order("creado_at", { ascending: false }),
     admin.from("partido_arbitros").select("arbitro_id, rol, arbitro:arbitro_id(nombre)").eq("match_id", matchId),
     admin.from("arbitros").select("id, nombre").eq("activo", true).order("nombre", { ascending: true }),
+    admin
+      .from("cargos_tarjetas")
+      .select("jugador_id")
+      .eq("estado", "pendiente")
+      .in(
+        "team_id",
+        [partido.equipo_local_id, partido.equipo_visitante_id].filter((id): id is string => Boolean(id))
+      ),
   ]);
+
+  const jugadoresConDeuda = new Set((cargosPendientesRaw ?? []).map((c) => c.jugador_id as string));
 
   const eventos = (eventosRaw ?? []).map((e) => {
     const jugador = Array.isArray(e.jugador) ? e.jugador[0] : e.jugador;
@@ -146,10 +157,16 @@ export default async function PartidoOperadorPage({
             matchId={partido.id}
             equipoLocalId={partido.equipo_local_id}
             equipoLocalNombre={local?.nombre_equipo ?? "Local"}
-            jugadoresLocal={jugadoresLocal ?? []}
+            jugadoresLocal={(jugadoresLocal ?? []).map((j) => ({
+              ...j,
+              tieneDeuda: jugadoresConDeuda.has(j.id),
+            }))}
             equipoVisitanteId={partido.equipo_visitante_id}
             equipoVisitanteNombre={visitante?.nombre_equipo ?? "Visitante"}
-            jugadoresVisitante={jugadoresVisitante ?? []}
+            jugadoresVisitante={(jugadoresVisitante ?? []).map((j) => ({
+              ...j,
+              tieneDeuda: jugadoresConDeuda.has(j.id),
+            }))}
           />
         )}
 

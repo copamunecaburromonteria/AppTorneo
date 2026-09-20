@@ -11,6 +11,8 @@ import {
   eliminarJugador,
 } from "@/app/portal/actions";
 import { PagarWompiButton } from "@/app/portal/inscripcion/pagar-wompi-button";
+import { PagarCargosEquipoButton } from "@/app/portal/pagar-cargos-equipo-button";
+import { LABEL_TIPO_TARJETA } from "@/lib/pagos/confirmar-cargos";
 
 function formatCOP(valor: number) {
   return new Intl.NumberFormat("es-CO", {
@@ -119,6 +121,7 @@ export default async function PortalPage({
     { data: pago },
     { data: config },
     estadoPlantilla,
+    { data: cargosRaw },
   ] = await Promise.all([
     supabase
       .from("teams")
@@ -135,6 +138,12 @@ export default async function PortalPage({
       .maybeSingle(),
     supabase.from("torneo_config").select("max_jugadores_por_equipo").eq("id", 1).single(),
     evaluarEstadoPlantilla(supabase, teamId),
+    supabase
+      .from("cargos_tarjetas")
+      .select("id, tipo_tarjeta, monto, jugador:jugador_id(nombre)")
+      .eq("team_id", teamId)
+      .eq("estado", "pendiente")
+      .order("created_at", { ascending: false }),
   ]);
 
   const maxJugadores = config?.max_jugadores_por_equipo ?? 15;
@@ -145,6 +154,17 @@ export default async function PortalPage({
   const proximaCuotaPendiente = cuotas.find((c: { estado: string }) => c.estado === "pendiente");
   const compraUniformeCopa = Boolean(team?.compra_uniforme_copa);
   const inscripcionIncompleta = (players ?? []).length === 0;
+
+  const cargosPendientes = (cargosRaw ?? []).map((c) => {
+    const jugador = Array.isArray(c.jugador) ? c.jugador[0] : c.jugador;
+    return {
+      id: c.id as string,
+      tipo: LABEL_TIPO_TARJETA[c.tipo_tarjeta as string] ?? (c.tipo_tarjeta as string),
+      monto: Number(c.monto),
+      jugadorNombre: jugador?.nombre ?? "—",
+    };
+  });
+  const totalCargos = cargosPendientes.reduce((sum, c) => sum + c.monto, 0);
 
   return (
     <div className="space-y-6">
@@ -215,6 +235,35 @@ export default async function PortalPage({
           </ul>
         )}
       </section>
+
+      {cargosPendientes.length > 0 && (
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display flex items-center gap-2 text-xl uppercase tracking-wide text-rose-700">
+                🟨 Jugadores con tarjeta
+              </h2>
+              <p className="mt-1 text-sm text-rose-700/80">
+                Un jugador con tarjetas sin pagar no debe jugar hasta saldar la deuda.
+              </p>
+            </div>
+            <PagarCargosEquipoButton total={formatCOP(totalCargos)} />
+          </div>
+          <ul className="mt-4 divide-y divide-rose-200/60 rounded-xl bg-white/60">
+            {cargosPendientes.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
+                <span className="text-muneca-black/80">
+                  {c.jugadorNombre} — {c.tipo}
+                </span>
+                <span className="font-semibold text-muneca-black">{formatCOP(c.monto)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-rose-700/60">
+            También se puede pagar por jugador, individualmente, en /pagos-tarjetas.
+          </p>
+        </section>
+      )}
 
       <Card titulo="Datos del delegado">
         <form action={guardarDelegado} className="grid gap-4 sm:grid-cols-2">

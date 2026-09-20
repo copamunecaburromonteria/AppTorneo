@@ -100,6 +100,7 @@ export default async function EquipoPage({
     { data: teamGroupRaw },
     { data: matchesRaw },
     { data: fairPlayRaw },
+    { data: deudaTarjetasRaw },
   ] = await Promise.all([
     supabase
       .from("v_players_public")
@@ -122,6 +123,11 @@ export default async function EquipoPage({
     supabase
       .from("v_fair_play")
       .select("amarillas, azules, rojas, puntos_fair_play")
+      .eq("team_id", teamId)
+      .maybeSingle(),
+    supabase
+      .from("v_equipos_con_deuda_tarjetas")
+      .select("jugadores_con_deuda")
       .eq("team_id", teamId)
       .maybeSingle(),
   ]);
@@ -188,6 +194,7 @@ export default async function EquipoPage({
   const amarillas = fairPlayRaw?.amarillas ?? 0;
   const azules = fairPlayRaw?.azules ?? 0;
   const rojas = fairPlayRaw?.rojas ?? 0;
+  const jugadoresConDeuda = deudaTarjetasRaw?.jugadores_con_deuda ?? 0;
 
   const estadoBadge = ESTADO_BADGE[team.estado_inscripcion] ?? ESTADO_BADGE.pendiente;
 
@@ -477,6 +484,27 @@ export default async function EquipoPage({
                     </div>
                   </div>
                 </div>
+
+                {jugadoresConDeuda > 0 && (
+                  <Link
+                    href="/pagos-tarjetas"
+                    className="mt-2 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 transition-colors hover:bg-amber-500/15"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-base">
+                      ⚠️
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-amber-300">
+                        {jugadoresConDeuda === 1
+                          ? "1 jugador con tarjeta pendiente"
+                          : `${jugadoresConDeuda} jugadores con tarjeta pendiente`}
+                      </p>
+                      <p className="text-xs text-amber-200/60">
+                        Recuerda: no puede jugar quien tenga tarjetas sin pagar. Toca para pagar.
+                      </p>
+                    </div>
+                  </Link>
+                )}
               </div>
 
               {/* Cuerpo técnico */}

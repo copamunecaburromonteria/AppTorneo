@@ -10,7 +10,7 @@ type Seccion = {
   items: string[];
 };
 
-// Contenido fuente: `claude/reglamento.md` en el proyecto. Los 18 puntos
+// Contenido fuente: `claude/reglamento.md` en el proyecto. Los 19 puntos
 // ya decididos con Fernando (formato deportivo + comportamiento operativo,
 // entrevista 2026-09-14) — ver el historial de decisiones al final de ese
 // documento. `**texto**` se resalta en negrita al render.
@@ -114,7 +114,9 @@ const SECCIONES: Seccion[] = [
       "Tarjeta amarilla: **$5.000 COP**, cargado al equipo (no al jugador), desglosado por jugador y tarjeta.",
       "Tarjeta azul: **$7.000 COP**, mismo mecanismo.",
       "Tarjeta roja: **$10.000 COP**, mismo mecanismo.",
-      "Es un cargo aparte de la cuota de inscripción — se genera automáticamente en el portal del equipo y se notifica al delegado.",
+      "Es un cargo aparte de la cuota de inscripción — se genera automáticamente al registrarse la tarjeta y se notifica al delegado por correo.",
+      "Un jugador con tarjetas sin pagar **no debe jugar el siguiente partido de su equipo** hasta saldar la deuda.",
+      "Se puede pagar en línea por jugador (cédula + nombre) en /pagos-tarjetas, o de una sola vez por todo el equipo desde el portal del equipo.",
     ],
   },
   {
@@ -168,6 +170,16 @@ const SECCIONES: Seccion[] = [
       "Al inscribirse, el delegado acepta el uso de fotos/videos del equipo y sus jugadores en la galería del torneo, redes sociales y demás contenido oficial de la Copa — es un consentimiento a nivel de equipo, no individual por jugador.",
     ],
   },
+  {
+    numero: 19,
+    titulo: "Partidos de cada equipo",
+    items: [
+      "Los grupos (A, B, C y D) se arman de forma **automática y aleatoria** en el momento en que se da inicio oficial al torneo — no antes. El orden en que un equipo se inscribió **no determina** su grupo ni su posición dentro de él: inscribirse primero no garantiza, por ejemplo, quedar como \"Equipo A1\".",
+      "Mientras se completan los 24 cupos, la estructura es: Grupo A (Equipo A1 a Equipo A6), Grupo B (Equipo B1 a Equipo B6), Grupo C (Equipo C1 a Equipo C6) y Grupo D (Equipo D1 a Equipo D6) — nombres de ejemplo para explicar el formato, no equipos reales todavía.",
+      "Una vez sorteados los grupos, cada equipo juega **5 partidos garantizados** de fase de grupos, todos contra todos dentro de su grupo (ver punto 2).",
+      "El calendario y resultados reales de cada equipo aparecen en su página en /equipos, y el calendario completo del torneo en /partidos — ahí se actualizan automáticamente a medida que se juegan los partidos.",
+    ],
+  },
 ];
 
 /** Resalta fragmentos `**texto**` como negrita, sin traer un parser de Markdown. */
@@ -190,7 +202,7 @@ function ConNegritas({ texto }: { texto: string }) {
 
 /**
  * Reglamento oficial — contenido estático (no depende de Supabase), a
- * partir de `claude/reglamento.md`: 18 puntos que combinan el formato
+ * partir de `claude/reglamento.md`: 19 puntos que combinan el formato
  * deportivo ya definido (`formato-torneo.md`) con el comportamiento
  * operativo del torneo, resuelto con Fernando por entrevista (2026-09-14).
  */

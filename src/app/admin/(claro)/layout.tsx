@@ -62,6 +62,7 @@ export default async function AdminClaroLayout({
     { count: partidosCount },
     { count: arbitrosCount },
     { count: operadoresCount },
+    { count: cargosCount },
   ] = await Promise.all([
     supabase
       .from("teams")
@@ -76,6 +77,10 @@ export default async function AdminClaroLayout({
     supabase.from("matches").select("*", { count: "exact", head: true }),
     supabase.from("arbitros").select("*", { count: "exact", head: true }),
     supabase.from("operadores").select("*", { count: "exact", head: true }),
+    supabase
+      .from("cargos_tarjetas")
+      .select("*", { count: "exact", head: true })
+      .eq("estado", "pendiente"),
   ]);
 
   const navCounts = {
@@ -84,6 +89,7 @@ export default async function AdminClaroLayout({
     partidos: partidosCount ?? 0,
     arbitros: arbitrosCount ?? 0,
     operadores: operadoresCount ?? 0,
+    cargos: cargosCount ?? 0,
   };
 
   return (

@@ -16,6 +16,49 @@ const TIPOS_EVENTO = new Set([
   "cambio",
 ]);
 
+const TIPOS_TARJETA = new Set(["tarjeta_amarilla", "tarjeta_azul", "tarjeta_roja"]);
+
+/**
+ * Genera el cargo económico de una tarjeta recién registrada — una fila en
+ * `cargos_tarjetas` con el monto vigente de `torneo_config`, lista para que
+ * el jugador (por cédula, `/pagos-tarjetas`) o el delegado (desde el portal,
+ * pago grupal) la salden más adelante. No bloquea el registro del evento si
+ * falla: el evento deportivo ya quedó guardado, un cargo que no se pudo
+ * generar se puede corregir después desde el panel admin.
+ */
+async function generarCargoTarjeta(
+  admin: ReturnType<typeof createAdminClient>,
+  params: { matchEventId: string; jugadorId: string; teamId: string; matchId: string; tipo: string }
+) {
+  if (!TIPOS_TARJETA.has(params.tipo)) return;
+
+  const { data: config } = await admin
+    .from("torneo_config")
+    .select("monto_tarjeta_amarilla, monto_tarjeta_azul, monto_tarjeta_roja")
+    .eq("id", 1)
+    .single();
+  if (!config) return;
+
+  const montosPorTipo: Record<string, number> = {
+    tarjeta_amarilla: Number(config.monto_tarjeta_amarilla),
+    tarjeta_azul: Number(config.monto_tarjeta_azul),
+    tarjeta_roja: Number(config.monto_tarjeta_roja),
+  };
+  const monto = montosPorTipo[params.tipo];
+  if (monto == null || Number.isNaN(monto)) return;
+
+  const { error } = await admin.from("cargos_tarjetas").insert({
+    match_event_id: params.matchEventId,
+    jugador_id: params.jugadorId,
+    team_id: params.teamId,
+    match_id: params.matchId,
+    tipo_tarjeta: params.tipo,
+    monto,
+  });
+
+  if (error) console.error("[cargos_tarjetas] No se pudo generar el cargo:", error.message);
+}
+
 async function requireOperador() {
   const sesion = await obtenerSesionOperador();
   if (!sesion) redirect("/operador/login");
@@ -227,20 +270,34 @@ export async function registrarEvento(
     return { success: false, error: "El minuto debe ser un número entre 0 y 120." };
   }
 
-  const { error } = await admin.from("match_events").insert({
-    match_id: matchId,
-    tipo,
-    equipo_id: equipoId,
-    jugador_id: jugadorId,
-    minuto,
-    creado_por: sesion.operadorId,
-  });
+  const { data: eventoInsertado, error } = await admin
+    .from("match_events")
+    .insert({
+      match_id: matchId,
+      tipo,
+      equipo_id: equipoId,
+      jugador_id: jugadorId,
+      minuto,
+      creado_por: sesion.operadorId,
+    })
+    .select("id")
+    .single();
 
   if (error) return { success: false, error: `No se pudo registrar el evento: ${error.message}` };
 
   if (tipo === "gol" || tipo === "autogol") {
     const { local, visitante } = await obtenerEquipos(admin, matchId);
     if (local && visitante) await recalcularMarcador(admin, matchId, local, visitante);
+  }
+
+  if (TIPOS_TARJETA.has(tipo) && eventoInsertado) {
+    await generarCargoTarjeta(admin, {
+      matchEventId: eventoInsertado.id as string,
+      jugadorId,
+      teamId: equipoId,
+      matchId,
+      tipo,
+    });
   }
 
   revalidatePath(`/operador/partido/${matchId}`);
@@ -268,6 +325,18 @@ export async function deshacerUltimoEvento(matchId: string): Promise<ResultadoAc
   if (ultimo.tipo === "gol" || ultimo.tipo === "autogol") {
     const { local, visitante } = await obtenerEquipos(admin, matchId);
     if (local && visitante) await recalcularMarcador(admin, matchId, local, visitante);
+  }
+
+  // Si el evento deshecho era una tarjeta y su cargo seguía pendiente, se
+  // anula también — un cargo ya pagado se deja intacto (sería un reembolso,
+  // caso que el admin debe resolver a mano, no algo que se pueda deducir
+  // solo de "se deshizo el evento").
+  if (TIPOS_TARJETA.has(ultimo.tipo)) {
+    await admin
+      .from("cargos_tarjetas")
+      .update({ estado: "anulado" })
+      .eq("match_event_id", ultimo.id)
+      .eq("estado", "pendiente");
   }
 
   revalidatePath(`/operador/partido/${matchId}`);

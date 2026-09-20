@@ -3,7 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { registrarEvento } from "@/app/operador/actions";
 
-type Jugador = { id: string; nombre: string; numero_camiseta: number | null };
+type Jugador = { id: string; nombre: string; numero_camiseta: number | null; tieneDeuda?: boolean };
 
 type EstadoForm = { success: boolean; error: string };
 const estadoInicial: EstadoForm = { success: false, error: "" };
@@ -95,11 +95,18 @@ export function FormularioEvento({
         </option>
         {jugadores.map((j) => (
           <option key={j.id} value={j.id}>
+            {j.tieneDeuda ? "⚠️ " : ""}
             {j.numero_camiseta != null ? `#${j.numero_camiseta} ` : ""}
             {j.nombre}
+            {j.tieneDeuda ? " — debe tarjetas" : ""}
           </option>
         ))}
       </select>
+      {jugadores.some((j) => j.tieneDeuda) && (
+        <p className="text-xs text-amber-400">
+          ⚠️ Jugadores marcados con tarjetas sin pagar no deberían jugar hasta saldar la deuda.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <select
