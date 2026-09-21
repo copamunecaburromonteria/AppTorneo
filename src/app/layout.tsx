@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Montserrat, Permanent_Marker } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
+
+// ID de medición de Google Analytics 4 (Fernando, 2026-09-21) — público por
+// naturaleza (viaja en el HTML de cualquier sitio con GA), no es secreto,
+// por eso NEXT_PUBLIC_GA_MEASUREMENT_ID viene con valor real en
+// .env.local.example en vez de vacío, mismo criterio que
+// NEXT_PUBLIC_SUPABASE_URL.
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const bebas = Bebas_Neue({
   variable: "--font-bebas",
@@ -39,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-muneca-black text-muneca-white">
         {children}
       </body>
+      {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </html>
   );
 }
