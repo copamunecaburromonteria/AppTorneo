@@ -1,4 +1,6 @@
+import { Users, FileText, DollarSign, CalendarDays, ShieldCheck, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { StatCard, type StatCardColor } from "@/components/admin/stat-card";
 
 function formatCOP(valor: number): string {
   return new Intl.NumberFormat("es-CO", {
@@ -8,7 +10,13 @@ function formatCOP(valor: number): string {
   }).format(valor);
 }
 
-type Stat = { label: string; valor: string; detalle: string };
+type Stat = {
+  label: string;
+  valor: string;
+  detalle: string;
+  icon: LucideIcon;
+  color: StatCardColor;
+};
 
 /**
  * Fila de estadísticas del panel admin — se muestra igual en todas las
@@ -54,37 +62,50 @@ export async function AdminHeaderStats() {
       label: "Equipos validados",
       valor: `${validados ?? 0}/${cupo || "—"}`,
       detalle: "cupo del torneo",
+      icon: Users,
+      color: "purple",
     },
     {
       label: "Preinscritos",
       valor: `${preinscritos ?? 0}`,
       detalle: `${invitados ?? 0} invitados esperando pago`,
+      icon: FileText,
+      color: "yellow",
     },
     {
       label: "Recaudado",
       valor: formatCOP(recaudado),
       detalle: metaInscripciones > 0 ? `de ${formatCOP(metaInscripciones)} en inscripciones` : "en inscripciones",
+      icon: DollarSign,
+      color: "green",
     },
     {
       label: "Partidos programados",
       valor: `${partidosProgramados ?? 0}`,
       detalle: `${partidosFinalizados ?? 0} finalizados`,
+      icon: CalendarDays,
+      color: "purple",
     },
     {
       label: "Árbitros activos",
       valor: `${arbitrosActivos ?? 0}`,
       detalle: "en la nómina",
+      icon: ShieldCheck,
+      color: "red",
     },
   ];
 
   return (
     <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
       {stats.map((s) => (
-        <div key={s.label} className="rounded-xl border border-black/10 bg-white px-4 py-3 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-black/40">{s.label}</p>
-          <p className="font-display mt-0.5 text-xl text-muneca-black sm:text-2xl">{s.valor}</p>
-          <p className="text-xs text-black/40">{s.detalle}</p>
-        </div>
+        <StatCard
+          key={s.label}
+          icon={s.icon}
+          color={s.color}
+          label={s.label}
+          valor={s.valor}
+          detalle={s.detalle}
+        />
       ))}
     </div>
   );
