@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { armarLinkWhatsApp } from "@/lib/whatsapp";
 import type { PatrocinadorPublico } from "@/lib/patrocinadores/tipos";
+import { SponsorTracker } from "./sponsor-tracker";
 
 /**
  * Fase 2 del sistema de espacios de patrocinio (2026-09-21): estos
@@ -26,6 +27,12 @@ import type { PatrocinadorPublico } from "@/lib/patrocinadores/tipos";
  * página (no hay subasta ni prioridad — ver conversación con Fernando
  * 2026-09-20: "los ads de Google" era la referencia, pero acá alcanza con
  * algo mucho más simple).
+ *
+ * Fase 3 (2026-09-21): cada logo/link renderizado queda envuelto en
+ * `SponsorTracker`, que mide exposición e interacción vía Google Analytics
+ * 4 (eventos `sponsor_impression` / `sponsor_click`) — no se construyó un
+ * sistema de tracking propio en Supabase, se reusa el GA que ya cubre todo
+ * el sitio.
  */
 
 const WHATSAPP_TORNEO = "573126070588";
@@ -47,7 +54,15 @@ async function patrocinadorDelSlot(slot: string): Promise<PatrocinadorPublico | 
   return candidatos[Math.floor(Math.random() * candidatos.length)];
 }
 
-function LogoInline({ patrocinador, alto }: { patrocinador: PatrocinadorPublico; alto: number }) {
+function LogoInline({
+  patrocinador,
+  alto,
+  slot,
+}: {
+  patrocinador: PatrocinadorPublico;
+  alto: number;
+  slot: string;
+}) {
   const img = (
     <Image
       src={patrocinador.logo_url}
@@ -58,7 +73,7 @@ function LogoInline({ patrocinador, alto }: { patrocinador: PatrocinadorPublico;
       className="inline-block object-contain align-middle"
     />
   );
-  return patrocinador.link_url ? (
+  const contenido = patrocinador.link_url ? (
     <Link
       href={patrocinador.link_url}
       target="_blank"
@@ -69,6 +84,17 @@ function LogoInline({ patrocinador, alto }: { patrocinador: PatrocinadorPublico;
     </Link>
   ) : (
     img
+  );
+
+  return (
+    <SponsorTracker
+      sponsorId={patrocinador.id}
+      sponsorNombre={patrocinador.nombre}
+      nivel={patrocinador.nivel}
+      slot={slot}
+    >
+      {contenido}
+    </SponsorTracker>
   );
 }
 
@@ -94,7 +120,7 @@ export async function SponsorPresentadoPor({
 
   return (
     <p className={className}>
-      {etiqueta} <LogoInline patrocinador={patrocinador} alto={22} />
+      {etiqueta} <LogoInline patrocinador={patrocinador} alto={22} slot={slot} />
     </p>
   );
 }
@@ -112,7 +138,7 @@ export async function SponsorPresentadoPorInline({ slot }: { slot: string }) {
   return (
     <>
       {" "}
-      · presentado por <LogoInline patrocinador={patrocinador} alto={18} />
+      · presentado por <LogoInline patrocinador={patrocinador} alto={18} slot={slot} />
     </>
   );
 }
@@ -156,6 +182,18 @@ export async function SponsorSlotCaja({ slot, titulo }: { slot: string; titulo?:
       className="h-full w-full object-contain"
     />
   );
+  const contenidoLogo = patrocinador.link_url ? (
+    <Link
+      href={patrocinador.link_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="h-full w-full"
+    >
+      {logo}
+    </Link>
+  ) : (
+    logo
+  );
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center">
@@ -163,18 +201,14 @@ export async function SponsorSlotCaja({ slot, titulo }: { slot: string; titulo?:
         {titulo ?? "Patrocinador"}
       </p>
       <div className="mt-3 flex h-24 items-center justify-center rounded-xl bg-white/5 p-3 sm:h-28">
-        {patrocinador.link_url ? (
-          <Link
-            href={patrocinador.link_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-full w-full"
-          >
-            {logo}
-          </Link>
-        ) : (
-          logo
-        )}
+        <SponsorTracker
+          sponsorId={patrocinador.id}
+          sponsorNombre={patrocinador.nombre}
+          nivel={patrocinador.nivel}
+          slot={slot}
+        >
+          {contenidoLogo}
+        </SponsorTracker>
       </div>
     </div>
   );
