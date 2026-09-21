@@ -4,13 +4,16 @@
  * ver conversación con Fernando 2026-09-20/21). Cada slot es un lugar fijo
  * de la plataforma donde puede aparecer un patrocinador.
  *
- * Fase 1 (2026-09-21) solo conecta `home-slider` de verdad (el carrusel del
- * Home, `src/components/home/patrocinadores.tsx`). Los demás quedan listados
- * aquí como catálogo de inventario — se ven en el panel admin marcados
- * "Próximamente" para que Fernando ya visualice qué se puede vender, pero no
- * son seleccionables todavía porque el componente reutilizable `SponsorSlot`
- * que los va a mostrar (Fase 2) no está construido. Cuando se construya cada
- * uno, basta con marcar `disponible: true` acá.
+ * Fase 1 (2026-09-21) conectó `home-slider` (el carrusel del Home,
+ * `src/components/home/patrocinadores.tsx`). Fase 2 (mismo día) construyó
+ * el componente reutilizable `SponsorSlot`
+ * (`src/components/patrocinadores/sponsor-slot.tsx`) y lo desplegó en
+ * tabla de posiciones, votación MVP, resultado de MVP del partido y perfil
+ * de equipo — quedan marcados `disponible: true`.
+ *
+ * `galeria` sigue en `disponible: false` porque la página de galería en sí
+ * (punto 25 del brief) todavía no está construida — no hay dónde montar el
+ * slot. Se activa cuando exista esa página.
  */
 
 export type SlotPatrocinio = {
@@ -22,9 +25,9 @@ export type SlotPatrocinio = {
 
 export const SLOTS_PATROCINIO: SlotPatrocinio[] = [
   { id: "home-slider", label: "Carrusel de patrocinadores — Home", disponible: true },
-  { id: "tabla-posiciones", label: '"Presentado por" — Tabla de posiciones', disponible: false },
-  { id: "mvp-votacion", label: '"Presentado por" — Pantalla de votación MVP', disponible: false },
-  { id: "mvp-resultado", label: '"Presentado por" — Resultado del MVP del partido', disponible: false },
-  { id: "equipo-perfil", label: "Logo en caja — Perfil de cada equipo", disponible: false },
-  { id: "galeria", label: "Logo en caja — Galería / contenido", disponible: false },
+  { id: "tabla-posiciones", label: '"Presentado por" — Tabla de posiciones', disponible: true },
+  { id: "mvp-votacion", label: '"Presentado por" — Pantalla de votación MVP', disponible: true },
+  { id: "mvp-resultado", label: '"Presentado por" — Resultado del MVP del partido', disponible: true },
+  { id: "equipo-perfil", label: "Logo en caja — Perfil de cada equipo", disponible: true },
+  { id: "galeria", label: "Logo en caja — Galería / contenido (aún no existe la página)", disponible: false },
 ];

@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { TeamCrest } from "@/components/team-crest";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
+import { SponsorSlotCaja } from "@/components/patrocinadores/sponsor-slot";
 
 const ROL_LABEL: Record<string, string> = {
   dt: "Director técnico",
@@ -532,6 +533,8 @@ export default async function EquipoPage({
                 </p>
                 <p className="mt-2 text-sm text-white/30">Próximamente</p>
               </div>
+
+              <SponsorSlotCaja slot="equipo-perfil" titulo="Patrocinador del equipo" />
             </div>
           </div>
 

@@ -27,10 +27,12 @@ const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-wide tex
 
 /**
  * Formulario de patrocinador, compartido entre "crear" y "editar" — mismos
- * campos, distinta Server Action y distintos valores iniciales. Fase 1 del
- * sistema de espacios de patrocinio (ver `SLOTS_PATROCINIO`): solo el slot
- * "home-slider" es seleccionable, el resto aparece deshabilitado como
- * catálogo de lo que viene, para que Fernando ya vea el inventario completo.
+ * campos, distinta Server Action y distintos valores iniciales. Los slots
+ * marcados `disponible: true` en `SLOTS_PATROCINIO` son seleccionables
+ * (Fase 2, 2026-09-21: home, tabla de posiciones, votación MVP, resultado
+ * de MVP y perfil de equipo); el resto (por ahora solo "galería") aparece
+ * deshabilitado como catálogo de lo que viene, para que Fernando ya vea el
+ * inventario completo.
  */
 export function PatrocinadorForm({
   modo,

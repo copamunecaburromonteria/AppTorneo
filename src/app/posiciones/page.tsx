@@ -5,6 +5,7 @@ import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 import { createClient } from "@/lib/supabase/server";
 import { PosicionesTabs, type FilaTabla, type GrupoData, type PartidoResumen } from "@/components/posiciones/posiciones-tabs";
+import { SponsorPresentadoPor } from "@/components/patrocinadores/sponsor-slot";
 
 type TeamInfo = { id: string; nombre_equipo: string; escudo_url: string | null };
 type TeamRel = TeamInfo | TeamInfo[] | null;
@@ -148,6 +149,7 @@ export default async function PosicionesPage() {
             <p className="mt-2 max-w-xl text-white/70">
               Los 4 primeros de cada grupo clasifican a la fase eliminatoria.
             </p>
+            <SponsorPresentadoPor slot="tabla-posiciones" etiqueta="Tabla de posiciones presentada por" />
           </div>
         </section>
 

@@ -35,10 +35,11 @@ export default async function AdminPatrocinadoresPage() {
           Patrocinadores
         </h1>
         <p className="mt-1 text-sm text-muneca-black/60">
-          Marcas que aparecen en la Copa. Por ahora solo alimentan el carrusel del Home — el
-          resto de espacios (tabla de posiciones, MVP, perfil de equipo, galería) se activan en
-          una fase siguiente. Un patrocinador oculto o fuera de su rango de fechas simplemente no
-          se muestra, sin borrarlo.
+          Marcas que aparecen en la Copa. Marca los espacios donde quieres que aparezca cada una
+          — carrusel del Home, tabla de posiciones, votación MVP, resultado del MVP del partido y
+          perfil de equipo ya están conectados. La galería queda pendiente hasta que exista esa
+          página. Un patrocinador oculto o fuera de su rango de fechas simplemente no se muestra,
+          sin borrarlo.
         </p>
       </div>
 

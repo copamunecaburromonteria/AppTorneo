@@ -8,6 +8,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 import { AgregarCalendarioBoton } from "@/components/partido/agregar-calendario-boton";
 import { calcularJornada } from "@/lib/jornada";
+import { SponsorPresentadoPorInline } from "@/components/patrocinadores/sponsor-slot";
 
 const NOMBRE_TORNEO = "Copa Muñeca e'Burro";
 
@@ -331,7 +332,8 @@ export default async function PartidoPage({
                     className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(123,31,162,0.4),transparent)]"
                   />
                   <p className="relative text-xs font-semibold uppercase tracking-[0.2em] text-muneca-yellow">
-                    ⭐ MVP del partido · presentado por [Patrocinador]
+                    ⭐ MVP del partido
+                    <SponsorPresentadoPorInline slot="mvp-resultado" />
                   </p>
                   <p className="font-display relative mt-2 text-2xl sm:text-3xl">{mvp.nombre}</p>
                   <p className="relative mt-1 text-sm text-white/70">

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { TeamCrest } from "@/components/team-crest";
 import { votacionAbierta, type ConfigVentana } from "@/lib/votacion/ventana";
+import { SponsorPresentadoPor } from "@/components/patrocinadores/sponsor-slot";
 import { VotoForm, type JugadorVotable } from "./voto-form";
 
 type TeamInfo = { id: string; nombre_equipo: string; escudo_url: string | null };
@@ -104,6 +105,14 @@ export default async function VotarPartidoPage({
                   {visitante?.nombre_equipo ?? "Por definir"}
                 </span>
               </div>
+            </div>
+
+            <div className="flex justify-center">
+              <SponsorPresentadoPor
+                slot="mvp-votacion"
+                etiqueta="Votación MVP presentada por"
+                className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40"
+              />
             </div>
 
             <div className="mt-10">
