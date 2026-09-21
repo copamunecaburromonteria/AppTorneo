@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
-import { NIVEL_LABEL, type PatrocinadorReal } from "@/lib/patrocinadores-reales";
+import { NIVEL_LABEL, type NivelPatrocinio, type PatrocinadorPublico } from "@/lib/patrocinadores/tipos";
 
 const PASO_SCROLL = 260;
 
@@ -15,14 +15,15 @@ const PASO_SCROLL = 260;
  * centrado por tarjeta, con flechas en desktop y swipe nativo en celular
  * (mobile-first, sin librería externa de carrusel).
  *
- * Cliente porque las flechas necesitan `scrollBy` sobre un ref; el fetch de
- * `patrocinadoresReales` sigue pasando por el server component
- * `Patrocinadores` (`patrocinadores.tsx`), que le pasa el arreglo ya listo.
+ * Cliente porque las flechas necesitan `scrollBy` sobre un ref; la consulta a
+ * `v_patrocinadores_publicos` (Supabase, migración 23_patrocinadores) sigue
+ * pasando por el server component `Patrocinadores` (`patrocinadores.tsx`),
+ * que le pasa el arreglo ya listo y filtrado al slot "home-slider".
  */
 export function PatrocinadoresSlider({
   patrocinadores,
 }: {
-  patrocinadores: PatrocinadorReal[];
+  patrocinadores: PatrocinadorPublico[];
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +60,7 @@ export function PatrocinadoresSlider({
         {patrocinadores.map((p) => {
           const logo = (
             <Image
-              src={p.logoUrl}
+              src={p.logo_url}
               alt={p.nombre}
               width={200}
               height={200}
@@ -68,12 +69,12 @@ export function PatrocinadoresSlider({
           );
           return (
             <div
-              key={p.logoUrl}
+              key={p.id}
               className="flex w-36 shrink-0 snap-center flex-col items-center gap-2 sm:w-44"
             >
               <div className="flex h-24 w-full items-center justify-center rounded-xl bg-white/5 p-3 transition-transform hover:scale-[1.04] sm:h-28">
-                {p.url ? (
-                  <Link href={p.url} target="_blank" rel="noopener noreferrer" className="h-full w-full">
+                {p.link_url ? (
+                  <Link href={p.link_url} target="_blank" rel="noopener noreferrer" className="h-full w-full">
                     {logo}
                   </Link>
                 ) : (
@@ -81,7 +82,7 @@ export function PatrocinadoresSlider({
                 )}
               </div>
               <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-white/40">
-                {NIVEL_LABEL[p.nivel]}
+                {NIVEL_LABEL[p.nivel as NivelPatrocinio] ?? p.nivel}
               </span>
             </div>
           );

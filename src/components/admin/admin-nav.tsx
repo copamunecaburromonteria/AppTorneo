@@ -10,6 +10,7 @@ export type AdminNavCounts = {
   arbitros?: number;
   operadores?: number;
   cargos?: number;
+  patrocinadores?: number;
 };
 
 const ADMIN_NAV: {
@@ -21,6 +22,7 @@ const ADMIN_NAV: {
   { href: "/admin/preinscripciones", label: "Preinscripciones", contador: "preinscritos" },
   { href: "/admin/partidos", label: "Partidos", contador: "partidos" },
   { href: "/admin/cargos-tarjetas", label: "Cargos por tarjeta", contador: "cargos" },
+  { href: "/admin/patrocinadores", label: "Patrocinadores", contador: "patrocinadores" },
   { href: "/admin/arbitros", label: "Árbitros", contador: "arbitros" },
   { href: "/admin/operadores", label: "Operadores", contador: "operadores" },
   { href: "/admin/accesos", label: "Accesos" },

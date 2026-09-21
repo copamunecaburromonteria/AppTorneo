@@ -6,17 +6,15 @@
 // y esas secciones ahora muestran un mensaje de "todavía no hay
 // información" en vez de datos inventados — ver `claude/plan-fases-tareas.md`.
 //
-// Lo que queda acá es contenido editorial real (qué incluye la inscripción,
-// nombres de los espacios de patrocinio disponibles), no resultados
-// simulados del torneo.
-
-export const patrocinadoresPlaceholder = [
-  "Patrocinador 1",
-  "Patrocinador 2",
-  "Patrocinador 3",
-  "Patrocinador 4",
-  "Patrocinador 5",
-];
+// Lo que queda acá es contenido editorial real (qué incluye la inscripción),
+// no resultados simulados del torneo.
+//
+// `patrocinadoresPlaceholder` (fila de cajas punteadas "Espacios
+// disponibles") se retiró el 2026-09-21 al construir la Fase 1 del sistema
+// de espacios de patrocinio: el Home ahora consulta patrocinadores reales
+// desde Supabase (`v_patrocinadores_publicos`, ver `patrocinadores.tsx`) y
+// el espacio libre se promociona con un banner real en vez de cajas con
+// nombres inventados.
 
 export const inclusiones = [
   "Canchas",
