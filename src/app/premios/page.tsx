@@ -4,34 +4,37 @@ import { SiteFooter } from "@/components/site-footer";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { ParallaxSectionBackground } from "@/components/parallax-section-background";
 
-const PREMIOS_PRINCIPALES = [
-  {
-    icon: "🥇",
-    categoria: "Campeón",
-    monto: "$5.000.000 COP",
-    extra: "+ trofeo y medallas",
-    destacado: true,
-  },
+const PREMIO_CAMPEON = {
+  icon: "🥇",
+  categoria: "Campeón",
+  monto: "$5.000.000 COP",
+  extra: "+ trofeo y medallas",
+};
+
+const PREMIOS_SECUNDARIOS = [
   {
     icon: "🥈",
     categoria: "Subcampeón",
     monto: "$3.000.000 COP",
     extra: "+ trofeo y medallas",
-    destacado: false,
+  },
+  {
+    icon: "🥉",
+    categoria: "Tercer puesto",
+    monto: "$700.000 COP",
+    extra: "+ trofeo y medallas",
   },
   {
     icon: "🧤",
     categoria: "Mejor arquero",
-    monto: "$1.000.000 COP",
+    monto: "$500.000 COP",
     extra: "+ trofeo",
-    destacado: false,
   },
   {
     icon: "⚽",
     categoria: "Goleador",
-    monto: "$1.000.000 COP",
+    monto: "$500.000 COP",
     extra: "+ trofeo",
-    destacado: false,
   },
 ];
 
@@ -43,12 +46,14 @@ const PREMIOS_SORPRESA = [
 
 /**
  * "Premios" — contenido estático (no depende de Supabase). Premiación
- * confirmada por Fernando (2026-09-14), reemplaza por completo la del brief
- * original — ver `claude/contenido-premios.md` en el proyecto. Montos y
- * categorías marcados como provisionales ("pueden modificarse más
- * adelante"): quedan como constantes en este archivo por ahora, no en
- * `torneo_config` — si se ajustan seguido, vale la pena moverlos a un
- * editor en el panel admin más adelante.
+ * confirmada por Fernando, actualizada el 2026-09-25 para incluir Tercer
+ * puesto (el partido ya existe en el sistema de fases finales —
+ * `torneo_config.incluye_tercer_puesto` — antes se jugaba sin premio) — ver
+ * `claude/contenido-premios.md` en el proyecto para el análisis completo del
+ * reparto. Montos y categorías marcados como provisionales ("pueden
+ * modificarse más adelante"): quedan como constantes en este archivo por
+ * ahora, no en `torneo_config` — si se ajustan seguido, vale la pena
+ * moverlos a un editor en el panel admin más adelante.
  */
 export default function PremiosPage() {
   const breadcrumbs: Crumb[] = [{ label: "Inicio", href: "/" }, { label: "Premios" }];
@@ -84,20 +89,33 @@ export default function PremiosPage() {
             </p>
             <p className="font-display text-4xl text-white sm:text-5xl">$10.000.000 COP</p>
             <p className="mt-1 text-xs text-white/50">
-              No incluye los premios sorpresa — ver más abajo.
+              Incluye la bolsa reservada para los premios sorpresa — el monto de cada uno se
+              revela más adelante.
             </p>
           </div>
 
-          {/* Premios principales */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PREMIOS_PRINCIPALES.map((p) => (
+          {/* Campeón — destacado por separado, el resto del podio y los individuales abajo */}
+          <div className="mt-10 flex flex-col items-center gap-2 rounded-2xl border border-muneca-yellow/40 bg-muneca-yellow/10 px-6 py-8 text-center">
+            <span className="text-5xl" aria-hidden="true">
+              {PREMIO_CAMPEON.icon}
+            </span>
+            <p className="font-display text-xl uppercase tracking-wide text-white">
+              {PREMIO_CAMPEON.categoria}
+            </p>
+            <p className="font-display text-3xl text-muneca-yellow sm:text-4xl">
+              {PREMIO_CAMPEON.monto}
+            </p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+              {PREMIO_CAMPEON.extra}
+            </p>
+          </div>
+
+          {/* Premios secundarios */}
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {PREMIOS_SECUNDARIOS.map((p) => (
               <div
                 key={p.categoria}
-                className={`flex flex-col items-center gap-2 rounded-2xl border p-6 text-center ${
-                  p.destacado
-                    ? "border-muneca-yellow/40 bg-muneca-yellow/10 sm:col-span-2 lg:col-span-1 lg:row-span-1"
-                    : "border-white/10 bg-white/[0.04]"
-                }`}
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center"
               >
                 <span className="text-4xl" aria-hidden="true">
                   {p.icon}
@@ -105,13 +123,7 @@ export default function PremiosPage() {
                 <p className="font-display text-lg uppercase tracking-wide text-white">
                   {p.categoria}
                 </p>
-                <p
-                  className={`font-display text-2xl ${
-                    p.destacado ? "text-muneca-yellow" : "text-white"
-                  }`}
-                >
-                  {p.monto}
-                </p>
+                <p className="font-display text-2xl text-white">{p.monto}</p>
                 <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
                   {p.extra}
                 </p>
