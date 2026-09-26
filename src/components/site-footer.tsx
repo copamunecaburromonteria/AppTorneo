@@ -71,6 +71,18 @@ const LEGAL_LINKS: FooterLink[] = [
   { label: "Contacto", href: "#" },
 ];
 
+// Mismos 4 accesos que `SiteHeaderAccesos` (el dropdown "Acceder" del
+// header) — acá como espejo discreto en el pie de página, pedido por
+// Fernando el 2026-09-26 junto con el del header. "Árbitros" se etiqueta
+// "Líder de árbitros" a propósito: el árbitro individual no tiene login
+// propio, solo quien administra la planilla.
+const ACCESOS_LINKS: FooterLink[] = [
+  { label: "Equipos", href: "/portal/login" },
+  { label: "Líder de árbitros", href: "/lider-arbitros/login" },
+  { label: "Operador de cancha", href: "/operador/login" },
+  { label: "Administración", href: "/admin/login" },
+];
+
 export function SiteFooter() {
   return (
     <footer className="relative overflow-hidden bg-muneca-black text-muneca-white">
@@ -164,8 +176,24 @@ export function SiteFooter() {
           />
         </div>
 
+        {/* Acceso a los paneles — fila discreta aparte de los legales, para
+            no mezclar "iniciar sesión" con términos/privacidad/contacto. */}
+        <div className="mt-8 flex flex-col items-center gap-2 border-t border-white/10 pt-6 text-center text-xs text-white/40 sm:flex-row sm:justify-between sm:text-left">
+          <span className="font-semibold uppercase tracking-widest text-white/30">Acceso</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:justify-end">
+            {ACCESOS_LINKS.map((link, i) => (
+              <span key={link.label} className="flex items-center gap-2">
+                {i > 0 && <span className="text-white/25">·</span>}
+                <a href={link.href} className="hover:text-white/80">
+                  {link.label}
+                </a>
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* Copyright + legales */}
-        <div className="mt-8 flex flex-col items-center gap-3 border-t border-white/10 pt-6 text-center text-xs text-white/50 sm:flex-row sm:justify-between sm:text-left">
+        <div className="mt-4 flex flex-col items-center gap-3 border-t border-white/10 pt-6 text-center text-xs text-white/50 sm:flex-row sm:justify-between sm:text-left">
           <p>© {new Date().getFullYear()} Copa Muñeca e&apos;Burro. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:justify-end">
             {LEGAL_LINKS.map((link, i) => (

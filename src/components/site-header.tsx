@@ -13,6 +13,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { NavDropdown } from "@/components/nav-dropdown";
+import { SiteHeaderAccesos } from "@/components/site-header-accesos";
 import { cerrarSesionEquipo } from "@/app/portal/actions";
 
 const SOCIAL_LINKS = [
@@ -39,6 +40,16 @@ const CONTENIDO_LINKS = [
   { href: "#", label: "Noticias" },
   { href: "/#galeria", label: "Fotos" },
   { href: "/#galeria", label: "Videos" },
+];
+
+// Mismos 4 accesos que `SiteHeaderAccesos` (el dropdown de escritorio) — acá
+// solo como lista plana de 2 columnas, sin el detalle de "correo/PIN", para
+// no sobrecargar el menú móvil.
+const ACCESOS_MOBILE = [
+  { href: "/portal/login", label: "Equipos" },
+  { href: "/lider-arbitros/login", label: "Líder de árbitros" },
+  { href: "/operador/login", label: "Operador de cancha" },
+  { href: "/admin/login", label: "Administración" },
 ];
 
 export type SiteHeaderUserChip = {
@@ -186,6 +197,10 @@ export function SiteHeader({
           </a>
         </nav>
 
+        <div className="hidden items-center gap-1 md:flex">
+          <SiteHeaderAccesos tone={tone} />
+        </div>
+
         {userChip ? (
           <div className={tone === "light" ? "text-white" : "text-muneca-black"}>
             <UserChip chip={userChip} tone={tone} />
@@ -313,6 +328,22 @@ export function SiteHeader({
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/85 transition-colors hover:bg-muneca-yellow hover:text-muneca-black"
                 >
                   <Icon size={17} weight="regular" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+
+            <p className="mt-5 px-0 text-xs font-semibold uppercase tracking-widest text-white/40">
+              Acceder
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {ACCESOS_MOBILE.map((acceso) => (
+                <a
+                  key={acceso.href}
+                  href={acceso.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg bg-white/5 px-3 py-2.5 text-xs font-semibold normal-case tracking-normal text-white/75 transition-colors hover:bg-white/10 hover:text-muneca-yellow"
+                >
+                  {acceso.label}
                 </a>
               ))}
             </div>
