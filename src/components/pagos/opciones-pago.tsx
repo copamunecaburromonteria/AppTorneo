@@ -82,12 +82,20 @@ export function OpcionesPago({
           <img
             src={qrSrc}
             alt="Código QR para pagar por transferencia (Bre-B / Nu)"
-            className="h-36 w-36 rounded-lg border border-black/10 object-contain"
+            className="h-56 w-56 rounded-lg border border-black/10 bg-white object-contain p-1 sm:h-64 sm:w-64"
           />
         </div>
         <p className="mt-2 text-center text-xs text-black/60">
           Llave Nu: <span className="font-bold text-muneca-black">{llave}</span>
         </p>
+        <div className="mt-2 rounded-lg bg-white/60 px-3 py-2 text-center text-[11px] leading-relaxed text-black/60">
+          <p>
+            Llave Bre-B Bancolombia: <span className="font-bold text-muneca-black">7368940</span>
+          </p>
+          <p className="font-semibold text-muneca-black/80">Bancolombia</p>
+          <p>Ahorros: 35372731034</p>
+          <p>A nombre de Fernando Javier González Contreras</p>
+        </div>
 
         {reportado ? (
           <div className="mt-3 rounded-xl bg-emerald-50 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700">
