@@ -60,7 +60,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Galería", href: "/#galeria" },
       { label: "Patrocinadores", href: "/#patrocinadores" },
       { label: "Noticias", href: "#" },
-      { label: "Preguntas frecuentes", href: "#" },
+      { label: "Preguntas frecuentes", href: "/#preguntas-frecuentes" },
     ],
   },
 ];

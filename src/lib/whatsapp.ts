@@ -67,7 +67,7 @@ export function mensajeWhatsAppInvitacionOficial(params: {
 
 ¡Buenas noticias! Le llegó el turno a ${params.nombreEquipo} para completar la inscripción oficial y activar su cupo en la Copa Muñeca e'Burro.
 
-Entra con el mismo correo que usaste para preinscribirte (${params.correo}). Ahí creas tu cuenta, defines si necesitas uniforme y ves el plan de pagos.
+Entra con el mismo correo que usaste para preinscribirte (${params.correo}). Ahí creas tu cuenta y ves el plan de pagos.
 
 Completa tu inscripción aquí: ${SITE_URL}/inscripcion
 

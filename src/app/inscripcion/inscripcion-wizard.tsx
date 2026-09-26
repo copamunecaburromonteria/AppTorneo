@@ -12,17 +12,17 @@ import {
 
 type Pricing = {
   montoInscripcion: number;
-  precioUniforme: number;
-  maxJugadoresPorEquipo: number;
-  numeroCuotasSinUniforme: number;
-  numeroCuotasConUniforme: number;
+  numeroCuotas: number;
   diasPlazoSaldo: number;
+  diasPrevioTorneoUltimaCuota: number;
+  fechaInicioTorneo: string | null;
 };
 
 /**
  * Prellena el wizard con lo que el equipo ya dio en la preinscripción, para
  * no pedirle otra vez el nombre del equipo ni los datos del delegado — solo
- * faltan la contraseña, el cuerpo técnico y la decisión de uniforme.
+ * faltan la contraseña y el cuerpo técnico (el uniforme ya va incluido para
+ * todos, no hay decisión que tomar aquí — ver `actions.ts`).
  */
 function construirEstadoInicial(preinscripcion: InvitacionEncontrada): RegistroEquipoInput {
   return {
@@ -43,8 +43,6 @@ function construirEstadoInicial(preinscripcion: InvitacionEncontrada): RegistroE
     dtDocumento: "",
     preparadorNombre: "",
     preparadorDocumento: "",
-    tieneUniformePropio: null,
-    compraUniformeCopa: false,
   };
 }
 
@@ -61,8 +59,49 @@ function repartirEnPartesIguales(total: number, partes: number): number[] {
   return montos;
 }
 
+function sumarDias(fecha: Date, dias: number): string {
+  const copia = new Date(fecha);
+  copia.setDate(copia.getDate() + dias);
+  return copia.toISOString().slice(0, 10);
+}
+
+/** Mismo cálculo que `calcularFechasCuotas` de `actions.ts` — se duplica acá
+ * (componente cliente) solo para la vista previa antes de enviar; el valor
+ * real que queda guardado siempre lo calcula el servidor. */
+function calcularFechasCuotasPreview(pricing: Pricing): string[] {
+  const hoy = new Date();
+  const numeroCuotas = pricing.numeroCuotas;
+  if (numeroCuotas <= 1) return [sumarDias(hoy, 0)];
+
+  const fechas: string[] = [];
+  for (let i = 0; i < numeroCuotas - 1; i++) {
+    fechas.push(sumarDias(hoy, i * pricing.diasPlazoSaldo));
+  }
+
+  const fallbackUltima = sumarDias(hoy, (numeroCuotas - 1) * pricing.diasPlazoSaldo);
+  let fechaFinal = fallbackUltima;
+  if (pricing.fechaInicioTorneo) {
+    const inicio = new Date(`${pricing.fechaInicioTorneo}T00:00:00`);
+    const limite = new Date(inicio);
+    limite.setDate(limite.getDate() - pricing.diasPrevioTorneoUltimaCuota);
+    if (limite.getTime() > hoy.getTime()) {
+      fechaFinal = limite.toISOString().slice(0, 10);
+    }
+  }
+  fechas.push(fechaFinal);
+  return fechas;
+}
+
 function formatCOP(valor: number): string {
   return `$${valor.toLocaleString("es-CO")}`;
+}
+
+function formatFecha(fecha: string): string {
+  return new Date(`${fecha}T00:00:00`).toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function Field({
@@ -135,11 +174,9 @@ function NavBotones({
 
 export function InscripcionWizard({
   pricing,
-  montoUniformeKit,
   preinscripcion,
 }: {
   pricing: Pricing;
-  montoUniformeKit: number;
   preinscripcion: InvitacionEncontrada;
 }) {
   const router = useRouter();
@@ -153,14 +190,10 @@ export function InscripcionWizard({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  const compraUniformeActiva = form.tieneUniformePropio === false && form.compraUniformeCopa;
-  const montoTotal = compraUniformeActiva
-    ? pricing.montoInscripcion + montoUniformeKit
-    : pricing.montoInscripcion;
-  const numeroCuotas = compraUniformeActiva
-    ? pricing.numeroCuotasConUniforme
-    : pricing.numeroCuotasSinUniforme;
-  const cuotasPreview = repartirEnPartesIguales(montoTotal, numeroCuotas);
+  const montoTotal = pricing.montoInscripcion;
+  const numeroCuotas = pricing.numeroCuotas;
+  const montosCuotasPreview = repartirEnPartesIguales(montoTotal, numeroCuotas);
+  const fechasCuotasPreview = calcularFechasCuotasPreview(pricing);
 
   function irAPaso2() {
     setError(null);
@@ -185,12 +218,6 @@ export function InscripcionWizard({
   async function finalizar(e?: FormEvent) {
     e?.preventDefault();
     setError(null);
-
-    if (form.tieneUniformePropio === null) {
-      setError("Indica si tu equipo ya cuenta con uniforme propio.");
-      return;
-    }
-
     setSubmitting(true);
     const res = await registrarEquipo(form);
 
@@ -396,81 +423,12 @@ export function InscripcionWizard({
               </Field>
             </Card>
 
-            <Card title="Uniforme personalizado">
-              <div className="sm:col-span-2">
-                <span className={labelClass}>
-                  ¿Tu equipo ya cuenta con uniforme propio? <span className="text-muneca-yellow">*</span>
-                </span>
-                <div className="mt-2 flex gap-3">
-                  {[
-                    { label: "Sí, ya tenemos", value: true },
-                    { label: "No, todavía no", value: false },
-                  ].map((opt) => (
-                    <button
-                      key={String(opt.value)}
-                      type="button"
-                      onClick={() => update("tieneUniformePropio", opt.value)}
-                      className={`rounded-md border px-5 py-2.5 text-sm font-semibold transition-colors ${
-                        form.tieneUniformePropio === opt.value
-                          ? "border-muneca-purple bg-muneca-purple text-muneca-white"
-                          : "border-white/15 text-white hover:border-muneca-yellow/50"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {form.tieneUniformePropio === false && (
-                <div className="rounded-xl bg-muneca-purple/10 p-5 sm:col-span-2">
-                  <span className={labelClass}>
-                    ¿Deseas adquirir el uniforme oficial personalizado con la Copa Muñeca e&apos;Burro?
-                  </span>
-                  <p className="mt-1 text-sm text-white/60">
-                    Pedido de plantilla completa ({pricing.maxJugadoresPorEquipo} uniformes) a{" "}
-                    {formatCOP(pricing.precioUniforme)} c/u = {formatCOP(montoUniformeKit)}. La talla de
-                    cada jugador se pide después, al completar la plantilla en el portal.
-                  </p>
-                  <div className="mt-3 flex gap-3">
-                    {[
-                      { label: "Sí, lo quiero", value: true },
-                      { label: "No, gracias", value: false },
-                    ].map((opt) => (
-                      <button
-                        key={String(opt.value)}
-                        type="button"
-                        onClick={() => update("compraUniformeCopa", opt.value)}
-                        className={`rounded-md border px-5 py-2.5 text-sm font-semibold transition-colors ${
-                          form.compraUniformeCopa === opt.value
-                            ? "border-muneca-purple bg-muneca-purple text-muneca-white"
-                            : "border-white/15 text-white hover:border-muneca-yellow/50"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </Card>
-
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-muneca-white sm:p-8">
               <p className="text-sm uppercase tracking-wide text-donkey-gray">Resumen de pago</p>
-              <div className="mt-3 space-y-1 text-sm text-white/80">
-                <div className="flex justify-between">
-                  <span>Inscripción</span>
-                  <span>{formatCOP(pricing.montoInscripcion)}</span>
-                </div>
-                {compraUniformeActiva && (
-                  <div className="flex justify-between">
-                    <span>
-                      Uniformes ({pricing.maxJugadoresPorEquipo} × {formatCOP(pricing.precioUniforme)})
-                    </span>
-                    <span>{formatCOP(montoUniformeKit)}</span>
-                  </div>
-                )}
-              </div>
+              <p className="mt-2 text-sm text-white/60">
+                Incluye uniforme oficial, cancha, hidratación, arbitraje y la plataforma web de la
+                Copa.
+              </p>
               <div className="mt-3 flex items-baseline justify-between border-t border-white/15 pt-3">
                 <span className="font-display text-xl">Total</span>
                 <span className="font-display text-3xl text-muneca-yellow">
@@ -480,13 +438,15 @@ export function InscripcionWizard({
 
               <div className="mt-4 rounded-xl bg-white/5 p-4">
                 <p className="text-xs uppercase tracking-wide text-donkey-gray">
-                  Se paga en {numeroCuotas} partidas, cada una {pricing.diasPlazoSaldo} días después de
-                  la anterior
+                  Se paga en {numeroCuotas} partidas
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-white/80">
-                  {cuotasPreview.map((monto, index) => (
+                  {montosCuotasPreview.map((monto, index) => (
                     <li key={index} className="flex justify-between">
-                      <span>Partida {index + 1}</span>
+                      <span>
+                        Partida {index + 1}
+                        {fechasCuotasPreview[index] && ` · vence ${formatFecha(fechasCuotasPreview[index])}`}
+                      </span>
                       <span>{formatCOP(monto)}</span>
                     </li>
                   ))}

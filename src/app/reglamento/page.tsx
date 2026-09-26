@@ -79,8 +79,8 @@ const SECCIONES: Seccion[] = [
     numero: 8,
     titulo: "Uniformes",
     items: [
-      "Cada equipo juega con su propio uniforme (comprado aparte o el oficial de la Copa, ver punto 13).",
-      "Si dos equipos coinciden en colores el día del partido, la organización presta petos/camisillas disponibles en la cancha — no se exige que ningún equipo traiga un uniforme alterno propio.",
+      "Cada equipo juega con el uniforme oficial de la Copa Muñeca e'Burro, incluido en la inscripción (ver punto 13) — la talla de cada jugador se registra en el portal del equipo.",
+      "Si dos equipos coinciden en colores el día del partido, la organización presta petos/camisillas disponibles en la cancha.",
     ],
   },
   {
@@ -123,12 +123,12 @@ const SECCIONES: Seccion[] = [
     numero: 13,
     titulo: "Inscripción y pagos",
     items: [
-      "Valor de inscripción: **$800.000 COP** por equipo.",
-      "Uniforme oficial de la Copa (opcional): **$50.000 COP** por jugador.",
-      "Plan de cuotas: 2 partidas si el equipo no compra uniforme, 3 partidas si sí lo compra.",
+      "Valor de inscripción: **$1.500.000 COP** por equipo — incluye uniforme oficial, cancha, hidratación, arbitraje y la plataforma web de la Copa.",
+      "Plan de cuotas: **2 partidas** — la primera el día de la inscripción, la segunda unos días antes del inicio del torneo.",
       "La inscripción debe quedar **100% paga (paz y salvo) antes del inicio del torneo** (29 de octubre tentativo).",
       "Un equipo queda validado (con cupo asegurado) al pagar la primera cuota. Si los 24 cupos ya están llenos, el siguiente equipo que se inscriba entra a lista de espera.",
       "Plazo para completar la plantilla de jugadores: fecha de pago de la 1ª cuota + 5 días de gracia (con tope de 3 días antes del inicio del torneo).",
+      "**Devolución de dinero (retiro antes de iniciar el torneo):** si el equipo solo pagó la primera cuota, se devuelve el 50% de esa cuota; si ya pagó la totalidad de la inscripción, se devuelve el 75% del valor total.",
     ],
   },
   {

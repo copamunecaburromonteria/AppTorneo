@@ -8,11 +8,10 @@ import { verificarInvitacion, type InvitacionEncontrada } from "./actions";
 
 type Pricing = {
   montoInscripcion: number;
-  precioUniforme: number;
-  maxJugadoresPorEquipo: number;
-  numeroCuotasSinUniforme: number;
-  numeroCuotasConUniforme: number;
+  numeroCuotas: number;
   diasPlazoSaldo: number;
+  diasPrevioTorneoUltimaCuota: number;
+  fechaInicioTorneo: string | null;
 };
 
 const inputClass =
@@ -28,13 +27,7 @@ const inputClass =
  * en `actions.ts`). Si el correo tiene invitación activa, se muestra el
  * wizard de pago ya prellenado con los datos de la preinscripción.
  */
-export function InscripcionGate({
-  pricing,
-  montoUniformeKit,
-}: {
-  pricing: Pricing;
-  montoUniformeKit: number;
-}) {
+export function InscripcionGate({ pricing }: { pricing: Pricing }) {
   const [correo, setCorreo] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,13 +55,7 @@ export function InscripcionGate({
   }
 
   if (invitacion) {
-    return (
-      <InscripcionWizard
-        pricing={pricing}
-        montoUniformeKit={montoUniformeKit}
-        preinscripcion={invitacion}
-      />
-    );
+    return <InscripcionWizard pricing={pricing} preinscripcion={invitacion} />;
   }
 
   return (

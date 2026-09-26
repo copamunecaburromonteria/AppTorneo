@@ -489,7 +489,7 @@ export function correoInvitacionInscripcionOficial(params: {
     <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">¡Te llegó el turno!</p>
     <p>Hola ${params.delegadoNombre},</p>
     <p>¡Buenas noticias! Le llegó el turno a <strong>${params.nombreEquipo}</strong> para completar la inscripción oficial y activar su cupo en la Copa Muñeca e&apos;Burro.</p>
-    <p style="margin-top:16px;">Entra con el mismo correo que usaste para preinscribirte (<strong>${params.correo}</strong>). Ahí vas a crear tu cuenta, definir si necesitas uniforme y ver el plan de pagos.</p>
+    <p style="margin-top:16px;">Entra con el mismo correo que usaste para preinscribirte (<strong>${params.correo}</strong>). Ahí vas a crear tu cuenta y ver el plan de pagos.</p>
     ${boton(`${SITE_URL}/inscripcion`, "Completar inscripción")}
     <p style="margin-top:20px;">Cualquier duda, escríbenos por WhatsApp.</p>
     `
@@ -499,7 +499,7 @@ export function correoInvitacionInscripcionOficial(params: {
 
 ¡Buenas noticias! Le llegó el turno a ${params.nombreEquipo} para completar la inscripción oficial y activar su cupo en la Copa Muñeca e'Burro.
 
-Entra con el mismo correo que usaste para preinscribirte (${params.correo}). Ahí vas a crear tu cuenta, definir si necesitas uniforme y ver el plan de pagos.
+Entra con el mismo correo que usaste para preinscribirte (${params.correo}). Ahí vas a crear tu cuenta y ver el plan de pagos.
 
 Completar inscripción: ${SITE_URL}/inscripcion
 

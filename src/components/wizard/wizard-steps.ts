@@ -16,7 +16,7 @@ export type WizardStep = {
 export const WIZARD_STEPS: WizardStep[] = [
   { id: 1, label: "Datos del equipo", description: "Información principal", zona: "publica" },
   { id: 2, label: "Delegado", description: "Datos de contacto", zona: "publica" },
-  { id: 3, label: "Cuerpo técnico", description: "Entrenador y uniforme", zona: "publica" },
+  { id: 3, label: "Cuerpo técnico", description: "Entrenador y preparador físico", zona: "publica" },
   { id: 4, label: "Plantilla de jugadores", description: "Registra a tus jugadores", zona: "portal" },
   { id: 5, label: "Documentos", description: "Carga los archivos", zona: "portal" },
   { id: 6, label: "Pago de inscripción", description: "Realiza el pago", zona: "portal" },

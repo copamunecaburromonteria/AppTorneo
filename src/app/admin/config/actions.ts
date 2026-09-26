@@ -93,7 +93,7 @@ export type ConfiguracionPagos = {
   dias_plazo_saldo: number;
   dias_aviso_previo_cuota: number;
   numero_cuotas_sin_uniforme: number;
-  numero_cuotas_con_uniforme: number;
+  dias_previo_torneo_ultima_cuota: number;
 };
 
 /**
@@ -117,7 +117,7 @@ export async function actualizarConfiguracionPagos(datos: ConfiguracionPagos): P
     datos.dias_plazo_saldo < 1 ||
     datos.dias_aviso_previo_cuota < 0 ||
     datos.numero_cuotas_sin_uniforme < 1 ||
-    datos.numero_cuotas_con_uniforme < 1
+    datos.dias_previo_torneo_ultima_cuota < 0
   ) {
     return { success: false, error: "Alguno de los valores no es válido." };
   }

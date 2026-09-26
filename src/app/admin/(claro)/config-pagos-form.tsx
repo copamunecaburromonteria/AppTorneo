@@ -7,12 +7,12 @@ import {
 } from "@/app/admin/config/actions";
 
 const CAMPOS: { key: keyof ConfiguracionPagos; label: string; sufijo?: string }[] = [
-  { key: "monto_inscripcion", label: "Inscripción por equipo", sufijo: "COP" },
-  { key: "precio_uniforme", label: "Precio uniforme (por jugador)", sufijo: "COP" },
+  { key: "monto_inscripcion", label: "Inscripción por equipo (todo incluido)", sufijo: "COP" },
+  { key: "precio_uniforme", label: "Costo interno del uniforme (por jugador)", sufijo: "COP" },
   { key: "porcentaje_abono_minimo", label: "Abono mínimo", sufijo: "%" },
-  { key: "numero_cuotas_sin_uniforme", label: "Cuotas sin uniforme" },
-  { key: "numero_cuotas_con_uniforme", label: "Cuotas con uniforme" },
-  { key: "dias_plazo_saldo", label: "Días de plazo para el saldo" },
+  { key: "numero_cuotas_sin_uniforme", label: "Número de cuotas" },
+  { key: "dias_previo_torneo_ultima_cuota", label: "Última cuota vence N días antes del torneo" },
+  { key: "dias_plazo_saldo", label: "Días de plazo para el saldo (respaldo si no hay fecha de inicio)" },
   { key: "dias_aviso_previo_cuota", label: "Días de aviso antes de vencer" },
 ];
 

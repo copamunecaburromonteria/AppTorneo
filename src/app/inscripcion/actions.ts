@@ -23,8 +23,6 @@ export type RegistroEquipoInput = {
   dtDocumento: string;
   preparadorNombre: string;
   preparadorDocumento: string;
-  tieneUniformePropio: boolean | null;
-  compraUniformeCopa: boolean;
 };
 
 export type CuotaPlan = {
@@ -82,6 +80,45 @@ function sumarDias(fecha: Date, dias: number): string {
   const copia = new Date(fecha);
   copia.setDate(copia.getDate() + dias);
   return copia.toISOString().slice(0, 10);
+}
+
+/**
+ * Calcula la fecha límite de cada cuota. La 1a siempre vence el día de la
+ * inscripción (hoy). La última vence `diasPrevioTorneo` días antes de
+ * `fechaInicioTorneo` (política confirmada por Fernando el 2026-09-26: "dos
+ * cuotas, la primera el día de la inscripción y una fecha antes de iniciar
+ * el torneo") — si esa fecha ya quedara en el pasado (o `fechaInicioTorneo`
+ * todavía no está configurada), cae de vuelta al esquema anterior de
+ * `hoy + diasPlazoSaldo` para no generar una cuota vencida el mismo día que
+ * se crea. Las cuotas intermedias (si `numeroCuotas` llega a ser > 2 en el
+ * futuro) se reparten cada `diasPlazoSaldo` días desde la 1a, como antes.
+ */
+function calcularFechasCuotas(
+  numeroCuotas: number,
+  hoy: Date,
+  fechaInicioTorneo: string | null,
+  diasPrevioTorneo: number,
+  diasPlazoSaldo: number
+): string[] {
+  if (numeroCuotas <= 1) return [sumarDias(hoy, 0)];
+
+  const fechas: string[] = [];
+  for (let i = 0; i < numeroCuotas - 1; i++) {
+    fechas.push(sumarDias(hoy, i * diasPlazoSaldo));
+  }
+
+  const fallbackUltima = sumarDias(hoy, (numeroCuotas - 1) * diasPlazoSaldo);
+  let fechaFinal = fallbackUltima;
+  if (fechaInicioTorneo) {
+    const inicio = new Date(`${fechaInicioTorneo}T00:00:00`);
+    const limite = new Date(inicio);
+    limite.setDate(limite.getDate() - diasPrevioTorneo);
+    if (limite.getTime() > hoy.getTime()) {
+      fechaFinal = limite.toISOString().slice(0, 10);
+    }
+  }
+  fechas.push(fechaFinal);
+  return fechas;
 }
 
 /**
@@ -175,8 +212,6 @@ export async function registrarEquipo(
     return { success: false, error: "Faltan datos obligatorios del delegado." };
   if (!input.password || input.password.length < 8)
     return { success: false, error: "La contraseña debe tener al menos 8 caracteres." };
-  if (input.tieneUniformePropio === null)
-    return { success: false, error: "Indica si el equipo ya cuenta con uniforme propio." };
 
   let admin;
   try {
@@ -208,10 +243,13 @@ export async function registrarEquipo(
   const teamId = input.preinscripcionTeamId;
 
   // --- Precios y plan de pagos vigentes (torneo_config es la única fuente de verdad) ---
+  // La inscripción incluye uniforme oficial para todos los equipos desde el
+  // 2026-09-26 (decisión de Fernando) — ya no es una compra aparte/opcional,
+  // así que `monto_inscripcion` ya lo trae incluido y no se suma nada extra.
   const { data: config, error: configError } = await admin
     .from("torneo_config")
     .select(
-      "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo"
+      "monto_inscripcion, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota"
     )
     .eq("id", 1)
     .single();
@@ -221,25 +259,27 @@ export async function registrarEquipo(
   }
 
   const montoInscripcion = Number(config.monto_inscripcion);
-  const precioUniforme = Number(config.precio_uniforme);
   const maxJugadores = config.max_jugadores_por_equipo as number;
   const diasPlazoSaldo = config.dias_plazo_saldo as number;
+  const fechaInicioTorneo = (config.fecha_inicio_torneo as string | null) ?? null;
+  const diasPrevioTorneo = config.dias_previo_torneo_ultima_cuota as number;
+  const numeroCuotas = config.numero_cuotas_sin_uniforme as number;
 
-  const compraUniforme = input.tieneUniformePropio === false && input.compraUniformeCopa;
-  const cantidadUniformes = compraUniforme ? maxJugadores : 0;
-  const montoUniformes = cantidadUniformes * precioUniforme;
-  const montoTotal = montoInscripcion + montoUniformes;
+  // El uniforme va incluido para los 15 cupos de la plantilla, sin cargo
+  // aparte — se sigue registrando la cantidad para trazabilidad/producción,
+  // pero el monto cobrado por uniformes es $0 (ya está dentro de
+  // `montoInscripcion`).
+  const cantidadUniformes = maxJugadores;
+  const montoUniformes = 0;
+  const montoTotal = montoInscripcion;
 
-  const numeroCuotas = compraUniforme
-    ? (config.numero_cuotas_con_uniforme as number)
-    : (config.numero_cuotas_sin_uniforme as number);
-
-  const montosCuotas = repartirEnPartesIguales(montoTotal, numeroCuotas);
   const hoy = new Date();
+  const fechasCuotas = calcularFechasCuotas(numeroCuotas, hoy, fechaInicioTorneo, diasPrevioTorneo, diasPlazoSaldo);
+  const montosCuotas = repartirEnPartesIguales(montoTotal, numeroCuotas);
   const cuotas: CuotaPlan[] = montosCuotas.map((monto, index) => ({
     numeroCuota: index + 1,
     monto,
-    fechaLimite: sumarDias(hoy, index * diasPlazoSaldo),
+    fechaLimite: fechasCuotas[index],
   }));
 
   // --- 1. Usuario de Auth (rol equipo) ---
@@ -278,8 +318,12 @@ export async function registrarEquipo(
       anio_fundacion: anioFundacion,
       ciudad_barrio: ciudadBarrio || null,
       descripcion: descripcion || null,
-      tiene_uniforme_propio: input.tieneUniformePropio,
-      compra_uniforme_copa: compraUniforme,
+      // El uniforme oficial va incluido para todos los equipos desde el
+      // 2026-09-26 — ya no se pregunta, queda fijo en true/false para que
+      // el resto de la plataforma (selector de talla en el portal, correo
+      // de confirmación) siga funcionando sin cambios.
+      tiene_uniforme_propio: false,
+      compra_uniforme_copa: true,
       estado_inscripcion: "pendiente_validacion",
     })
     .eq("id", teamId);

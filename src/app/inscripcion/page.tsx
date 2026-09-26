@@ -8,13 +8,17 @@ export const metadata: Metadata = {
     "Inscribe a tu equipo en la Copa Muñeca e'Burro — 24 equipos, categoría libre, Montería, Córdoba.",
 };
 
+// Inscripción "todo incluido" desde el 2026-09-26 (decisión de Fernando):
+// $1.500.000 COP incluyen uniforme oficial, cancha, hidratación, arbitraje y
+// la plataforma web — el uniforme ya no es una compra aparte/opcional. Se
+// paga en 2 cuotas: la 1a el día de la inscripción, la 2a unos días antes
+// del inicio del torneo (ver `calcularFechasCuotas` en `actions.ts`).
 const PRICING_FALLBACK = {
-  montoInscripcion: 800000,
-  precioUniforme: 50000,
-  maxJugadoresPorEquipo: 15,
-  numeroCuotasSinUniforme: 2,
-  numeroCuotasConUniforme: 3,
+  montoInscripcion: 1500000,
+  numeroCuotas: 2,
   diasPlazoSaldo: 7,
+  diasPrevioTorneoUltimaCuota: 5,
+  fechaInicioTorneo: null as string | null,
 };
 
 async function getPricing() {
@@ -23,7 +27,7 @@ async function getPricing() {
     const { data } = await supabase
       .from("torneo_config")
       .select(
-        "monto_inscripcion, precio_uniforme, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, numero_cuotas_con_uniforme, dias_plazo_saldo"
+        "monto_inscripcion, numero_cuotas_sin_uniforme, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota"
       )
       .eq("id", 1)
       .single();
@@ -32,11 +36,10 @@ async function getPricing() {
 
     return {
       montoInscripcion: Number(data.monto_inscripcion),
-      precioUniforme: Number(data.precio_uniforme),
-      maxJugadoresPorEquipo: data.max_jugadores_por_equipo as number,
-      numeroCuotasSinUniforme: data.numero_cuotas_sin_uniforme as number,
-      numeroCuotasConUniforme: data.numero_cuotas_con_uniforme as number,
+      numeroCuotas: data.numero_cuotas_sin_uniforme as number,
       diasPlazoSaldo: data.dias_plazo_saldo as number,
+      diasPrevioTorneoUltimaCuota: data.dias_previo_torneo_ultima_cuota as number,
+      fechaInicioTorneo: (data.fecha_inicio_torneo as string | null) ?? null,
     };
   } catch {
     // Si Supabase todavía no está conectado (faltan variables de entorno),
@@ -52,7 +55,6 @@ async function getPricing() {
  */
 export default async function InscripcionPage() {
   const pricing = await getPricing();
-  const montoUniformeKit = pricing.precioUniforme * pricing.maxJugadoresPorEquipo;
 
-  return <InscripcionGate pricing={pricing} montoUniformeKit={montoUniformeKit} />;
+  return <InscripcionGate pricing={pricing} />;
 }
