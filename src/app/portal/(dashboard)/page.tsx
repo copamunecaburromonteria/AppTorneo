@@ -330,7 +330,7 @@ export default async function PortalPage({
               qrSrc={QR_PAGO_SRC}
               deadlineTexto={cuotaDeadlineTexto}
               yaReportado={cuotaYaReportada}
-              onReportar={(formData) => reportarTransferenciaCuota(proximaCuotaPendiente.id, formData)}
+              onReportar={reportarTransferenciaCuota.bind(null, proximaCuotaPendiente.id)}
               wompiBoton={<PagarWompiButton cuotaId={proximaCuotaPendiente.id} />}
             />
           </div>
@@ -371,7 +371,7 @@ export default async function PortalPage({
               qrSrc={QR_PAGO_SRC}
               deadlineTexto={cargosDeadlineTexto}
               yaReportado={cargosYaReportados}
-              onReportar={(formData) => reportarTransferenciaCargosEquipo(formData)}
+              onReportar={reportarTransferenciaCargosEquipo}
               wompiBoton={<PagarCargosEquipoButton />}
             />
           </div>
