@@ -116,7 +116,7 @@ export async function PreguntasFrecuentes() {
 
   return (
     <section id="preguntas-frecuentes" className="bg-muneca-black">
-      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
         <p className="border-l-4 border-muneca-yellow pl-3 text-sm font-bold uppercase tracking-widest text-muneca-yellow">
           Preguntas frecuentes
         </p>
