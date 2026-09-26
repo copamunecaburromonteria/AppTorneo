@@ -24,6 +24,13 @@ const SLOT_HOME = "home-slider";
  * ("¡Tu marca va aquí!"), enlazado al WhatsApp del torneo con un mensaje
  * precargado — mismo patrón de `armarLinkWhatsApp` que ya se usa en el panel
  * admin.
+ *
+ * El banner (`BannerCentral.png`, nombre tal cual lo envió Fernando el
+ * 2026-09-26) es una versión más ancha/nueva del mismo diseño — reemplaza al
+ * anterior `banner-espacio-disponible.png` (que queda sin uso en
+ * `public/brand/patrocinadores/`, no se borró por si se necesita revertir).
+ * Se recortó el margen blanco superior/inferior del archivo original que
+ * mandó Fernando para que quede a sangre completa, igual que el anterior.
  */
 export async function Patrocinadores() {
   const supabase = await createClient();
@@ -66,19 +73,19 @@ export async function Patrocinadores() {
             className="mt-3 block overflow-hidden rounded-xl transition-transform hover:scale-[1.01]"
           >
             <Image
-              src="/brand/patrocinadores/banner-espacio-disponible.png"
+              src="/brand/patrocinadores/BannerCentral.png"
               alt="¡Tu marca va aquí! Escríbenos por WhatsApp para patrocinar la Copa Muñeca e'Burro."
-              width={1600}
-              height={533}
+              width={2059}
+              height={399}
               className="h-auto w-full"
             />
           </Link>
         ) : (
           <Image
-            src="/brand/patrocinadores/banner-espacio-disponible.png"
+            src="/brand/patrocinadores/BannerCentral.png"
             alt="¡Tu marca va aquí!"
-            width={1600}
-            height={533}
+            width={2059}
+            height={399}
             className="mt-3 h-auto w-full rounded-xl"
           />
         )}
