@@ -26,7 +26,7 @@ export default async function AdminPreinscripcionesPage() {
       supabase
         .from("teams")
         .select(
-          `id, nombre_equipo, orden_preinscripcion, fecha_invitado,
+          `id, nombre_equipo, orden_preinscripcion, fecha_invitado, como_se_entero,
            team_delegado(nombre, apellido, correo, contacto_principal, contacto_alterno, whatsapp_notificaciones)`
         )
         .eq("estado_inscripcion", "invitado")
@@ -34,7 +34,7 @@ export default async function AdminPreinscripcionesPage() {
       supabase
         .from("teams")
         .select(
-          `id, nombre_equipo, orden_preinscripcion, created_at,
+          `id, nombre_equipo, orden_preinscripcion, created_at, como_se_entero,
            team_delegado(nombre, apellido, correo, contacto_principal, contacto_alterno, whatsapp_notificaciones)`
         )
         .eq("estado_inscripcion", "preinscrito")
@@ -50,6 +50,7 @@ export default async function AdminPreinscripcionesPage() {
     nombre_equipo: e.nombre_equipo,
     orden_preinscripcion: e.orden_preinscripcion,
     fecha: e.fecha_invitado ?? "",
+    como_se_entero: e.como_se_entero,
     delegado: unwrapDelegado(e.team_delegado),
   }));
 
@@ -58,6 +59,7 @@ export default async function AdminPreinscripcionesPage() {
     nombre_equipo: e.nombre_equipo,
     orden_preinscripcion: e.orden_preinscripcion,
     fecha: e.created_at,
+    como_se_entero: e.como_se_entero,
     delegado: unwrapDelegado(e.team_delegado),
   }));
 

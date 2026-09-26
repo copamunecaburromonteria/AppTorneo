@@ -30,6 +30,7 @@ export type EquipoPreinscrito = {
   nombre_equipo: string;
   orden_preinscripcion: number | null;
   fecha: string; // fecha_invitado o created_at, ya resuelta por el server
+  como_se_entero: string | null;
   delegado: Delegado;
 };
 
@@ -87,6 +88,11 @@ function TarjetaEquipo({
         <p className="text-xs text-muneca-black/40">
           {tipoFecha} {formatFecha(equipo.fecha)}
         </p>
+        {equipo.como_se_entero && (
+          <p className="mt-1 text-xs text-muneca-black/40">
+            Se enteró por: <span className="font-semibold text-muneca-black/60">{equipo.como_se_entero}</span>
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

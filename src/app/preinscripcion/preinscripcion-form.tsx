@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { WizardShell } from "@/components/wizard/wizard-shell";
+import { CANALES_PREINSCRIPCION } from "@/lib/canales-preinscripcion";
 import { preinscribirEquipo, type PreinscripcionInput } from "./actions";
 
 const initialState: PreinscripcionInput = {
@@ -9,6 +10,7 @@ const initialState: PreinscripcionInput = {
   anioFundacion: "",
   ciudadBarrio: "",
   descripcion: "",
+  comoSeEntero: "",
   correo: "",
   delegadoNombre: "",
   delegadoApellido: "",
@@ -173,6 +175,20 @@ export function PreinscripcionForm() {
               className={inputClass}
               placeholder="Ej. Barrio, comuna o zona"
             />
+          </Field>
+          <Field label="¿Dónde te enteraste de la Copa? (opcional)">
+            <select
+              value={form.comoSeEntero}
+              onChange={(e) => update("comoSeEntero", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Selecciona una opción</option>
+              {CANALES_PREINSCRIPCION.map((canal) => (
+                <option key={canal} value={canal}>
+                  {canal}
+                </option>
+              ))}
+            </select>
           </Field>
         </Card>
 

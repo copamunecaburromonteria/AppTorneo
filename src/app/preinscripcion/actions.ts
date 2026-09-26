@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminNotificationEmails, sendEmail } from "@/lib/resend/client";
 import { correoNuevaPreinscripcionAdmin, correoPreinscripcion } from "@/lib/resend/templates";
+import { esCanalValido } from "@/lib/canales-preinscripcion";
 
 /**
  * Nueva modalidad de entrada al torneo (2026-09-17, decisión de Fernando):
@@ -22,6 +23,7 @@ export type PreinscripcionInput = {
   anioFundacion: string;
   ciudadBarrio: string;
   descripcion: string;
+  comoSeEntero: string;
   correo: string;
   delegadoNombre: string;
   delegadoApellido: string;
@@ -46,6 +48,11 @@ export async function preinscribirEquipo(
   const delegadoContactoPrincipal = input.delegadoContactoPrincipal.trim();
   const ciudadBarrio = input.ciudadBarrio.trim();
   const descripcion = input.descripcion.trim();
+  const comoSeEntero = input.comoSeEntero.trim();
+
+  if (comoSeEntero && !esCanalValido(comoSeEntero)) {
+    return { success: false, error: "La opción de '¿Dónde te enteraste?' no es válida." };
+  }
 
   const anioFundacionRaw = input.anioFundacion.trim();
   let anioFundacion: number | null = null;
@@ -91,6 +98,7 @@ export async function preinscribirEquipo(
       anio_fundacion: anioFundacion,
       ciudad_barrio: ciudadBarrio || null,
       descripcion: descripcion || null,
+      como_se_entero: comoSeEntero || null,
       estado_inscripcion: "preinscrito",
       orden_preinscripcion: ordenPreinscripcion,
     })
@@ -135,6 +143,7 @@ export async function preinscribirEquipo(
       contacto: delegadoContactoPrincipal,
       correo,
       ciudadBarrio: ciudadBarrio || null,
+      comoSeEntero: comoSeEntero || null,
     });
     await sendEmail({
       to: adminEmails,

@@ -439,7 +439,9 @@ export function correoNuevaPreinscripcionAdmin(params: {
   contacto: string;
   correo: string;
   ciudadBarrio: string | null;
+  comoSeEntero: string | null;
 }): EmailContent {
+  const filaCorreo = params.ciudadBarrio || params.comoSeEntero;
   const html = layout(
     `Nueva preinscripción: ${params.nombreEquipo}`,
     `
@@ -449,8 +451,9 @@ export function correoNuevaPreinscripcionAdmin(params: {
       <tr><td style="padding:10px 16px 4px;color:${COLOR.grayText};">Equipo</td><td style="padding:10px 16px 4px;font-weight:bold;text-align:right;">${params.nombreEquipo}</td></tr>
       <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Delegado</td><td style="padding:4px 16px;text-align:right;">${params.delegadoNombre}</td></tr>
       <tr><td style="padding:4px 16px;color:${COLOR.grayText};">Contacto</td><td style="padding:4px 16px;text-align:right;">${params.contacto}</td></tr>
-      <tr><td style="padding:4px 16px${params.ciudadBarrio ? "" : " 10px"};color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px${params.ciudadBarrio ? "" : " 10px"};text-align:right;">${params.correo}</td></tr>
-      ${params.ciudadBarrio ? `<tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Ciudad / Barrio</td><td style="padding:4px 16px 10px;text-align:right;">${params.ciudadBarrio}</td></tr>` : ""}
+      <tr><td style="padding:4px 16px${filaCorreo ? "" : " 10px"};color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px${filaCorreo ? "" : " 10px"};text-align:right;">${params.correo}</td></tr>
+      ${params.ciudadBarrio ? `<tr><td style="padding:4px 16px${params.comoSeEntero ? "" : " 10px"};color:${COLOR.grayText};">Ciudad / Barrio</td><td style="padding:4px 16px${params.comoSeEntero ? "" : " 10px"};text-align:right;">${params.ciudadBarrio}</td></tr>` : ""}
+      ${params.comoSeEntero ? `<tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">¿Dónde se enteró?</td><td style="padding:4px 16px 10px;text-align:right;">${params.comoSeEntero}</td></tr>` : ""}
     </table>
     ${boton(`${SITE_URL}/admin/preinscripciones`, "Ver en el panel admin")}
     `
@@ -461,7 +464,7 @@ export function correoNuevaPreinscripcionAdmin(params: {
 Equipo: ${params.nombreEquipo}
 Delegado: ${params.delegadoNombre}
 Contacto: ${params.contacto}
-Correo: ${params.correo}${params.ciudadBarrio ? `\nCiudad / Barrio: ${params.ciudadBarrio}` : ""}
+Correo: ${params.correo}${params.ciudadBarrio ? `\nCiudad / Barrio: ${params.ciudadBarrio}` : ""}${params.comoSeEntero ? `\n¿Dónde se enteró?: ${params.comoSeEntero}` : ""}
 
 Ver en el panel admin: ${SITE_URL}/admin/preinscripciones`;
 
