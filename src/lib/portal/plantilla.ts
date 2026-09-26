@@ -74,7 +74,15 @@ export async function evaluarEstadoPlantilla(
   const diasGracia = config?.dias_gracia_plantilla ?? 5;
   const diasLimitePrevio = config?.dias_limite_previo_torneo ?? 3;
 
-  const limitePorPago = new Date(`${cuota1.fecha_pago}T00:00:00`);
+  // `fecha_pago` es `timestamp with time zone` (momento exacto del pago), no
+  // una fecha simple como `fecha_limite` — a diferencia de esa, no se le
+  // puede pegar "T00:00:00" directo (arma un string irreconocible, ej.
+  // "2026-09-26T17:17:18.734+00:00T00:00:00", que produce una fecha
+  // inválida y hace explotar el `.toISOString()` de más abajo). Se toma
+  // solo el día calendario del pago y se arma la medianoche local desde ahí,
+  // igual que con el resto de las fechas de este archivo.
+  const fechaPagoYmd = cuota1.fecha_pago.slice(0, 10);
+  const limitePorPago = new Date(`${fechaPagoYmd}T00:00:00`);
   limitePorPago.setDate(limitePorPago.getDate() + diasGracia);
 
   let limite = limitePorPago;
