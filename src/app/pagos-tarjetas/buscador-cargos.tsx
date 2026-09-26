@@ -6,8 +6,11 @@ import {
   buscarCargosPorCedula,
   iniciarPagoCargosJugador,
   confirmarPagoCargosJugador,
+  reportarTransferenciaCargosJugador,
   type ResultadoBusquedaCargos,
 } from "@/app/pagos-tarjetas/actions";
+import { OpcionesPago } from "@/components/pagos/opciones-pago";
+import { calcularMontoConRecargoWompi } from "@/lib/pagos/recargo-wompi";
 
 declare global {
   interface Window {
@@ -174,20 +177,29 @@ export function BuscadorCargos() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-4 flex items-center justify-between rounded-xl bg-muneca-purple/5 px-4 py-3">
-                <span className="text-sm font-semibold text-muneca-black">Total a pagar</span>
-                <span className="font-display text-xl text-muneca-purple">{formatCOP(resultado.total)}</span>
+              <div className="mt-4">
+                <OpcionesPago
+                  montoBase={resultado.total}
+                  montoWompi={calcularMontoConRecargoWompi(resultado.total, resultado.recargoWompiPct)}
+                  llave={resultado.llave}
+                  qrSrc="/brand/pagos/qr-nu.png"
+                  deadlineTexto={resultado.deadlineTexto}
+                  yaReportado={resultado.yaReportado}
+                  onReportar={(formData) => reportarTransferenciaCargosJugador(cedula, nombre, formData)}
+                  wompiBoton={
+                    <button
+                      type="button"
+                      onClick={pagar}
+                      disabled={pagando !== "idle"}
+                      className="w-full rounded-md bg-muneca-yellow px-4 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.01] disabled:opacity-60"
+                    >
+                      {pagando === "abriendo" && "Abriendo pago..."}
+                      {pagando === "confirmando" && "Confirmando..."}
+                      {pagando === "idle" && "Pagar por Wompi"}
+                    </button>
+                  }
+                />
               </div>
-              <button
-                type="button"
-                onClick={pagar}
-                disabled={pagando !== "idle"}
-                className="mt-4 w-full rounded-md bg-muneca-yellow px-4 py-3 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.01] disabled:opacity-60"
-              >
-                {pagando === "abriendo" && "Abriendo pago..."}
-                {pagando === "confirmando" && "Confirmando..."}
-                {pagando === "idle" && `Pagar ${formatCOP(resultado.total)}`}
-              </button>
             </>
           )}
         </div>

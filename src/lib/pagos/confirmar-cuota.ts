@@ -62,6 +62,11 @@ export async function aplicarPagoCuota(
       estado: "pagada",
       fecha_pago: new Date().toISOString(),
       referencia_wompi: params.referencia,
+      // Si Wompi confirmó automáticamente, deja constancia de que así se
+      // pagó. Si fue el admin quien la marcó a mano, no se toca este campo —
+      // puede que ya diga "transferencia" porque el equipo la reportó antes
+      // (ver `reportarTransferencia`), y no hay que perder ese dato.
+      ...(params.notificarAdmin ? { metodo_pago_declarado: "wompi" as const } : {}),
     })
     .eq("id", params.cuotaId);
 

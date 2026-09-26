@@ -54,6 +54,9 @@ export type Cuota = {
   estado: string;
   fecha_pago: string | null;
   referencia_wompi: string | null;
+  metodo_pago_declarado: string | null;
+  pago_reportado_at: string | null;
+  comprobante_url: string | null;
 };
 
 export type EquipoFila = {
@@ -283,6 +286,22 @@ export function EquiposTabla({ equipos, grupos }: { equipos: EquipoFila[]; grupo
                                       pagada el {formatFecha(cuota.fecha_pago)}
                                       {cuota.referencia_wompi ? ` · ref. ${cuota.referencia_wompi}` : ""}
                                     </span>
+                                  )}
+                                  {cuota.estado !== "pagada" && cuota.pago_reportado_at && (
+                                    <div className="mt-1 text-xs font-semibold text-muneca-purple">
+                                      💜 Reportó transferencia el{" "}
+                                      {new Date(cuota.pago_reportado_at).toLocaleString("es-CO", {
+                                        timeZone: "America/Bogota",
+                                      })}
+                                      {cuota.comprobante_url && (
+                                        <>
+                                          {" · "}
+                                          <a href={cuota.comprobante_url} target="_blank" rel="noreferrer" className="underline">
+                                            Ver comprobante
+                                          </a>
+                                        </>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-3">

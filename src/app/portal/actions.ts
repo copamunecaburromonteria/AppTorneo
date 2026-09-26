@@ -129,8 +129,15 @@ export async function eliminarStaff(staffId: string, _formData: FormData) {
 // --- Plantilla de jugadores ---
 
 const TIPOS_DOCUMENTO = new Set(["TI", "CC", "CE", "RC", "PA"]);
-const POSICIONES = new Set(["Arquero", "Defensa", "Mediocampista", "Delantero"]);
+// Simplificado el 2026-09-26 a pedido de Fernando: antes era Arquero/Defensa/
+// Mediocampista/Delantero — ahora solo importa distinguir arquero de jugador
+// de campo.
+const POSICIONES = new Set(["Arquero", "Jugador de Campo"]);
 const TALLAS = new Set(["XS", "S", "M", "L", "XL", "XXL", "3XL"]);
+// Un jugador puede marcarse también como DT o Asistente Técnico del equipo
+// (en vez de registrarlo dos veces: una en la plantilla y otra en "Cuerpo
+// técnico") — ver `rol_cuerpo_tecnico` en `players`.
+const ROLES_CUERPO_TECNICO = new Set(["dt", "asistente_tecnico"]);
 
 function leerDatosJugador(formData: FormData) {
   const nombre = (formData.get("nombre") as string)?.trim();
@@ -140,12 +147,16 @@ function leerDatosJugador(formData: FormData) {
   const numeroCamisetaRaw = (formData.get("numero_camiseta") as string)?.trim();
   const posicion = formData.get("posicion") as string;
   const tallaUniforme = formData.get("talla_uniforme") as string;
+  const rolCuerpoTecnico = formData.get("rol_cuerpo_tecnico") as string;
 
   if (!nombre) volverConError("Falta el nombre del jugador.");
   if (!TIPOS_DOCUMENTO.has(tipoDocumento)) volverConError("Tipo de documento inválido.");
   if (!numeroDocumento) volverConError("Falta el número de documento.");
   if (posicion && !POSICIONES.has(posicion)) volverConError("Posición inválida.");
   if (tallaUniforme && !TALLAS.has(tallaUniforme)) volverConError("Talla de uniforme inválida.");
+  if (rolCuerpoTecnico && !ROLES_CUERPO_TECNICO.has(rolCuerpoTecnico)) {
+    volverConError("Rol de cuerpo técnico inválido.");
+  }
 
   const numeroCamiseta = numeroCamisetaRaw ? Number(numeroCamisetaRaw) : null;
   if (numeroCamisetaRaw && (!Number.isInteger(numeroCamiseta) || numeroCamiseta! < 0)) {
@@ -160,6 +171,7 @@ function leerDatosJugador(formData: FormData) {
     numero_camiseta: numeroCamiseta,
     posicion: posicion || null,
     talla_uniforme: tallaUniforme || null,
+    rol_cuerpo_tecnico: rolCuerpoTecnico || null,
   };
 }
 

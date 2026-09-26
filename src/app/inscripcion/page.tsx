@@ -19,6 +19,8 @@ const PRICING_FALLBACK = {
   diasPlazoSaldo: 7,
   diasPrevioTorneoUltimaCuota: 5,
   fechaInicioTorneo: null as string | null,
+  recargoWompiPct: 0.033333,
+  llavePago: "@FGC368",
 };
 
 async function getPricing() {
@@ -27,7 +29,7 @@ async function getPricing() {
     const { data } = await supabase
       .from("torneo_config")
       .select(
-        "monto_inscripcion, numero_cuotas_sin_uniforme, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota"
+        "monto_inscripcion, numero_cuotas_sin_uniforme, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota, recargo_wompi_pct, llave_pago_transferencia"
       )
       .eq("id", 1)
       .single();
@@ -40,6 +42,8 @@ async function getPricing() {
       diasPlazoSaldo: data.dias_plazo_saldo as number,
       diasPrevioTorneoUltimaCuota: data.dias_previo_torneo_ultima_cuota as number,
       fechaInicioTorneo: (data.fecha_inicio_torneo as string | null) ?? null,
+      recargoWompiPct: Number(data.recargo_wompi_pct ?? PRICING_FALLBACK.recargoWompiPct),
+      llavePago: (data.llave_pago_transferencia as string | null) ?? PRICING_FALLBACK.llavePago,
     };
   } catch {
     // Si Supabase todavía no está conectado (faltan variables de entorno),

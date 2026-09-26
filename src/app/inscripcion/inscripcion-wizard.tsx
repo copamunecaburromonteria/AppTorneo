@@ -16,6 +16,8 @@ type Pricing = {
   diasPlazoSaldo: number;
   diasPrevioTorneoUltimaCuota: number;
   fechaInicioTorneo: string | null;
+  recargoWompiPct: number;
+  llavePago: string;
 };
 
 /**
@@ -452,6 +454,11 @@ export function InscripcionWizard({
                   ))}
                 </ul>
               </div>
+
+              <p className="mt-3 text-xs text-white/40">
+                Cada partida se puede pagar por transferencia (QR/Llave Nu {pricing.llavePago}, sin recargo) o
+                por Wompi (con recargo de procesamiento) — verás las dos opciones en el portal del equipo.
+              </p>
             </div>
           </>
         )}

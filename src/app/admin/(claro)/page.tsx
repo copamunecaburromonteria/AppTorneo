@@ -45,7 +45,8 @@ export default async function AdminPagosPage() {
         `id, nombre_equipo, escudo_url, estado_inscripcion, orden_inscripcion, created_at,
          team_delegado(nombre, apellido, correo),
          payments(id, monto_total, monto_pagado, tipo_pago,
-           payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi))`
+           payment_installments(id, numero_cuota, monto, fecha_limite, estado, fecha_pago, referencia_wompi,
+             metodo_pago_declarado, pago_reportado_at, comprobante_url))`
       )
       .neq("estado_inscripcion", "lista_espera")
       .neq("estado_inscripcion", "preinscrito")

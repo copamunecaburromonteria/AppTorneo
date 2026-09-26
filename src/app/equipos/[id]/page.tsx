@@ -11,7 +11,19 @@ import { SponsorSlotCaja } from "@/components/patrocinadores/sponsor-slot";
 
 const ROL_LABEL: Record<string, string> = {
   dt: "Director técnico",
-  preparador_fisico: "Preparador físico",
+  // Renombrado el 2026-09-26 a pedido de Fernando (el valor guardado sigue
+  // siendo 'preparador_fisico', solo cambia la etiqueta que se muestra) —
+  // ver el mismo cambio en src/app/portal/(dashboard)/page.tsx.
+  preparador_fisico: "Asistente Técnico",
+};
+
+// Etiquetas para `players.rol_cuerpo_tecnico` (jugador que también es DT o
+// Asistente Técnico) — vocabulario propio, distinto al de `team_staff.rol`
+// que usa ROL_LABEL arriba. Ver 04a_rol_cuerpo_tecnico y el mismo mapa en
+// src/app/portal/(dashboard)/page.tsx.
+const ROL_CUERPO_TECNICO_LABEL: Record<string, string> = {
+  dt: "DT",
+  asistente_tecnico: "Asistente Técnico",
 };
 
 const ESTADO_BADGE: Record<string, { label: string; className: string }> = {
@@ -105,7 +117,7 @@ export default async function EquipoPage({
   ] = await Promise.all([
     supabase
       .from("v_players_public")
-      .select("id, nombre, numero_camiseta, posicion, foto_url, es_jugador")
+      .select("id, nombre, numero_camiseta, posicion, foto_url, es_jugador, rol_cuerpo_tecnico")
       .eq("team_id", teamId)
       .order("numero_camiseta", { ascending: true, nullsFirst: false }),
     supabase.from("v_team_staff_public").select("nombre, rol").eq("team_id", teamId),
@@ -337,7 +349,14 @@ export default async function EquipoPage({
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-white">{j.nombre}</p>
-                        <p className="text-xs text-white/40">{j.posicion ?? "—"}</p>
+                        <p className="text-xs text-white/40">
+                          {j.posicion ?? "—"}
+                          {j.rol_cuerpo_tecnico && (
+                            <span className="ml-1.5 rounded-full bg-muneca-yellow/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-muneca-yellow">
+                              {ROL_CUERPO_TECNICO_LABEL[j.rol_cuerpo_tecnico] ?? j.rol_cuerpo_tecnico}
+                            </span>
+                          )}
+                        </p>
                       </div>
                     </Link>
                   ))}
@@ -514,7 +533,7 @@ export default async function EquipoPage({
                   🧑‍💼 Cuerpo técnico
                 </p>
                 <div className="mt-3 space-y-2">
-                  {staff.length === 0 && (
+                  {staff.length === 0 && jugadores.every((j) => !j.rol_cuerpo_tecnico) && (
                     <p className="text-xs text-white/40">Sin información pública.</p>
                   )}
                   {staff.map((s, i) => (
@@ -523,6 +542,17 @@ export default async function EquipoPage({
                       <p className="text-xs text-white/40">{ROL_LABEL[s.rol] ?? s.rol}</p>
                     </div>
                   ))}
+                  {jugadores
+                    .filter((j) => j.rol_cuerpo_tecnico)
+                    .map((j) => (
+                      <div key={`jugador-staff-${j.id}`} className="rounded-xl bg-white/5 p-2.5">
+                        <p className="text-sm font-semibold text-white">{j.nombre}</p>
+                        <p className="text-xs text-white/40">
+                          {ROL_CUERPO_TECNICO_LABEL[j.rol_cuerpo_tecnico as string] ?? j.rol_cuerpo_tecnico}{" "}
+                          <span className="text-white/25">(también juega)</span>
+                        </p>
+                      </div>
+                    ))}
                 </div>
               </div>
 

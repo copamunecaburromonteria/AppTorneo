@@ -94,6 +94,13 @@ export type ConfiguracionPagos = {
   dias_aviso_previo_cuota: number;
   numero_cuotas_sin_uniforme: number;
   dias_previo_torneo_ultima_cuota: number;
+  // Recargo de Wompi + plazo de notificación de transferencia — agregados
+  // 2026-09-26 (ver claude/plan-fases-tareas.md). `recargo_wompi_pct` va en
+  // fracción (0.033333 = 3.3333%) en la base de datos, pero se edita acá en
+  // porcentaje (3.3333) para que sea legible — se convierte en ambos
+  // sentidos en `actualizarConfiguracionPagos`.
+  recargo_wompi_pct: number;
+  horas_plazo_notificacion_transferencia: number;
 };
 
 /**
@@ -117,12 +124,21 @@ export async function actualizarConfiguracionPagos(datos: ConfiguracionPagos): P
     datos.dias_plazo_saldo < 1 ||
     datos.dias_aviso_previo_cuota < 0 ||
     datos.numero_cuotas_sin_uniforme < 1 ||
-    datos.dias_previo_torneo_ultima_cuota < 0
+    datos.dias_previo_torneo_ultima_cuota < 0 ||
+    datos.recargo_wompi_pct < 0 ||
+    datos.recargo_wompi_pct > 100 ||
+    datos.horas_plazo_notificacion_transferencia < 1
   ) {
     return { success: false, error: "Alguno de los valores no es válido." };
   }
 
-  const { error } = await supabase.from("torneo_config").update(datos).eq("id", 1);
+  // `recargo_wompi_pct` se edita en porcentaje (ej. 3.3333) pero se guarda en
+  // fracción (0.033333) — así lo consume `calcularMontoConRecargoWompi`.
+  const { recargo_wompi_pct, ...resto } = datos;
+  const { error } = await supabase
+    .from("torneo_config")
+    .update({ ...resto, recargo_wompi_pct: recargo_wompi_pct / 100 })
+    .eq("id", 1);
 
   if (error) {
     return { success: false, error: `No se pudo actualizar la configuración: ${error.message}` };

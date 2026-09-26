@@ -12,10 +12,66 @@ type Pricing = {
   diasPlazoSaldo: number;
   diasPrevioTorneoUltimaCuota: number;
   fechaInicioTorneo: string | null;
+  recargoWompiPct: number;
+  llavePago: string;
 };
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-muneca-yellow focus:outline-none focus:ring-2 focus:ring-muneca-yellow/20";
+
+function formatCOP(valor: number) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
+/**
+ * Bloque informativo de cómo se paga la inscripción — 2026-09-26, a pedido
+ * de Fernando. Puramente informativo (sin QR de verdad ni botón de reporte:
+ * eso solo tiene sentido una vez que el equipo ya está inscrito y tiene una
+ * partida real que pagar — ver `OpcionesPago` dentro del portal). El monto
+ * y el recargo salen de `torneo_config`, nunca hardcodeados, para que si
+ * cambian no haya que tocar este archivo.
+ */
+function ComoSePaga({ pricing }: { pricing: Pricing }) {
+  const montoCuota = Math.round(pricing.montoInscripcion / pricing.numeroCuotas);
+  const montoCuotaConRecargo = Math.round(montoCuota * (1 + pricing.recargoWompiPct));
+  const montoTotalConRecargo = Math.round(pricing.montoInscripcion * (1 + pricing.recargoWompiPct));
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+      <p className="text-xs font-bold uppercase tracking-wide text-muneca-yellow">
+        🏆 Inscripción: {formatCOP(pricing.montoInscripcion)}
+      </p>
+      <p className="mt-1 text-sm text-white/60">
+        El equipo puede pagar completo o en {pricing.numeroCuotas} cuotas de{" "}
+        {formatCOP(montoCuota)} — de dos maneras.
+      </p>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-muneca-purple/30 bg-muneca-purple/10 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-white">💜 Transferencia</p>
+          <p className="mt-1 text-sm text-white/70">Sin recargo — QR o Llave Nu {pricing.llavePago}.</p>
+          <p className="mt-2 text-xs text-white/40">Aprobación manual: revisamos y confirmamos tu pago.</p>
+        </div>
+        <div className="rounded-xl border border-muneca-yellow/30 bg-muneca-yellow/10 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-white">💳 Wompi</p>
+          <p className="mt-1 text-sm text-white/70">
+            {formatCOP(montoCuotaConRecargo)} por cuota ({formatCOP(montoTotalConRecargo)} completo) — incluye el
+            costo de procesamiento.
+          </p>
+          <p className="mt-2 text-xs text-white/40">Confirmación automática, al instante.</p>
+        </div>
+      </div>
+
+      <p className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
+        🔥 ¿Quieres asegurar tu cupo? Cupos limitados para la Copa Muñeca e&apos;Burro.
+      </p>
+    </div>
+  );
+}
 
 /**
  * Puerta de entrada a `/inscripcion` (2026-09-17, ver
@@ -76,6 +132,8 @@ export function InscripcionGate({ pricing }: { pricing: Pricing }) {
             ingresa el mismo correo que usaste al preinscribirte.
           </p>
         </div>
+
+        <ComoSePaga pricing={pricing} />
 
         <form
           onSubmit={buscar}

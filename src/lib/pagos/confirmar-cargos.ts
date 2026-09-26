@@ -92,6 +92,10 @@ export async function aplicarPagoCargos(
       estado: "pagado",
       fecha_pago: new Date().toISOString(),
       referencia_wompi: params.referencia,
+      // Igual que en `aplicarPagoCuota`: solo se toca si fue Wompi quien
+      // confirmó — si el admin lo marcó a mano, se respeta lo que ya
+      // hubiera quedado de un reporte de transferencia previo.
+      ...(params.notificarAdmin ? { metodo_pago_declarado: "wompi" as const } : {}),
     })
     .eq("lote_pago_id", params.loteId)
     .eq("estado", "pendiente");

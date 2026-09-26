@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { aplicarPagoCuota } from "@/lib/pagos/confirmar-cuota";
+import { calcularMontoConRecargoWompi } from "@/lib/pagos/recargo-wompi";
 import {
   consultarTransaccionWompi,
   firmarIntegridadWompi,
@@ -44,11 +45,10 @@ export async function iniciarPagoCuota(cuotaId: string): Promise<IniciarPagoResu
     return { success: false, error: "No hay sesión activa." };
   }
 
-  const { data: cuota, error } = await supabase
-    .from("payment_installments")
-    .select("id, monto, estado")
-    .eq("id", cuotaId)
-    .maybeSingle();
+  const [{ data: cuota, error }, { data: config }] = await Promise.all([
+    supabase.from("payment_installments").select("id, monto, estado").eq("id", cuotaId).maybeSingle(),
+    supabase.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single(),
+  ]);
 
   if (error || !cuota) {
     // Si la cuota no es del equipo con sesión, RLS hace que no aparezca —
@@ -65,7 +65,13 @@ export async function iniciarPagoCuota(cuotaId: string): Promise<IniciarPagoResu
     return { success: false, error: "El pago en línea todavía no está configurado." };
   }
 
-  const amountInCents = Math.round(Number(cuota.monto) * 100);
+  // El monto que cobra Wompi lleva el recargo de procesamiento — el que
+  // queda registrado como pagado en `payment_installments` sigue siendo el
+  // monto real de la cuota (`aplicarPagoCuota` usa `cuota.monto`, no lo que
+  // Wompi cobró), así que la inscripción nunca "cuesta más" en el sistema.
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const montoConRecargo = calcularMontoConRecargoWompi(Number(cuota.monto), recargoPct);
+  const amountInCents = Math.round(montoConRecargo * 100);
   const reference = generarReferenciaCuota(cuota.id);
   let signature: string;
   try {
@@ -110,11 +116,10 @@ export async function confirmarPagoWompi(
     return { success: false, error: "No hay sesión activa." };
   }
 
-  const { data: cuotaPropia } = await supabase
-    .from("payment_installments")
-    .select("id, monto")
-    .eq("id", cuotaId)
-    .maybeSingle();
+  const [{ data: cuotaPropia }, { data: config }] = await Promise.all([
+    supabase.from("payment_installments").select("id, monto").eq("id", cuotaId).maybeSingle(),
+    supabase.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single(),
+  ]);
 
   if (!cuotaPropia) {
     return { success: false, error: "No se encontró la partida." };
@@ -132,7 +137,9 @@ export async function confirmarPagoWompi(
     return { success: false, error: "La transacción no corresponde a esta partida." };
   }
 
-  const montoEsperado = Math.round(Number(cuotaPropia.monto) * 100);
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const montoConRecargo = calcularMontoConRecargoWompi(Number(cuotaPropia.monto), recargoPct);
+  const montoEsperado = Math.round(montoConRecargo * 100);
   if (transaccion.amount_in_cents !== montoEsperado || transaccion.currency !== "COP") {
     return { success: false, error: "El monto de la transacción no coincide con esta partida." };
   }

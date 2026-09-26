@@ -799,3 +799,97 @@ Ver en el panel admin: ${SITE_URL}/admin/cargos-tarjetas`;
     text,
   };
 }
+
+// --- Reporte de pago por transferencia (QR Nu / Llave @FGC368) —
+// agregado 2026-09-26 a pedido de Fernando. A diferencia de los correos de
+// "pago recibido" de arriba (Wompi, ya verificado contra su API), esto es
+// un AVISO del equipo/jugador de que ya transfirió — todavía sin confirmar:
+// el admin sigue teniendo que revisar la cuenta Nu y marcar la partida/tarjeta
+// como pagada a mano en el panel, igual que siempre. Lo nuevo es solo que
+// ahora queda un registro de cuándo avisaron y si fue dentro del plazo.
+
+function avisoPlazo(aTiempo: boolean, plazoTexto: string): string {
+  const color = aTiempo ? "#0F7B4D" : "#B45309";
+  const bg = aTiempo ? "#EAF7F0" : "#FEF3E2";
+  const texto = aTiempo
+    ? `✅ Reportado a tiempo (dentro de las ${plazoTexto})`
+    : `⚠️ Reportado fuera del plazo de ${plazoTexto}`;
+  return `<p style="margin:10px 0 0;padding:8px 14px;border-radius:8px;background-color:${bg};color:${color};font-size:13px;font-weight:bold;">${texto}</p>`;
+}
+
+export function correoTransferenciaReportadaCuotaAdmin(params: {
+  nombreEquipo: string;
+  delegadoNombre: string;
+  delegadoCorreo: string;
+  numeroCuota: number;
+  monto: number;
+  comprobanteUrl: string | null;
+  aTiempo: boolean;
+  plazoTexto: string;
+}): EmailContent {
+  const html = layout(
+    `Transferencia reportada: ${params.nombreEquipo} — partida ${params.numeroCuota}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">💜 Transferencia reportada — falta confirmar</p>
+    <p><strong>${params.nombreEquipo}</strong> avisó que ya transfirió la <strong>partida ${params.numeroCuota}</strong>. Revisa tu cuenta Nu y márcala como pagada en el panel cuando la veas reflejada.</p>
+    ${montoDestacado(`Partida ${params.numeroCuota}`, params.monto)}
+    ${avisoPlazo(params.aTiempo, params.plazoTexto)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;background-color:#FAFAFA;border-radius:12px;">
+      <tr><td style="padding:10px 16px 4px;color:${COLOR.grayText};">Delegado</td><td style="padding:10px 16px 4px;font-weight:bold;text-align:right;">${params.delegadoNombre}</td></tr>
+      <tr><td style="padding:4px 16px 10px;color:${COLOR.grayText};">Correo</td><td style="padding:4px 16px 10px;text-align:right;">${params.delegadoCorreo}</td></tr>
+    </table>
+    ${boton(params.comprobanteUrl ?? `${SITE_URL}/admin`, params.comprobanteUrl ? "Ver comprobante" : "Ver en el panel admin")}
+    `
+  );
+
+  const text = `${params.nombreEquipo} avisó que ya transfirió la partida ${params.numeroCuota} (${formatCOP(params.monto)}).
+
+${params.aTiempo ? "Reportado a tiempo" : "Reportado fuera de plazo"} (plazo: ${params.plazoTexto}).
+
+Delegado: ${params.delegadoNombre}
+Correo: ${params.delegadoCorreo}
+${params.comprobanteUrl ? `Comprobante: ${params.comprobanteUrl}\n` : ""}
+Revisa tu cuenta Nu y marca la partida como pagada en el panel: ${SITE_URL}/admin`;
+
+  return {
+    subject: `💜 Transferencia reportada: ${params.nombreEquipo} — partida ${params.numeroCuota} (${formatCOP(params.monto)})`,
+    html,
+    text,
+  };
+}
+
+export function correoTransferenciaReportadaCargosAdmin(params: {
+  nombreEquipo: string;
+  items: ItemCargoTarjeta[];
+  total: number;
+  comprobanteUrl: string | null;
+  aTiempo: boolean;
+  plazoTexto: string;
+}): EmailContent {
+  const html = layout(
+    `Transferencia de tarjetas reportada: ${params.nombreEquipo}`,
+    `
+    <p style="margin:0 0 4px;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:${COLOR.purple};">💜 Transferencia reportada — falta confirmar</p>
+    <p><strong>${params.nombreEquipo}</strong> avisó que ya transfirió estas tarjetas. Revisa tu cuenta Nu y márcalas como pagadas en el panel cuando las veas reflejadas.</p>
+    ${tablaCargos(params.items)}
+    ${montoDestacado("Total", params.total)}
+    ${avisoPlazo(params.aTiempo, params.plazoTexto)}
+    ${boton(params.comprobanteUrl ?? `${SITE_URL}/admin/cargos-tarjetas`, params.comprobanteUrl ? "Ver comprobante" : "Ver en el panel admin")}
+    `
+  );
+
+  const text = `${params.nombreEquipo} avisó que ya transfirió estas tarjetas:
+
+${textoCargos(params.items)}
+
+Total: ${formatCOP(params.total)}
+${params.aTiempo ? "Reportado a tiempo" : "Reportado fuera de plazo"} (plazo: ${params.plazoTexto}).
+${params.comprobanteUrl ? `Comprobante: ${params.comprobanteUrl}\n` : ""}
+Revisa tu cuenta Nu y marca las tarjetas como pagadas en el panel: ${SITE_URL}/admin/cargos-tarjetas`;
+
+  return {
+    subject: `💜 Transferencia de tarjetas reportada: ${params.nombreEquipo} (${formatCOP(params.total)})`,
+    html,
+    text,
+  };
+}

@@ -11,6 +11,7 @@ import {
   referenciaPerteneceACuota,
 } from "@/lib/wompi/client";
 import { crearLotePagoCargos, aplicarPagoCargos } from "@/lib/pagos/confirmar-cargos";
+import { calcularMontoConRecargoWompi } from "@/lib/pagos/recargo-wompi";
 
 const SITE_URL = "https://xn--copamuecaburro-vnb.com";
 
@@ -63,7 +64,10 @@ export async function iniciarPagoCargosEquipo(): Promise<IniciarPagoResult> {
   const publicKey = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY;
   if (!publicKey) return { success: false, error: "El pago en línea todavía no está configurado." };
 
-  const amountInCents = Math.round(lote.total * 100);
+  const { data: config } = await admin.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single();
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const totalConRecargo = calcularMontoConRecargoWompi(lote.total, recargoPct);
+  const amountInCents = Math.round(totalConRecargo * 100);
   const reference = generarReferenciaCuota(lote.loteId);
   let signature: string;
   try {
@@ -100,11 +104,10 @@ export async function confirmarPagoCargosEquipo(loteId: string, transactionId: s
   if (!teamId) return { success: false, error: "No hay sesión activa." };
 
   const admin = createAdminClient();
-  const { data: cargosDelLote } = await admin
-    .from("cargos_tarjetas")
-    .select("id, monto, team_id")
-    .eq("lote_pago_id", loteId)
-    .eq("estado", "pendiente");
+  const [{ data: cargosDelLote }, { data: config }] = await Promise.all([
+    admin.from("cargos_tarjetas").select("id, monto, team_id").eq("lote_pago_id", loteId).eq("estado", "pendiente"),
+    admin.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single(),
+  ]);
 
   if (!cargosDelLote || cargosDelLote.length === 0) {
     return { success: false, error: "No se encontró el pago." };
@@ -126,7 +129,9 @@ export async function confirmarPagoCargosEquipo(loteId: string, transactionId: s
     return { success: false, error: "La transacción no corresponde a este pago." };
   }
 
-  const montoEsperado = Math.round(cargosDelLote.reduce((sum, c) => sum + Number(c.monto), 0) * 100);
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const totalReal = cargosDelLote.reduce((sum, c) => sum + Number(c.monto), 0);
+  const montoEsperado = Math.round(calcularMontoConRecargoWompi(totalReal, recargoPct) * 100);
   if (transaccion.amount_in_cents !== montoEsperado || transaccion.currency !== "COP") {
     return { success: false, error: "El monto de la transacción no coincide con lo que se debe." };
   }

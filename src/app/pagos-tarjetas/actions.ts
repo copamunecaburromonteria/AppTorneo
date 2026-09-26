@@ -9,6 +9,15 @@ import {
   referenciaPerteneceACuota,
 } from "@/lib/wompi/client";
 import { crearLotePagoCargos, aplicarPagoCargos, LABEL_TIPO_TARJETA } from "@/lib/pagos/confirmar-cargos";
+import { calcularMontoConRecargoWompi } from "@/lib/pagos/recargo-wompi";
+import {
+  reportarTransferencia,
+  subirComprobante,
+  calcularTextoLimiteReporte,
+  estaATiempo,
+} from "@/lib/pagos/reportar-transferencia";
+import { correoTransferenciaReportadaCargosAdmin } from "@/lib/resend/templates";
+import { sendEmail } from "@/lib/resend/client";
 
 const SITE_URL = "https://xn--copamuecaburro-vnb.com";
 
@@ -39,6 +48,12 @@ export type ResultadoBusquedaCargos =
       equipoNombre: string;
       items: ItemCargo[];
       total: number;
+      // Datos para mostrar las opciones de pago (transferencia/Wompi) — ver
+      // `OpcionesPago` y `reportarTransferenciaCargosJugador` más abajo.
+      recargoWompiPct: number;
+      llave: string;
+      deadlineTexto: string;
+      yaReportado: { at: string; aTiempo: boolean } | null;
     }
   | { success: false; error: string };
 
@@ -69,7 +84,7 @@ async function localizarJugadorConCargos(cedula: string, nombreCompleto: string)
   const { data: cargos } = await admin
     .from("cargos_tarjetas")
     .select(
-      "id, tipo_tarjeta, monto, match:match_id(fecha_hora_programada, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)), equipo_id_evento:team_id"
+      "id, tipo_tarjeta, monto, created_at, pago_reportado_at, match:match_id(fecha_hora_programada, equipo_local:equipo_local_id(nombre_equipo), equipo_visitante:equipo_visitante_id(nombre_equipo)), equipo_id_evento:team_id"
     )
     .eq("jugador_id", jugador.id)
     .eq("estado", "pendiente");
@@ -88,7 +103,28 @@ export async function buscarCargosPorCedula(
   const resultado = await localizarJugadorConCargos(cedula, nombreCompleto);
   if (!resultado) return { success: false, error: ERROR_GENERICO };
 
-  const { jugador, equipo, cargos } = resultado;
+  const { jugador, equipo, cargos, admin } = resultado;
+
+  const { data: config } = await admin
+    .from("torneo_config")
+    .select("recargo_wompi_pct, horas_plazo_notificacion_transferencia, llave_pago_transferencia")
+    .eq("id", 1)
+    .single();
+  const recargoWompiPct = Number(config?.recargo_wompi_pct ?? 0);
+  const horasPlazo = config?.horas_plazo_notificacion_transferencia ?? 24;
+  const llave = config?.llave_pago_transferencia ?? "@FGC368";
+
+  const masAntiguo = cargos.length > 0
+    ? cargos.reduce((min, c) => ((c.created_at as string) < min ? (c.created_at as string) : min), cargos[0].created_at as string)
+    : new Date().toISOString();
+  const deadlineTexto = calcularTextoLimiteReporte(new Date(masAntiguo), horasPlazo);
+  const yaReportado =
+    cargos.length > 0 && cargos.every((c) => c.pago_reportado_at)
+      ? {
+          at: cargos[0].pago_reportado_at as string,
+          aTiempo: estaATiempo(cargos[0].pago_reportado_at as string, new Date(masAntiguo), horasPlazo),
+        }
+      : null;
 
   const items: ItemCargo[] = cargos.map((c) => {
     const match = Array.isArray(c.match) ? c.match[0] : c.match;
@@ -118,6 +154,10 @@ export async function buscarCargosPorCedula(
     equipoNombre: equipo?.nombre_equipo ?? "—",
     items,
     total: items.reduce((sum, i) => sum + i.monto, 0),
+    recargoWompiPct,
+    llave,
+    deadlineTexto,
+    yaReportado,
   };
 }
 
@@ -153,7 +193,10 @@ export async function iniciarPagoCargosJugador(cedula: string, nombreCompleto: s
   const publicKey = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY;
   if (!publicKey) return { success: false, error: "El pago en línea todavía no está configurado." };
 
-  const amountInCents = Math.round(lote.total * 100);
+  const { data: config } = await admin.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single();
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const totalConRecargo = calcularMontoConRecargoWompi(lote.total, recargoPct);
+  const amountInCents = Math.round(totalConRecargo * 100);
   const reference = generarReferenciaCuota(lote.loteId);
   let signature: string;
   try {
@@ -184,11 +227,10 @@ export async function confirmarPagoCargosJugador(
 ): Promise<ConfirmarPagoResult> {
   const admin = createAdminClient();
 
-  const { data: cargosDelLote } = await admin
-    .from("cargos_tarjetas")
-    .select("id, monto")
-    .eq("lote_pago_id", loteId)
-    .eq("estado", "pendiente");
+  const [{ data: cargosDelLote }, { data: config }] = await Promise.all([
+    admin.from("cargos_tarjetas").select("id, monto").eq("lote_pago_id", loteId).eq("estado", "pendiente"),
+    admin.from("torneo_config").select("recargo_wompi_pct").eq("id", 1).single(),
+  ]);
 
   if (!cargosDelLote || cargosDelLote.length === 0) {
     return { success: false, error: "No se encontró el pago." };
@@ -206,7 +248,9 @@ export async function confirmarPagoCargosJugador(
     return { success: false, error: "La transacción no corresponde a este pago." };
   }
 
-  const montoEsperado = Math.round(cargosDelLote.reduce((sum, c) => sum + Number(c.monto), 0) * 100);
+  const recargoPct = Number(config?.recargo_wompi_pct ?? 0);
+  const totalReal = cargosDelLote.reduce((sum, c) => sum + Number(c.monto), 0);
+  const montoEsperado = Math.round(calcularMontoConRecargoWompi(totalReal, recargoPct) * 100);
   if (transaccion.amount_in_cents !== montoEsperado || transaccion.currency !== "COP") {
     return { success: false, error: "El monto de la transacción no coincide con lo que se debe." };
   }
@@ -228,4 +272,78 @@ export async function confirmarPagoCargosJugador(
   });
 
   return resultado;
+}
+
+export type ReportarTransferenciaResult = { success: true } | { success: false; error: string };
+
+/**
+ * Reporte de pago por transferencia para el jugador que paga desde
+ * /pagos-tarjetas (sin sesión) — vuelve a verificar cédula + nombre, igual
+ * que el resto de las acciones de este archivo, en vez de confiar en ids que
+ * pudiera mandar el navegador. NO marca las tarjetas como pagadas: el admin
+ * sigue confirmándolo a mano tras revisar su cuenta Nu (ver
+ * `reportarTransferencia` en `lib/pagos/reportar-transferencia.ts`).
+ */
+export async function reportarTransferenciaCargosJugador(
+  cedula: string,
+  nombreCompleto: string,
+  formData: FormData
+): Promise<ReportarTransferenciaResult> {
+  const resultado = await localizarJugadorConCargos(cedula, nombreCompleto);
+  if (!resultado) return { success: false, error: ERROR_GENERICO };
+
+  const { jugador, equipo, cargos, admin } = resultado;
+  if (cargos.length === 0) return { success: false, error: "No hay tarjetas pendientes por pagar." };
+
+  const { data: config } = await admin
+    .from("torneo_config")
+    .select("horas_plazo_notificacion_transferencia")
+    .eq("id", 1)
+    .single();
+  const horasPlazo = config?.horas_plazo_notificacion_transferencia ?? 24;
+
+  let comprobanteUrl: string | null = null;
+  const file = formData.get("comprobante") as File | null;
+  if (file && file.size > 0) {
+    const subida = await subirComprobante(admin, file);
+    if ("error" in subida) return { success: false, error: subida.error };
+    comprobanteUrl = subida.url;
+  }
+
+  const masAntiguo = cargos.reduce(
+    (min, c) => ((c.created_at as string) < min ? (c.created_at as string) : min),
+    cargos[0].created_at as string
+  );
+
+  const resultadoReporte = await reportarTransferencia(admin, {
+    tabla: "cargos_tarjetas",
+    ids: cargos.map((c) => c.id as string),
+    comprobanteUrl,
+    desde: new Date(masAntiguo),
+    horasPlazo,
+  });
+
+  if (!resultadoReporte.success) return resultadoReporte;
+
+  const items = cargos.map((c) => ({
+    jugadorNombre: jugador.nombre as string,
+    tipo: LABEL_TIPO_TARJETA[c.tipo_tarjeta as string] ?? (c.tipo_tarjeta as string),
+    monto: Number(c.monto),
+  }));
+  const total = items.reduce((sum, i) => sum + i.monto, 0);
+
+  const adminEmails = getAdminNotificationEmails();
+  if (adminEmails) {
+    const correo = correoTransferenciaReportadaCargosAdmin({
+      nombreEquipo: equipo?.nombre_equipo ?? "—",
+      items,
+      total,
+      comprobanteUrl,
+      aTiempo: resultadoReporte.aTiempo,
+      plazoTexto: `${horasPlazo} horas`,
+    });
+    await sendEmail({ to: adminEmails, subject: correo.subject, html: correo.html, text: correo.text }).catch(() => {});
+  }
+
+  return { success: true };
 }

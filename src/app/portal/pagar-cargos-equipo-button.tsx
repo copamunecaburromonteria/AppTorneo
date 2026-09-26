@@ -24,7 +24,7 @@ declare global {
  * patrón que `PagarWompiButton` (`portal/inscripcion/pagar-wompi-button.tsx`),
  * adaptado a un lote en vez de una sola cuota.
  */
-export function PagarCargosEquipoButton({ total }: { total: string }) {
+export function PagarCargosEquipoButton() {
   const router = useRouter();
   const [estado, setEstado] = useState<"idle" | "abriendo" | "confirmando">("idle");
   const [error, setError] = useState("");
@@ -89,7 +89,7 @@ export function PagarCargosEquipoButton({ total }: { total: string }) {
         >
           {estado === "abriendo" && "Abriendo pago..."}
           {estado === "confirmando" && "Confirmando..."}
-          {estado === "idle" && `Pagar todo el equipo — ${total}`}
+          {estado === "idle" && "Pagar por Wompi"}
         </button>
         {error && <span className="max-w-[260px] text-right text-xs text-rose-600">{error}</span>}
       </div>

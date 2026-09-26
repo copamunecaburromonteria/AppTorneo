@@ -45,7 +45,7 @@ export default async function JugadorPage({
 
   const { data: jugador } = await supabase
     .from("v_players_public")
-    .select("id, team_id, nombre, numero_camiseta, posicion, foto_url, es_jugador")
+    .select("id, team_id, nombre, numero_camiseta, posicion, foto_url, es_jugador, rol_cuerpo_tecnico")
     .eq("id", playerId)
     .maybeSingle();
 
@@ -104,6 +104,13 @@ export default async function JugadorPage({
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muneca-yellow">
                   {jugador.posicion ?? "Jugador"}
+                  {jugador.rol_cuerpo_tecnico && (
+                    <span className="text-white/40">
+                      {" "}
+                      · También{" "}
+                      {jugador.rol_cuerpo_tecnico === "dt" ? "es el DT" : "es Asistente Técnico"}
+                    </span>
+                  )}
                 </p>
                 <h1 className="font-display mt-1 text-3xl sm:text-4xl">{jugador.nombre}</h1>
                 {team && (

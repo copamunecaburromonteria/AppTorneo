@@ -15,6 +15,24 @@ const secondaryButtonClass =
 const yellowButtonClass =
   "rounded-md bg-muneca-yellow px-6 py-2.5 text-sm font-bold uppercase text-muneca-black transition-transform hover:scale-[1.02]";
 
+const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-wide text-black/50";
+
+// Un jugador puede marcarse también como DT o Asistente Técnico del equipo —
+// así no hay que registrarlo dos veces (una en la plantilla, otra en el
+// paso de Cuerpo técnico) cuando el cuerpo técnico también juega en cancha.
+function CampoRolCuerpoTecnico({ defaultValue, disabled }: { defaultValue?: string; disabled?: boolean }) {
+  return (
+    <label className="block sm:col-span-2">
+      <span className={labelClass}>¿También es del cuerpo técnico?</span>
+      <select name="rol_cuerpo_tecnico" defaultValue={defaultValue ?? ""} disabled={disabled} className={`${inputClass} px-2 py-1.5`}>
+        <option value="">No, solo juega</option>
+        <option value="dt">También es el DT</option>
+        <option value="asistente_tecnico">También es Asistente Técnico</option>
+      </select>
+    </label>
+  );
+}
+
 function formatCOP(valor: number) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -146,35 +164,57 @@ export default async function PortalInscripcionPage({
 
             <div className="space-y-3">
               {(players ?? []).map((p) => (
-                <form key={p.id} action={editarJugador.bind(null, p.id)} className="grid gap-2 rounded-lg border border-black/10 p-3 sm:grid-cols-6">
-                  <input name="nombre" defaultValue={p.nombre} disabled={!estadoPlantilla.puedeEditar} placeholder="Nombre" required className={`${inputClass} px-2 py-1.5 sm:col-span-2`} />
-                  <select name="tipo_documento" defaultValue={p.tipo_documento} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
-                    <option value="TI">TI</option>
-                    <option value="CC">CC</option>
-                    <option value="CE">CE</option>
-                    <option value="RC">RC</option>
-                    <option value="PA">PA</option>
-                  </select>
-                  <input name="numero_documento" defaultValue={p.numero_documento} disabled={!estadoPlantilla.puedeEditar} placeholder="N° documento" required className={`${inputClass} px-2 py-1.5`} />
-                  <input name="numero_camiseta" type="number" min={0} defaultValue={p.numero_camiseta ?? ""} disabled={!estadoPlantilla.puedeEditar} placeholder="N° camiseta" className={`${inputClass} px-2 py-1.5`} />
-                  <select name="posicion" defaultValue={p.posicion ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
-                    <option value="">Posición</option>
-                    <option value="Arquero">Arquero</option>
-                    <option value="Defensa">Defensa</option>
-                    <option value="Mediocampista">Mediocampista</option>
-                    <option value="Delantero">Delantero</option>
-                  </select>
-                  <input name="eps" defaultValue={p.eps ?? ""} disabled={!estadoPlantilla.puedeEditar} placeholder="EPS" className={`${inputClass} px-2 py-1.5 sm:col-span-2`} />
-                  {compraUniformeCopa && (
-                    <select name="talla_uniforme" defaultValue={p.talla_uniforme ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
-                      <option value="">Talla uniforme</option>
-                      {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
+                <form key={p.id} action={editarJugador.bind(null, p.id)} className="grid grid-cols-2 gap-3 rounded-lg border border-black/10 p-3 sm:grid-cols-4">
+                  <label className="col-span-2 block">
+                    <span className={labelClass}>Nombre</span>
+                    <input name="nombre" defaultValue={p.nombre} disabled={!estadoPlantilla.puedeEditar} required className={`${inputClass} px-2 py-1.5`} />
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>Tipo doc.</span>
+                    <select name="tipo_documento" defaultValue={p.tipo_documento} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
+                      <option value="TI">TI</option>
+                      <option value="CC">CC</option>
+                      <option value="CE">CE</option>
+                      <option value="RC">RC</option>
+                      <option value="PA">PA</option>
                     </select>
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>N° documento</span>
+                    <input name="numero_documento" defaultValue={p.numero_documento} disabled={!estadoPlantilla.puedeEditar} required className={`${inputClass} px-2 py-1.5`} />
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>Posición</span>
+                    <select name="posicion" defaultValue={p.posicion ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
+                      <option value="">Elige</option>
+                      <option value="Arquero">Arquero</option>
+                      <option value="Jugador de Campo">Jugador de Campo</option>
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className={labelClass}>N° camiseta</span>
+                    <input name="numero_camiseta" type="number" min={0} defaultValue={p.numero_camiseta ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`} />
+                  </label>
+                  <label className="col-span-2 block sm:col-span-1">
+                    <span className={labelClass}>EPS (opcional)</span>
+                    <input name="eps" defaultValue={p.eps ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`} />
+                  </label>
+                  {compraUniformeCopa && (
+                    <label className="block">
+                      <span className={labelClass}>Talla uniforme</span>
+                      <select name="talla_uniforme" defaultValue={p.talla_uniforme ?? ""} disabled={!estadoPlantilla.puedeEditar} className={`${inputClass} px-2 py-1.5`}>
+                        <option value="">Elige</option>
+                        {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </label>
                   )}
+                  <div className="col-span-2">
+                    <CampoRolCuerpoTecnico defaultValue={p.rol_cuerpo_tecnico ?? ""} disabled={!estadoPlantilla.puedeEditar} />
+                  </div>
                   {estadoPlantilla.puedeEditar && (
-                    <div className="flex gap-2 sm:col-span-2">
+                    <div className="col-span-2 flex gap-2 sm:col-span-4">
                       <button type="submit" className="rounded-md bg-muneca-yellow px-3 py-1.5 text-xs font-bold uppercase text-muneca-black">Guardar</button>
                       <button type="submit" formAction={eliminarJugador.bind(null, p.id)} className="rounded-md bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100">Eliminar</button>
                     </div>
@@ -185,34 +225,56 @@ export default async function PortalInscripcionPage({
             </div>
 
             {estadoPlantilla.puedeEditar && (players ?? []).length < maxJugadores && (
-              <form action={agregarJugador} className="mt-4 grid gap-2 rounded-lg border border-dashed border-black/20 p-3 sm:grid-cols-6">
-                <input name="nombre" placeholder="Nombre" required className={`${inputClass} px-2 py-1.5 sm:col-span-2`} />
-                <select name="tipo_documento" defaultValue="CC" className={`${inputClass} px-2 py-1.5`}>
-                  <option value="TI">TI</option>
-                  <option value="CC">CC</option>
-                  <option value="CE">CE</option>
-                  <option value="RC">RC</option>
-                  <option value="PA">PA</option>
-                </select>
-                <input name="numero_documento" placeholder="N° documento" required className={`${inputClass} px-2 py-1.5`} />
-                <input name="numero_camiseta" type="number" min={0} placeholder="N° camiseta" className={`${inputClass} px-2 py-1.5`} />
-                <select name="posicion" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
-                  <option value="">Posición</option>
-                  <option value="Arquero">Arquero</option>
-                  <option value="Defensa">Defensa</option>
-                  <option value="Mediocampista">Mediocampista</option>
-                  <option value="Delantero">Delantero</option>
-                </select>
-                <input name="eps" placeholder="EPS" className={`${inputClass} px-2 py-1.5 sm:col-span-2`} />
-                {compraUniformeCopa && (
-                  <select name="talla_uniforme" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
-                    <option value="">Talla uniforme</option>
-                    {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
+              <form action={agregarJugador} className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-dashed border-black/20 p-3 sm:grid-cols-4">
+                <label className="col-span-2 block">
+                  <span className={labelClass}>Nombre</span>
+                  <input name="nombre" required className={`${inputClass} px-2 py-1.5`} />
+                </label>
+                <label className="block">
+                  <span className={labelClass}>Tipo doc.</span>
+                  <select name="tipo_documento" defaultValue="CC" className={`${inputClass} px-2 py-1.5`}>
+                    <option value="TI">TI</option>
+                    <option value="CC">CC</option>
+                    <option value="CE">CE</option>
+                    <option value="RC">RC</option>
+                    <option value="PA">PA</option>
                   </select>
+                </label>
+                <label className="block">
+                  <span className={labelClass}>N° documento</span>
+                  <input name="numero_documento" required className={`${inputClass} px-2 py-1.5`} />
+                </label>
+                <label className="block">
+                  <span className={labelClass}>Posición</span>
+                  <select name="posicion" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
+                    <option value="">Elige</option>
+                    <option value="Arquero">Arquero</option>
+                    <option value="Jugador de Campo">Jugador de Campo</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className={labelClass}>N° camiseta</span>
+                  <input name="numero_camiseta" type="number" min={0} className={`${inputClass} px-2 py-1.5`} />
+                </label>
+                <label className="col-span-2 block sm:col-span-1">
+                  <span className={labelClass}>EPS (opcional)</span>
+                  <input name="eps" className={`${inputClass} px-2 py-1.5`} />
+                </label>
+                {compraUniformeCopa && (
+                  <label className="block">
+                    <span className={labelClass}>Talla uniforme</span>
+                    <select name="talla_uniforme" defaultValue="" className={`${inputClass} px-2 py-1.5`}>
+                      <option value="">Elige</option>
+                      {["XS", "S", "M", "L", "XL", "XXL", "3XL"].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </label>
                 )}
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
+                  <CampoRolCuerpoTecnico />
+                </div>
+                <div className="col-span-2 sm:col-span-4">
                   <button type="submit" className={`w-full ${secondaryButtonClass}`}>Agregar jugador</button>
                 </div>
               </form>

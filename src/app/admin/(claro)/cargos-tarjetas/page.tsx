@@ -46,7 +46,7 @@ export default async function AdminCargosTarjetasPage() {
   const { data: cargosRaw, error } = await supabase
     .from("cargos_tarjetas")
     .select(
-      "id, tipo_tarjeta, monto, created_at, jugador:jugador_id(nombre), teams:team_id(id, nombre_equipo, team_delegado(nombre, whatsapp_notificaciones, contacto_principal))"
+      "id, tipo_tarjeta, monto, created_at, metodo_pago_declarado, pago_reportado_at, comprobante_url, jugador:jugador_id(nombre), teams:team_id(id, nombre_equipo, team_delegado(nombre, whatsapp_notificaciones, contacto_principal))"
     )
     .eq("estado", "pendiente")
     .order("created_at", { ascending: true });
@@ -57,20 +57,27 @@ export default async function AdminCargosTarjetasPage() {
 
   const porEquipo = new Map<
     string,
-    { equipo: TeamInfo; items: { id: string; jugadorNombre: string; tipo: string; monto: number }[] }
+    {
+      equipo: TeamInfo;
+      items: { id: string; jugadorNombre: string; tipo: string; monto: number }[];
+      reportadoAt: string | null;
+      comprobanteUrl: string | null;
+    }
   >();
 
   for (const c of cargosRaw ?? []) {
     const equipo = unwrap<TeamInfo>(c.teams as TeamRel);
     if (!equipo) continue;
     const jugador = unwrap<JugadorInfo>(c.jugador as JugadorRel);
-    const entrada = porEquipo.get(equipo.id) ?? { equipo, items: [] };
+    const entrada = porEquipo.get(equipo.id) ?? { equipo, items: [], reportadoAt: null, comprobanteUrl: null };
     entrada.items.push({
       id: c.id as string,
       jugadorNombre: jugador?.nombre ?? "—",
       tipo: LABEL_TIPO_TARJETA[c.tipo_tarjeta as string] ?? (c.tipo_tarjeta as string),
       monto: Number(c.monto),
     });
+    if (c.pago_reportado_at) entrada.reportadoAt = c.pago_reportado_at as string;
+    if (c.comprobante_url) entrada.comprobanteUrl = c.comprobante_url as string;
     porEquipo.set(equipo.id, entrada);
   }
 
@@ -95,7 +102,7 @@ export default async function AdminCargosTarjetasPage() {
         </p>
       ) : (
         <div className="space-y-4">
-          {equipos.map(({ equipo, items }) => {
+          {equipos.map(({ equipo, items, reportadoAt, comprobanteUrl }) => {
             const delegado = unwrap<Delegado>(equipo.team_delegado);
             const numeroContacto = delegado?.whatsapp_notificaciones || delegado?.contacto_principal;
             const total = items.reduce((s, i) => s + i.monto, 0);
@@ -132,6 +139,21 @@ export default async function AdminCargosTarjetasPage() {
                     <MarcarCargosPagadosForm teamId={equipo.id} />
                   </div>
                 </div>
+
+                {reportadoAt && (
+                  <p className="mt-2 rounded-md bg-muneca-purple/10 px-3 py-1.5 text-xs font-semibold text-muneca-purple">
+                    💜 Reportó transferencia el{" "}
+                    {new Date(reportadoAt).toLocaleString("es-CO", { timeZone: "America/Bogota" })}
+                    {comprobanteUrl && (
+                      <>
+                        {" · "}
+                        <a href={comprobanteUrl} target="_blank" rel="noreferrer" className="underline">
+                          Ver comprobante
+                        </a>
+                      </>
+                    )}
+                  </p>
+                )}
 
                 <ul className="mt-3 divide-y divide-black/5 rounded-lg bg-black/[0.02]">
                   {items.map((i) => (

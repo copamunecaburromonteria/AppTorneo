@@ -14,6 +14,12 @@ const CAMPOS: { key: keyof ConfiguracionPagos; label: string; sufijo?: string }[
   { key: "dias_previo_torneo_ultima_cuota", label: "Última cuota vence N días antes del torneo" },
   { key: "dias_plazo_saldo", label: "Días de plazo para el saldo (respaldo si no hay fecha de inicio)" },
   { key: "dias_aviso_previo_cuota", label: "Días de aviso antes de vencer" },
+  { key: "recargo_wompi_pct", label: "Recargo por pagar con Wompi", sufijo: "%" },
+  {
+    key: "horas_plazo_notificacion_transferencia",
+    label: "Plazo para reportar una transferencia",
+    sufijo: "horas",
+  },
 ];
 
 /**
