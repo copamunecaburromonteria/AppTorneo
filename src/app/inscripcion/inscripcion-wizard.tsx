@@ -13,6 +13,7 @@ import {
 type Pricing = {
   montoInscripcion: number;
   numeroCuotas: number;
+  diasPlazoPrimeraCuota: number;
   diasPlazoSaldo: number;
   diasPrevioTorneoUltimaCuota: number;
   fechaInicioTorneo: string | null;
@@ -69,28 +70,33 @@ function sumarDias(fecha: Date, dias: number): string {
 
 /** Mismo cálculo que `calcularFechasCuotas` de `actions.ts` — se duplica acá
  * (componente cliente) solo para la vista previa antes de enviar; el valor
- * real que queda guardado siempre lo calcula el servidor. */
+ * real que queda guardado siempre lo calcula el servidor. Cuota 1 vence
+ * `diasPlazoPrimeraCuota` días después de hoy (24h); cada cuota siguiente
+ * vence `diasPlazoSaldo` días después de la anterior (encadenado). */
 function calcularFechasCuotasPreview(pricing: Pricing): string[] {
   const hoy = new Date();
-  const numeroCuotas = pricing.numeroCuotas;
-  if (numeroCuotas <= 1) return [sumarDias(hoy, 0)];
+  const numeroCuotas = Math.max(pricing.numeroCuotas, 1);
 
   const fechas: string[] = [];
-  for (let i = 0; i < numeroCuotas - 1; i++) {
-    fechas.push(sumarDias(hoy, i * pricing.diasPlazoSaldo));
+  for (let i = 0; i < numeroCuotas; i++) {
+    const dias = i === 0 ? pricing.diasPlazoPrimeraCuota : pricing.diasPlazoSaldo;
+    const base = i === 0 ? hoy : new Date(`${fechas[i - 1]}T00:00:00`);
+    fechas.push(sumarDias(base, dias));
   }
 
-  const fallbackUltima = sumarDias(hoy, (numeroCuotas - 1) * pricing.diasPlazoSaldo);
-  let fechaFinal = fallbackUltima;
-  if (pricing.fechaInicioTorneo) {
+  if (pricing.fechaInicioTorneo && fechas.length > 0) {
     const inicio = new Date(`${pricing.fechaInicioTorneo}T00:00:00`);
     const limite = new Date(inicio);
     limite.setDate(limite.getDate() - pricing.diasPrevioTorneoUltimaCuota);
-    if (limite.getTime() > hoy.getTime()) {
-      fechaFinal = limite.toISOString().slice(0, 10);
+    const limiteStr = limite.toISOString().slice(0, 10);
+
+    const ultimaIdx = fechas.length - 1;
+    const fechaAnteriorStr = ultimaIdx > 0 ? fechas[ultimaIdx - 1] : sumarDias(hoy, -1);
+    if (limiteStr < fechas[ultimaIdx] && limiteStr > fechaAnteriorStr) {
+      fechas[ultimaIdx] = limiteStr;
     }
   }
-  fechas.push(fechaFinal);
+
   return fechas;
 }
 

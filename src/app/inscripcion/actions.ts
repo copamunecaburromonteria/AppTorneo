@@ -83,41 +83,53 @@ function sumarDias(fecha: Date, dias: number): string {
 }
 
 /**
- * Calcula la fecha límite de cada cuota. La 1a siempre vence el día de la
- * inscripción (hoy). La última vence `diasPrevioTorneo` días antes de
- * `fechaInicioTorneo` (política confirmada por Fernando el 2026-09-26: "dos
- * cuotas, la primera el día de la inscripción y una fecha antes de iniciar
- * el torneo") — si esa fecha ya quedara en el pasado (o `fechaInicioTorneo`
- * todavía no está configurada), cae de vuelta al esquema anterior de
- * `hoy + diasPlazoSaldo` para no generar una cuota vencida el mismo día que
- * se crea. Las cuotas intermedias (si `numeroCuotas` llega a ser > 2 en el
- * futuro) se reparten cada `diasPlazoSaldo` días desde la 1a, como antes.
+ * Calcula la fecha límite de cada cuota (política confirmada por Fernando
+ * el 2026-09-28: "apenas termine el proceso de inscripción se dan 24h para
+ * que haga la transacción y a los 8 días la segunda partida"):
+ *
+ * - Cuota 1 vence `diasPlazoPrimeraCuota` días después de terminar el
+ *   registro (hoy) — 1 día calendario representa las 24h acordadas
+ *   (`fecha_limite` es una fecha, no un timestamp).
+ * - Cada cuota siguiente vence `diasPlazoSaldo` días después del
+ *   vencimiento de la cuota anterior (encadenado, no desde "hoy"
+ *   directamente) — hoy son 8 días, para la cuota 2.
+ *
+ * Salvaguarda: si `fechaInicioTorneo` está configurada, la última cuota
+ * nunca vence después de `diasPrevioTorneo` días antes del torneo — solo
+ * puede llegar a aplicar si el equipo se registra muy cerca del inicio del
+ * torneo, recortando (nunca extendiendo) esa fecha.
  */
 function calcularFechasCuotas(
   numeroCuotas: number,
   hoy: Date,
   fechaInicioTorneo: string | null,
   diasPrevioTorneo: number,
+  diasPlazoPrimeraCuota: number,
   diasPlazoSaldo: number
 ): string[] {
-  if (numeroCuotas <= 1) return [sumarDias(hoy, 0)];
-
   const fechas: string[] = [];
-  for (let i = 0; i < numeroCuotas - 1; i++) {
-    fechas.push(sumarDias(hoy, i * diasPlazoSaldo));
+  for (let i = 0; i < Math.max(numeroCuotas, 1); i++) {
+    const dias = i === 0 ? diasPlazoPrimeraCuota : diasPlazoSaldo;
+    const base = i === 0 ? hoy : new Date(`${fechas[i - 1]}T00:00:00`);
+    fechas.push(sumarDias(base, dias));
   }
 
-  const fallbackUltima = sumarDias(hoy, (numeroCuotas - 1) * diasPlazoSaldo);
-  let fechaFinal = fallbackUltima;
-  if (fechaInicioTorneo) {
+  if (fechaInicioTorneo && fechas.length > 0) {
     const inicio = new Date(`${fechaInicioTorneo}T00:00:00`);
     const limite = new Date(inicio);
     limite.setDate(limite.getDate() - diasPrevioTorneo);
-    if (limite.getTime() > hoy.getTime()) {
-      fechaFinal = limite.toISOString().slice(0, 10);
+    const limiteStr = limite.toISOString().slice(0, 10);
+
+    const ultimaIdx = fechas.length - 1;
+    const fechaAnteriorStr = ultimaIdx > 0 ? fechas[ultimaIdx - 1] : sumarDias(hoy, -1);
+    // Solo recorta si el tope sigue dejando espacio después de la cuota
+    // anterior (si no, un registro demasiado tardío queda con la fecha
+    // encadenada tal cual, en vez de un cronograma invertido/inválido).
+    if (limiteStr < fechas[ultimaIdx] && limiteStr > fechaAnteriorStr) {
+      fechas[ultimaIdx] = limiteStr;
     }
   }
-  fechas.push(fechaFinal);
+
   return fechas;
 }
 
@@ -249,7 +261,7 @@ export async function registrarEquipo(
   const { data: config, error: configError } = await admin
     .from("torneo_config")
     .select(
-      "monto_inscripcion, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota"
+      "monto_inscripcion, max_jugadores_por_equipo, numero_cuotas_sin_uniforme, dias_plazo_primera_cuota, dias_plazo_saldo, fecha_inicio_torneo, dias_previo_torneo_ultima_cuota"
     )
     .eq("id", 1)
     .single();
@@ -260,6 +272,7 @@ export async function registrarEquipo(
 
   const montoInscripcion = Number(config.monto_inscripcion);
   const maxJugadores = config.max_jugadores_por_equipo as number;
+  const diasPlazoPrimeraCuota = config.dias_plazo_primera_cuota as number;
   const diasPlazoSaldo = config.dias_plazo_saldo as number;
   const fechaInicioTorneo = (config.fecha_inicio_torneo as string | null) ?? null;
   const diasPrevioTorneo = config.dias_previo_torneo_ultima_cuota as number;
@@ -274,7 +287,14 @@ export async function registrarEquipo(
   const montoTotal = montoInscripcion;
 
   const hoy = new Date();
-  const fechasCuotas = calcularFechasCuotas(numeroCuotas, hoy, fechaInicioTorneo, diasPrevioTorneo, diasPlazoSaldo);
+  const fechasCuotas = calcularFechasCuotas(
+    numeroCuotas,
+    hoy,
+    fechaInicioTorneo,
+    diasPrevioTorneo,
+    diasPlazoPrimeraCuota,
+    diasPlazoSaldo
+  );
   const montosCuotas = repartirEnPartesIguales(montoTotal, numeroCuotas);
   const cuotas: CuotaPlan[] = montosCuotas.map((monto, index) => ({
     numeroCuota: index + 1,

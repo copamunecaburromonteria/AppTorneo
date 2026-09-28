@@ -9,6 +9,7 @@ import { verificarInvitacion, type InvitacionEncontrada } from "./actions";
 type Pricing = {
   montoInscripcion: number;
   numeroCuotas: number;
+  diasPlazoPrimeraCuota: number;
   diasPlazoSaldo: number;
   diasPrevioTorneoUltimaCuota: number;
   fechaInicioTorneo: string | null;

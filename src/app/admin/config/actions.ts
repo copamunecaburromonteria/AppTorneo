@@ -90,6 +90,12 @@ export type ConfiguracionPagos = {
   monto_inscripcion: number;
   precio_uniforme: number;
   porcentaje_abono_minimo: number;
+  // Cuota 1 vence `dias_plazo_primera_cuota` días después de terminar la
+  // inscripción (24h ≈ 1 día); cada cuota siguiente vence `dias_plazo_saldo`
+  // días después de la anterior, encadenado (ver `calcularFechasCuotas` en
+  // `src/app/inscripcion/actions.ts`) — política confirmada por Fernando el
+  // 2026-09-28.
+  dias_plazo_primera_cuota: number;
   dias_plazo_saldo: number;
   dias_aviso_previo_cuota: number;
   numero_cuotas_sin_uniforme: number;
@@ -121,6 +127,7 @@ export async function actualizarConfiguracionPagos(datos: ConfiguracionPagos): P
     datos.precio_uniforme < 0 ||
     datos.porcentaje_abono_minimo < 0 ||
     datos.porcentaje_abono_minimo > 100 ||
+    datos.dias_plazo_primera_cuota < 0 ||
     datos.dias_plazo_saldo < 1 ||
     datos.dias_aviso_previo_cuota < 0 ||
     datos.numero_cuotas_sin_uniforme < 1 ||

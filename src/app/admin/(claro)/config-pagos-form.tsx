@@ -11,8 +11,9 @@ const CAMPOS: { key: keyof ConfiguracionPagos; label: string; sufijo?: string }[
   { key: "precio_uniforme", label: "Costo interno del uniforme (por jugador)", sufijo: "COP" },
   { key: "porcentaje_abono_minimo", label: "Abono mínimo", sufijo: "%" },
   { key: "numero_cuotas_sin_uniforme", label: "Número de cuotas" },
-  { key: "dias_previo_torneo_ultima_cuota", label: "Última cuota vence N días antes del torneo" },
-  { key: "dias_plazo_saldo", label: "Días de plazo para el saldo (respaldo si no hay fecha de inicio)" },
+  { key: "dias_plazo_primera_cuota", label: "Cuota 1 vence N días después de inscribirse" },
+  { key: "dias_plazo_saldo", label: "Cada cuota siguiente vence N días después de la anterior" },
+  { key: "dias_previo_torneo_ultima_cuota", label: "Tope: ninguna cuota vence a menos de N días del torneo" },
   { key: "dias_aviso_previo_cuota", label: "Días de aviso antes de vencer" },
   { key: "recargo_wompi_pct", label: "Recargo por pagar con Wompi", sufijo: "%" },
   {
