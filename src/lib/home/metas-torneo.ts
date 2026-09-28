@@ -1,13 +1,16 @@
 /**
  * Metas/valores previstos del torneo, usados como respaldo en el home
- * mientras todavía no hay equipos validados en Supabase — con el flujo de
+ * mientras todavía no hay equipos inscritos en Supabase — con el flujo de
  * preinscripción (ver plan-fases-tareas.md, punto 9z) eso puede tardar
  * semanas, y mostrar puros ceros en el home no vende bien el torneo.
  *
  * Uso: `numeros.tsx` y `stats-bar.tsx` muestran estos valores mientras
- * `totalEquipos` (equipos con estado_inscripcion = 'validado') sea 0. En
- * cuanto exista al menos 1 equipo validado, ambos componentes cambian solo
- * a mostrar el conteo real en vivo de Supabase — esta meta deja de usarse
+ * `totalEquipos` (equipos con estado_inscripcion en `validado` o
+ * `pendiente_validacion` — 2026-09-28, a pedido de Fernando: se cuenta
+ * desde que el equipo se inscribe, no desde que se confirma el pago, para
+ * que el home muestre movimiento real más rápido) sea 0. En cuanto exista
+ * al menos 1 equipo inscrito, ambos componentes cambian solo a mostrar el
+ * conteo real en vivo de Supabase — esta meta deja de usarse
  * automáticamente, sin que haya que tocar código.
  *
  * Fuente: `claude/formato-torneo.md` (formato confirmado por Fernando) y

@@ -11,6 +11,16 @@ type Equipo = { id: string; nombre_equipo: string; escudo_url: string | null };
  * estadio + trazos morados) pero con un velo oscuro encima para que el texto
  * en blanco siga siendo legible, mismo criterio que los héroes de
  * /partidos y /equipos/[equipo] sobre `hero-stadium.jpg`.
+ *
+ * Se muestran los equipos `pendiente_validacion` además de los `validado`
+ * (2026-09-28, a pedido de Fernando: "los equipos que ya estén acá podemos
+ * agregarlos al home como si ya estuvieran inscritos... para que se empiece
+ * a mover el contenido de la página") — mismo criterio que usa el admin para
+ * decidir qué cuenta como "equipo inscrito" (ver `admin/(claro)/page.tsx`,
+ * que también excluye `lista_espera`/`preinscrito`/`invitado`, y además acá
+ * se excluye `rechazado`: un equipo rechazado no debe aparecer como si
+ * hiciera parte de la Copa). Cada equipo sigue mostrando su estado real
+ * (badge "PENDIENTE"/"ACTIVO") en su propia página de perfil.
  */
 export async function Equipos() {
   const supabase = await createClient();
@@ -19,7 +29,7 @@ export async function Equipos() {
     supabase
       .from("teams")
       .select("id, nombre_equipo, escudo_url")
-      .eq("estado_inscripcion", "validado")
+      .in("estado_inscripcion", ["validado", "pendiente_validacion"])
       .order("orden_inscripcion", { ascending: true }),
     supabase.from("torneo_config").select("numero_equipos_torneo").eq("id", 1).maybeSingle(),
   ]);
@@ -72,7 +82,7 @@ export async function Equipos() {
                       <span className="text-white/30"> / {cupo}</span>
                     </p>
                     <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-white/50">
-                      Equipos confirmados
+                      Equipos inscritos
                     </p>
                   </div>
                 </div>

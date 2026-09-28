@@ -24,7 +24,7 @@ export async function Numeros() {
     supabase
       .from("teams")
       .select("*", { count: "exact", head: true })
-      .eq("estado_inscripcion", "validado"),
+      .in("estado_inscripcion", ["validado", "pendiente_validacion"]),
     supabase
       .from("players")
       .select("*", { count: "exact", head: true })
@@ -52,23 +52,26 @@ export async function Numeros() {
     partidosMax = partidosDeGrupo + rondasEliminacion;
   }
 
-  // Mientras no haya ningún equipo validado todavía (recién arrancó la
-  // preinscripción, ver punto 9z de plan-fases-tareas.md), se muestran las
-  // metas previstas del torneo en vez de puros ceros — apenas se valide el
-  // primer equipo, estos 3 números pasan a ser el conteo real en vivo.
-  const hayEquiposValidados = (totalEquipos ?? 0) > 0;
+  // Mientras no haya ningún equipo inscrito todavía (ni validado ni
+  // pendiente_validacion — recién arrancó la preinscripción, ver punto 9z
+  // de plan-fases-tareas.md), se muestran las metas previstas del torneo en
+  // vez de puros ceros. Apenas se inscriba el primer equipo (2026-09-28, a
+  // pedido de Fernando: se cuenta desde que se inscribe, no desde que se
+  // valida el pago — ver la misma nota en `components/home/equipos.tsx`),
+  // estos 3 números pasan a ser el conteo real en vivo.
+  const hayEquiposInscritos = (totalEquipos ?? 0) > 0;
 
   const ITEMS = [
     {
-      valor: hayEquiposValidados ? `${totalEquipos}` : `${META_EQUIPOS}`,
+      valor: hayEquiposInscritos ? `${totalEquipos}` : `${META_EQUIPOS}`,
       label: "Equipos",
     },
     {
-      valor: hayEquiposValidados ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
+      valor: hayEquiposInscritos ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
       label: "Jugadores",
     },
     {
-      valor: hayEquiposValidados ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
+      valor: hayEquiposInscritos ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
       label: "Partidos",
     },
     { valor: partidosMax !== null ? `${partidosMax}` : "—", label: "Partidos máximo por equipo" },

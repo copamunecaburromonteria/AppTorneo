@@ -10,7 +10,7 @@ export async function StatsBar() {
       supabase
         .from("teams")
         .select("*", { count: "exact", head: true })
-        .eq("estado_inscripcion", "validado"),
+        .in("estado_inscripcion", ["validado", "pendiente_validacion"]),
       supabase
         .from("players")
         .select("*", { count: "exact", head: true })
@@ -19,24 +19,25 @@ export async function StatsBar() {
       supabase.from("matches").select("*", { count: "exact", head: true }),
     ]);
 
-  // Mismo criterio que numeros.tsx: mientras no haya ningún equipo validado
-  // todavía, se muestran las metas previstas del torneo en vez de ceros.
-  const hayEquiposValidados = (totalEquipos ?? 0) > 0;
+  // Mismo criterio que numeros.tsx: mientras no haya ningún equipo inscrito
+  // todavía (validado o pendiente_validacion), se muestran las metas
+  // previstas del torneo en vez de ceros.
+  const hayEquiposInscritos = (totalEquipos ?? 0) > 0;
 
   const ITEMS = [
     {
       Icon: UsersThree,
-      valor: hayEquiposValidados ? `${totalEquipos}` : `${META_EQUIPOS}`,
+      valor: hayEquiposInscritos ? `${totalEquipos}` : `${META_EQUIPOS}`,
       label: "Equipos",
     },
     {
       Icon: User,
-      valor: hayEquiposValidados ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
+      valor: hayEquiposInscritos ? `${totalJugadores ?? 0}` : `${META_JUGADORES}`,
       label: "Jugadores",
     },
     {
       Icon: SoccerBall,
-      valor: hayEquiposValidados ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
+      valor: hayEquiposInscritos ? `${totalPartidos ?? 0}` : `${META_PARTIDOS}`,
       label: "Partidos",
     },
     { Icon: Trophy, valor: "1", label: "Campeón" },

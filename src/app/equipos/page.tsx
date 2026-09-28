@@ -13,6 +13,10 @@ type Equipo = { id: string; nombre_equipo: string; escudo_url: string | null };
  * Índice público de equipos — fondo oscuro (2026-09-14), igual que
  * /partidos y /equipos/[equipo], parte del rediseño completo de la
  * plataforma a un solo tema oscuro que pidió Fernando.
+ *
+ * Incluye equipos `pendiente_validacion` además de `validado` — mismo
+ * criterio y misma razón que `components/home/equipos.tsx` (2026-09-28, a
+ * pedido de Fernando).
  */
 export default async function EquiposPage() {
   const supabase = await createClient();
@@ -21,7 +25,7 @@ export default async function EquiposPage() {
     supabase
       .from("teams")
       .select("id, nombre_equipo, escudo_url")
-      .eq("estado_inscripcion", "validado")
+      .in("estado_inscripcion", ["validado", "pendiente_validacion"])
       .order("orden_inscripcion", { ascending: true }),
     supabase.from("torneo_config").select("numero_equipos_torneo").eq("id", 1).maybeSingle(),
   ]);
@@ -52,7 +56,7 @@ export default async function EquiposPage() {
             <div className="mt-4 flex items-center gap-2.5">
               <UsersThree size={22} weight="regular" className="text-muneca-yellow" aria-hidden="true" />
               <p className="text-sm font-bold uppercase tracking-wide text-white/80">
-                {equipos.length} / {cupo} equipos confirmados
+                {equipos.length} / {cupo} equipos inscritos
               </p>
             </div>
           </div>
