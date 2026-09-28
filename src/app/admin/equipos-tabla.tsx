@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Fragment, useMemo, useState } from "react";
-import { Search, ChevronDown, Eye, Users } from "lucide-react";
+import { Search, ChevronDown, Eye, Users, Shirt } from "lucide-react";
 import { MarcarPagadaForm } from "@/app/admin/marcar-pagada-form";
 import {
   ReenviarRegistroForm,
@@ -73,6 +73,17 @@ export type EquipoFila = {
   montoTotal: number;
   cuotas: Cuota[];
 };
+
+/**
+ * Indicador de "listo para pedir uniforme" (2026-09-28, decisión de
+ * Fernando): solo un badge visible en el admin, sin flujo de pedido —
+ * gateado en que la 2a partida esté realmente confirmada (`pagada`), no
+ * solo reportada, ya que ese pago financia el uniforme.
+ */
+function listoParaUniforme(equipo: EquipoFila): boolean {
+  const cuota2 = equipo.cuotas.find((c) => c.numero_cuota === 2);
+  return cuota2?.estado === "pagada";
+}
 
 /**
  * Tabla de equipos y pagos con búsqueda + filtros — rediseño "más
@@ -191,6 +202,7 @@ export function EquiposTabla({ equipos, grupos }: { equipos: EquipoFila[]; grupo
             <tbody>
               {filtrados.map((e) => {
                 const expandido = expandidoId === e.id;
+                const uniformeListo = listoParaUniforme(e);
                 return (
                   <Fragment key={e.id}>
                     <tr className="border-b border-black/5 last:border-0">
@@ -226,14 +238,24 @@ export function EquiposTabla({ equipos, grupos }: { equipos: EquipoFila[]; grupo
                         </span>
                       </td>
                       <td className="px-4 py-3 text-muneca-black/70">
-                        {e.montoTotal > 0 ? (
-                          <>
-                            {formatCOP(e.montoPagado)}{" "}
-                            <span className="text-muneca-black/40">de {formatCOP(e.montoTotal)}</span>
-                          </>
-                        ) : (
-                          "—"
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {e.montoTotal > 0 ? (
+                            <>
+                              {formatCOP(e.montoPagado)}{" "}
+                              <span className="text-muneca-black/40">de {formatCOP(e.montoTotal)}</span>
+                            </>
+                          ) : (
+                            "—"
+                          )}
+                          {uniformeListo && (
+                            <span
+                              title="Cuota 2 confirmada — listo para pedir uniforme"
+                              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+                            >
+                              <Shirt size={12} />
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
@@ -286,6 +308,11 @@ export function EquiposTabla({ equipos, grupos }: { equipos: EquipoFila[]; grupo
                                       pagada el {formatFecha(cuota.fecha_pago)}
                                       {cuota.referencia_wompi ? ` · ref. ${cuota.referencia_wompi}` : ""}
                                     </span>
+                                  )}
+                                  {cuota.numero_cuota === 2 && cuota.estado === "pagada" && (
+                                    <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                                      <Shirt size={12} /> Listo para pedir uniforme
+                                    </div>
                                   )}
                                   {cuota.estado !== "pagada" && cuota.pago_reportado_at && (
                                     <div className="mt-1 text-xs font-semibold text-muneca-purple">
