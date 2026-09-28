@@ -11,11 +11,25 @@ export async function cerrarSesionEquipo() {
   redirect("/portal/login");
 }
 
-function volverConError(mensaje: string): never {
-  redirect(`/portal?error=${encodeURIComponent(mensaje)}`);
+function rutaVolver(teamId: string, esAdmin: boolean): string {
+  return esAdmin ? `/admin/equipos/${teamId}` : "/portal";
 }
 
-async function requireEquipo() {
+function volverConError(ruta: string, mensaje: string): never {
+  redirect(`${ruta}?error=${encodeURIComponent(mensaje)}`);
+}
+
+/**
+ * Resuelve sobre qué equipo actúa esta Server Action. Normalmente es el
+ * equipo de la sesión (`profiles.team_id`, rol 'equipo'). Pero si la sesión
+ * es de un admin Y el formulario manda `_admin_team_id` (lo agrega
+ * `CampoAdminTeamId` en `PortalDashboard` cuando `modoAdmin` está prendido —
+ * ver `/admin/equipos/[id]`), se actúa sobre ESE equipo en su lugar — es lo
+ * que permite al super admin ver/editar/corregir la plantilla y datos de
+ * cualquier equipo, agregado 2026-09-28 a pedido de Fernando. Nunca se
+ * confía en `_admin_team_id` si la sesión no es realmente de un admin.
+ */
+async function requireEquipo(formData?: FormData) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,19 +38,25 @@ async function requireEquipo() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("team_id")
+    .select("team_id, rol")
     .eq("id", user.id)
     .single();
 
+  const teamIdAdmin = formData?.get("_admin_team_id");
+  if (profile?.rol === "admin" && typeof teamIdAdmin === "string" && teamIdAdmin) {
+    return { supabase, teamId: teamIdAdmin, esAdmin: true };
+  }
+
   if (!profile?.team_id) redirect("/portal/login");
 
-  return { supabase, teamId: profile.team_id as string };
+  return { supabase, teamId: profile.team_id as string, esAdmin: false };
 }
 
 // --- Delegado ---
 
 export async function guardarDelegado(formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
   const nombre = (formData.get("nombre") as string)?.trim();
   const apellido = (formData.get("apellido") as string)?.trim();
@@ -46,7 +66,7 @@ export async function guardarDelegado(formData: FormData) {
   const whatsapp = (formData.get("whatsapp") as string)?.trim();
 
   if (!nombre || !apellido || !documento || !contactoPrincipal) {
-    volverConError("Faltan datos obligatorios del delegado.");
+    volverConError(ruta, "Faltan datos obligatorios del delegado.");
   }
 
   const { error } = await supabase
@@ -61,15 +81,16 @@ export async function guardarDelegado(formData: FormData) {
     })
     .eq("team_id", teamId);
 
-  if (error) volverConError(`No se pudo guardar el delegado: ${error.message}`);
+  if (error) volverConError(ruta, `No se pudo guardar el delegado: ${error.message}`);
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
 // --- Colores del equipo ---
 
 export async function guardarColores(formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
   const colorPrimario = (formData.get("color_primario") as string) || null;
   const colorSecundario = (formData.get("color_secundario") as string) || null;
@@ -79,25 +100,26 @@ export async function guardarColores(formData: FormData) {
     .update({ color_primario: colorPrimario, color_secundario: colorSecundario })
     .eq("id", teamId);
 
-  if (error) volverConError(`No se pudieron guardar los colores: ${error.message}`);
+  if (error) volverConError(ruta, `No se pudieron guardar los colores: ${error.message}`);
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
 // --- Cuerpo técnico ---
 
 export async function agregarStaff(formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
   const rol = formData.get("rol") as string;
   const nombre = (formData.get("nombre") as string)?.trim();
   const documento = (formData.get("documento") as string)?.trim();
 
   if (rol !== "dt" && rol !== "preparador_fisico") {
-    volverConError("Rol de cuerpo técnico inválido.");
+    volverConError(ruta, "Rol de cuerpo técnico inválido.");
   }
   if (!nombre) {
-    volverConError("Falta el nombre del integrante del cuerpo técnico.");
+    volverConError(ruta, "Falta el nombre del integrante del cuerpo técnico.");
   }
 
   const { error } = await supabase.from("team_staff").insert({
@@ -107,13 +129,14 @@ export async function agregarStaff(formData: FormData) {
     documento: documento || null,
   });
 
-  if (error) volverConError(`No se pudo agregar: ${error.message}`);
+  if (error) volverConError(ruta, `No se pudo agregar: ${error.message}`);
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
-export async function eliminarStaff(staffId: string, _formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+export async function eliminarStaff(staffId: string, formData: FormData) {
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
   const { error } = await supabase
     .from("team_staff")
@@ -121,9 +144,9 @@ export async function eliminarStaff(staffId: string, _formData: FormData) {
     .eq("id", staffId)
     .eq("team_id", teamId);
 
-  if (error) volverConError(`No se pudo eliminar: ${error.message}`);
+  if (error) volverConError(ruta, `No se pudo eliminar: ${error.message}`);
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
 // --- Plantilla de jugadores ---
@@ -139,7 +162,7 @@ const TALLAS = new Set(["XS", "S", "M", "L", "XL", "XXL", "3XL"]);
 // técnico") — ver `rol_cuerpo_tecnico` en `players`.
 const ROLES_CUERPO_TECNICO = new Set(["dt", "asistente_tecnico"]);
 
-function leerDatosJugador(formData: FormData) {
+function leerDatosJugador(formData: FormData, ruta: string) {
   const nombre = (formData.get("nombre") as string)?.trim();
   const tipoDocumento = formData.get("tipo_documento") as string;
   const numeroDocumento = (formData.get("numero_documento") as string)?.trim();
@@ -149,18 +172,18 @@ function leerDatosJugador(formData: FormData) {
   const tallaUniforme = formData.get("talla_uniforme") as string;
   const rolCuerpoTecnico = formData.get("rol_cuerpo_tecnico") as string;
 
-  if (!nombre) volverConError("Falta el nombre del jugador.");
-  if (!TIPOS_DOCUMENTO.has(tipoDocumento)) volverConError("Tipo de documento inválido.");
-  if (!numeroDocumento) volverConError("Falta el número de documento.");
-  if (posicion && !POSICIONES.has(posicion)) volverConError("Posición inválida.");
-  if (tallaUniforme && !TALLAS.has(tallaUniforme)) volverConError("Talla de uniforme inválida.");
+  if (!nombre) volverConError(ruta, "Falta el nombre del jugador.");
+  if (!TIPOS_DOCUMENTO.has(tipoDocumento)) volverConError(ruta, "Tipo de documento inválido.");
+  if (!numeroDocumento) volverConError(ruta, "Falta el número de documento.");
+  if (posicion && !POSICIONES.has(posicion)) volverConError(ruta, "Posición inválida.");
+  if (tallaUniforme && !TALLAS.has(tallaUniforme)) volverConError(ruta, "Talla de uniforme inválida.");
   if (rolCuerpoTecnico && !ROLES_CUERPO_TECNICO.has(rolCuerpoTecnico)) {
-    volverConError("Rol de cuerpo técnico inválido.");
+    volverConError(ruta, "Rol de cuerpo técnico inválido.");
   }
 
   const numeroCamiseta = numeroCamisetaRaw ? Number(numeroCamisetaRaw) : null;
   if (numeroCamisetaRaw && (!Number.isInteger(numeroCamiseta) || numeroCamiseta! < 0)) {
-    volverConError("El número de camiseta debe ser un entero positivo.");
+    volverConError(ruta, "El número de camiseta debe ser un entero positivo.");
   }
 
   return {
@@ -176,10 +199,16 @@ function leerDatosJugador(formData: FormData) {
 }
 
 export async function agregarJugador(formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
-  const estado = await evaluarEstadoPlantilla(supabase, teamId);
-  if (!estado.puedeEditar) volverConError(estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  // El super admin puede cargar/corregir jugadores siempre, sin importar el
+  // plazo del equipo — es justamente para poder corregir errores fuera de
+  // esa ventana (ver nota en `PortalDashboard`).
+  if (!esAdmin) {
+    const estado = await evaluarEstadoPlantilla(supabase, teamId);
+    if (!estado.puedeEditar) volverConError(ruta, estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  }
 
   const [{ count }, { data: config }] = await Promise.all([
     supabase
@@ -191,10 +220,10 @@ export async function agregarJugador(formData: FormData) {
 
   const maxJugadores = config?.max_jugadores_por_equipo ?? 15;
   if ((count ?? 0) >= maxJugadores) {
-    volverConError(`Ya alcanzaste el máximo de ${maxJugadores} jugadores.`);
+    volverConError(ruta, `Ya alcanzaste el máximo de ${maxJugadores} jugadores.`);
   }
 
-  const datos = leerDatosJugador(formData);
+  const datos = leerDatosJugador(formData, ruta);
 
   const { error } = await supabase.from("players").insert({ team_id: teamId, ...datos });
 
@@ -203,19 +232,22 @@ export async function agregarJugador(formData: FormData) {
       error.code === "23505"
         ? "Ese número de documento ya está registrado (puede que en otro equipo)."
         : `No se pudo agregar el jugador: ${error.message}`;
-    volverConError(mensaje);
+    volverConError(ruta, mensaje);
   }
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
 export async function editarJugador(jugadorId: string, formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
-  const estado = await evaluarEstadoPlantilla(supabase, teamId);
-  if (!estado.puedeEditar) volverConError(estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  if (!esAdmin) {
+    const estado = await evaluarEstadoPlantilla(supabase, teamId);
+    if (!estado.puedeEditar) volverConError(ruta, estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  }
 
-  const datos = leerDatosJugador(formData);
+  const datos = leerDatosJugador(formData, ruta);
 
   const { error } = await supabase
     .from("players")
@@ -228,17 +260,20 @@ export async function editarJugador(jugadorId: string, formData: FormData) {
       error.code === "23505"
         ? "Ese número de documento ya está registrado (puede que en otro equipo)."
         : `No se pudo actualizar el jugador: ${error.message}`;
-    volverConError(mensaje);
+    volverConError(ruta, mensaje);
   }
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }
 
-export async function eliminarJugador(jugadorId: string, _formData: FormData) {
-  const { supabase, teamId } = await requireEquipo();
+export async function eliminarJugador(jugadorId: string, formData: FormData) {
+  const { supabase, teamId, esAdmin } = await requireEquipo(formData);
+  const ruta = rutaVolver(teamId, esAdmin);
 
-  const estado = await evaluarEstadoPlantilla(supabase, teamId);
-  if (!estado.puedeEditar) volverConError(estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  if (!esAdmin) {
+    const estado = await evaluarEstadoPlantilla(supabase, teamId);
+    if (!estado.puedeEditar) volverConError(ruta, estado.motivo ?? "No puedes editar la plantilla en este momento.");
+  }
 
   const { error } = await supabase
     .from("players")
@@ -246,7 +281,7 @@ export async function eliminarJugador(jugadorId: string, _formData: FormData) {
     .eq("id", jugadorId)
     .eq("team_id", teamId);
 
-  if (error) volverConError(`No se pudo eliminar el jugador: ${error.message}`);
+  if (error) volverConError(ruta, `No se pudo eliminar el jugador: ${error.message}`);
 
-  revalidatePath("/portal");
+  revalidatePath(ruta);
 }

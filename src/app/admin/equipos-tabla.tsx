@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Fragment, useMemo, useState } from "react";
-import { Search, ChevronDown, Eye, Users, Shirt } from "lucide-react";
+import { Search, ChevronDown, Eye, Users, Shirt, Pencil } from "lucide-react";
 import { MarcarPagadaForm } from "@/app/admin/marcar-pagada-form";
 import {
   ReenviarRegistroForm,
@@ -267,6 +267,17 @@ export function EquiposTabla({ equipos, grupos }: { equipos: EquipoFila[]; grupo
                             className="flex h-8 w-8 items-center justify-center rounded-full text-muneca-black/50 transition-colors hover:bg-sky-100 hover:text-sky-700"
                           >
                             <Eye size={15} />
+                          </a>
+                          {/* Vista completa del portal del equipo en modo admin — ver/editar
+                              plantilla, delegado, escudo, etc. (2026-09-28, a pedido de
+                              Fernando: "que vea planilla de equipo que pueda editar que
+                              pueda corregir"). */}
+                          <a
+                            href={`/admin/equipos/${e.id}`}
+                            title="Ver y corregir plantilla y datos del equipo"
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-muneca-black/50 transition-colors hover:bg-muneca-purple/10 hover:text-muneca-purple"
+                          >
+                            <Pencil size={15} />
                           </a>
                           {e.cuotas.length > 0 && (
                             <button
