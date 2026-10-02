@@ -194,7 +194,8 @@ export function PreinscripcionesTabs({
           </IconHeading>
           <p className="text-sm text-muneca-black/60">
             Ya se les avisó — están completando la inscripción oficial en <code>/inscripcion</code>. Si
-            uno se demora demasiado, puedes revertirlo para invitar al siguiente de la fila.
+            uno se demora demasiado, puedes revertirlo para invitar al siguiente de la fila, o
+            eliminarlo directamente si no contesta ni está atento, para liberar su cupo.
           </p>
 
           {invitadosFiltrados.length === 0 && (
@@ -219,6 +220,7 @@ export function PreinscripcionesTabs({
                     <>
                       <ReenviarForm teamId={equipo.id} />
                       <RevertirForm teamId={equipo.id} />
+                      <EliminarPreinscripcionForm teamId={equipo.id} nombreEquipo={equipo.nombre_equipo} />
                     </>
                   }
                 />

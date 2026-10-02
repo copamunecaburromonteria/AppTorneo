@@ -101,9 +101,10 @@ export function ReenviarForm({ teamId }: { teamId: string }) {
 }
 
 /**
- * Elimina un equipo de la fila de preinscritos — para corregir errores de
- * creación o quitar equipos de prueba antes de que avancen. Pide
- * confirmación en el navegador porque no se puede deshacer.
+ * Elimina un equipo que todavía está en preinscripción (preinscrito o
+ * invitado) — para corregir errores de creación, quitar equipos de prueba,
+ * o liberar el cupo/puesto en la fila de uno que no responde ni está
+ * atento. Pide confirmación en el navegador porque no se puede deshacer.
  */
 export function EliminarPreinscripcionForm({
   teamId,
@@ -128,7 +129,7 @@ export function EliminarPreinscripcionForm({
       onSubmit={(event) => {
         if (
           !window.confirm(
-            `¿Eliminar a "${nombreEquipo}" de la fila de preinscritos? Esta acción no se puede deshacer.`
+            `¿Eliminar a "${nombreEquipo}"? Se libera su cupo/puesto en la fila y esta acción no se puede deshacer.`
           )
         ) {
           event.preventDefault();

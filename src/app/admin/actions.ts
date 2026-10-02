@@ -477,15 +477,23 @@ export async function revertirInvitacion(teamId: string): Promise<ResultadoAccio
 }
 
 /**
- * Elimina un equipo de la fila de preinscritos — para corregir errores de
- * creación (duplicados, equipos de prueba) antes de que avancen. Solo
- * permite borrar equipos que siguen en estado `preinscrito`: uno que ya fue
- * invitado, o que ya tiene cuenta/pagos, no se puede borrar desde aquí (hay
- * que revertirlo primero) para no perder datos reales por accidente. El
- * borrado de `teams` hace cascada sobre `team_delegado`, `payments`,
+ * Elimina un equipo de la fila de preinscripción — para corregir errores de
+ * creación (duplicados, equipos de prueba) o para liberar el cupo/puesto en
+ * la fila de un equipo que no responde ni está atento (2026-10-02, a pedido
+ * de Fernando: "necesito tener la opción de eliminar al equipo que yo desee
+ * ya que no contesta o no está atento... liberar el cupo" — antes solo se
+ * podía eliminar un `preinscrito`, un `invitado` que no contesta había que
+ * revertirlo primero y recién ahí eliminarlo desde la otra pestaña, dos
+ * pasos). Permite borrar equipos en `preinscrito` o `invitado` — nunca uno
+ * que ya completó la inscripción oficial (`pendiente_validacion`,
+ * `validado`, `rechazado`, `lista_espera`): esos sí pueden tener cuenta,
+ * plantilla o pagos reales, y borrarlos no es seguro desde aquí. El borrado
+ * de `teams` hace cascada sobre `team_delegado`, `payments`,
  * `payment_installments`, `players`, `squad_changes` y `team_group` — pero
- * un equipo en `preinscrito` nunca llega a tener nada de eso, así que en la
- * práctica solo borra la fila del equipo y su delegado.
+ * un equipo en `preinscrito`/`invitado` nunca llega a tener nada de eso (esas
+ * filas solo se crean al completar `/inscripcion`, que exige justamente
+ * `estado_inscripcion = 'invitado'` para arrancar — ver `inscripcion/actions.ts`),
+ * así que en la práctica solo borra la fila del equipo y su delegado.
  */
 export async function eliminarPreinscripcion(teamId: string): Promise<ResultadoAccion> {
   const supabase = await createClient();
@@ -507,10 +515,10 @@ export async function eliminarPreinscripcion(teamId: string): Promise<ResultadoA
     return { success: false, error: "No se encontró el equipo." };
   }
 
-  if (equipo.estado_inscripcion !== "preinscrito") {
+  if (equipo.estado_inscripcion !== "preinscrito" && equipo.estado_inscripcion !== "invitado") {
     return {
       success: false,
-      error: "Solo se pueden eliminar equipos en estado de preinscrito. Si ya fue invitado, revierte la invitación primero.",
+      error: "Solo se pueden eliminar equipos que todavía no completaron su inscripción oficial (preinscritos o invitados).",
     };
   }
 
