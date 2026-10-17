@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import { Countdown } from "@/components/en-construccion/countdown";
 
 export const metadata: Metadata = {
   title: "Copa Muñeca e'Burro — Estamos en construcción",
@@ -61,30 +63,52 @@ function IconOverlay({ icons }: { icons: IconHotspot[] }) {
   );
 }
 
-export default function EnConstruccionPage() {
-  return (
-    <main className="flex min-h-dvh items-center justify-center bg-muneca-black">
-      <span className="relative hidden md:inline-block">
-        <Image
-          src="/brand/en-construccion-desktop.jpg"
-          alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
-          width={1672}
-          height={941}
-          className="h-auto max-h-dvh w-auto max-w-full"
-        />
-        <IconOverlay icons={DESKTOP_ICONS} />
-      </span>
+/**
+ * Página pública "en construcción" (ver `src/middleware.ts`). El arte
+ * (desktop/mobile, `public/brand/en-construccion-*.jpg`) queda intacto tal
+ * cual se diseñó — el contador se agregó como un bloque aparte debajo de la
+ * imagen en vez de superponerlo sobre los píxeles, porque el diseño
+ * original no tiene un espacio reservado para esto y superponerlo a ciegas
+ * quedaba frágil/apretado. El layout pasó de "una sola pantalla, sin
+ * scroll" a una tarjeta centrada + bloque de contador debajo, con scroll si
+ * hace falta (2026-10-17, a pedido de Fernando: agregar un contador a la
+ * página de construcción).
+ */
+export default async function EnConstruccionPage() {
+  const supabase = await createClient();
+  const { data: config } = await supabase
+    .from("torneo_config")
+    .select("modo_construccion_fecha_meta")
+    .eq("id", 1)
+    .single();
 
-      <span className="relative inline-block md:hidden">
+  return (
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-muneca-black px-4 py-10 sm:py-14">
+      <span className="relative inline-block w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:hidden">
         <Image
           src="/brand/en-construccion-mobile.jpg"
           alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
           width={941}
           height={1672}
-          className="h-auto max-h-dvh w-auto max-w-full"
+          priority
+          className="h-auto w-full"
         />
         <IconOverlay icons={MOBILE_ICONS} />
       </span>
+
+      <span className="relative hidden w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:inline-block">
+        <Image
+          src="/brand/en-construccion-desktop.jpg"
+          alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
+          width={1672}
+          height={941}
+          priority
+          className="h-auto w-full"
+        />
+        <IconOverlay icons={DESKTOP_ICONS} />
+      </span>
+
+      <Countdown fechaMetaIso={config?.modo_construccion_fecha_meta ?? null} />
     </main>
   );
 }

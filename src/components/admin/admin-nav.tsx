@@ -26,6 +26,7 @@ const ADMIN_NAV: {
   { href: "/admin/arbitros", label: "Árbitros", contador: "arbitros" },
   { href: "/admin/operadores", label: "Operadores", contador: "operadores" },
   { href: "/admin/accesos", label: "Accesos" },
+  { href: "/admin/construccion", label: "Modo construcción" },
 ];
 
 /**

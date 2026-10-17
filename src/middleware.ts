@@ -3,23 +3,94 @@ import { createServerClient } from "@supabase/ssr";
 
 const PREVIEW_COOKIE = "cme_preview";
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
 const STATIC_FILE_RE =
   /\.(png|jpe?g|gif|svg|webp|ico|css|js|mjs|json|xml|txt|woff2?|ttf|map)$/i;
 
 /**
- * Sitio "en construcción" para el público. Mientras la variable de entorno
- * MAINTENANCE_MODE sea "true", toda ruta pública (todo menos /admin,
- * /portal, /operador, /lider-arbitros, /api y archivos estáticos) se sirve
- * como /en-construccion.
- *
- * Quien tenga el enlace de vista previa (visitar una vez
- * /api/preview?key=PREVIEW_BYPASS_SECRET) recibe una cookie y ve el sitio
- * real con normalidad — así Fernando puede seguir revisando los cambios en
- * producción mientras el público ve la página de construcción.
+ * Consulta liviana (REST directo, sin el cliente SSR completo) de
+ * `torneo_config.modo_construccion_activo` — el interruptor de la página
+ * "en construcción" que Fernando prende/apaga desde /admin/construccion,
+ * sin tocar variables de entorno ni redeploy (reemplaza el viejo
+ * `MAINTENANCE_MODE` por variable de entorno, 2026-10-17). Con
+ * `revalidate` corto para no pegarle a Supabase en cada request mientras
+ * el modo está apagado (el caso normal).
  */
-function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
-  if (process.env.MAINTENANCE_MODE !== "true") return null;
+async function modoConstruccionActivo(): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/torneo_config?id=eq.1&select=modo_construccion_activo`,
+      {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        next: { revalidate: 10 },
+      }
+    );
+    if (!res.ok) return false;
+    const filas = (await res.json()) as { modo_construccion_activo: boolean }[];
+    return !!filas[0]?.modo_construccion_activo;
+  } catch {
+    // Si Supabase no responde, no tumbamos el sitio completo: se asume
+    // apagado y se sirve el sitio real con normalidad.
+    return false;
+  }
+}
 
+/**
+ * ¿La sesión de este visitante es de un admin? Se usa SOLO cuando el modo
+ * construcción está activo, para dejar pasar a Fernando (o a cualquier
+ * cuenta con `profiles.rol = 'admin'`) al sitio real mientras el público ve
+ * `/en-construccion` — así puede seguir revisando/ajustando contenido en
+ * producción sin necesidad de un link secreto. Cliente de solo lectura
+ * (`setAll` vacío): esta verificación no debe reescribir cookies de sesión,
+ * eso lo sigue haciendo el bloque de /admin, /portal, /lider-arbitros más
+ * abajo cuando corresponde.
+ */
+async function esSesionAdmin(request: NextRequest): Promise<boolean> {
+  try {
+    const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll() {
+          // intencionalmente vacío — ver docstring de la función.
+        },
+      },
+    });
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("rol")
+      .eq("id", user.id)
+      .single();
+
+    return profile?.rol === "admin";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sitio "en construcción" para el público. Mientras
+ * `torneo_config.modo_construccion_activo` sea `true`, toda ruta pública
+ * (todo menos /admin, /portal, /operador, /lider-arbitros, /api y archivos
+ * estáticos) se sirve como /en-construccion.
+ *
+ * Dos formas de seguir viendo el sitio real mientras tanto:
+ *  1. Sesión de admin iniciada (`esSesionAdmin`) — la forma normal para
+ *     Fernando, 2026-10-17.
+ *  2. Link secreto de vista previa, histórico (visitar una vez
+ *     /api/preview?key=PREVIEW_BYPASS_SECRET) — se deja como respaldo por
+ *     si alguna vez hace falta dar acceso puntual sin crear cuenta.
+ */
+async function aplicarModoConstruccion(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
   const rutaExcluida =
@@ -33,9 +104,14 @@ function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
 
   if (rutaExcluida) return null;
 
+  const activo = await modoConstruccionActivo();
+  if (!activo) return null;
+
   const secreto = process.env.PREVIEW_BYPASS_SECRET;
-  const cookie = request.cookies.get(PREVIEW_COOKIE)?.value;
-  if (secreto && cookie === secreto) return null;
+  const cookiePreview = request.cookies.get(PREVIEW_COOKIE)?.value;
+  if (secreto && cookiePreview === secreto) return null;
+
+  if (await esSesionAdmin(request)) return null;
 
   const url = request.nextUrl.clone();
   url.pathname = "/en-construccion";
@@ -53,7 +129,7 @@ function aplicarModoConstruccion(request: NextRequest): NextResponse | null {
  * este middleware.
  */
 export async function middleware(request: NextRequest) {
-  const gate = aplicarModoConstruccion(request);
+  const gate = await aplicarModoConstruccion(request);
   if (gate) return gate;
 
   const { pathname } = request.nextUrl;

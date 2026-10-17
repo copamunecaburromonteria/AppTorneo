@@ -154,3 +154,45 @@ export async function actualizarConfiguracionPagos(datos: ConfiguracionPagos): P
   revalidatePath("/admin");
   return { success: true };
 }
+
+export type ConfiguracionConstruccion = {
+  activo: boolean;
+  /** ISO 8601 en UTC, o null si todavía no se ha definido una fecha meta. */
+  fechaMetaIso: string | null;
+};
+
+/**
+ * Prende/apaga la página pública "en construcción" y define la fecha meta
+ * de su contador (`torneo_config.modo_construccion_activo` /
+ * `modo_construccion_fecha_meta` — ver `src/middleware.ts`). Mientras está
+ * activo, cualquier visitante SIN sesión de admin ve `/en-construccion` en
+ * vez del sitio real; el admin logueado sigue navegando el sitio real con
+ * normalidad para poder seguir trabajando en producción. Reemplaza el viejo
+ * interruptor por variable de entorno `MAINTENANCE_MODE` (requería tocar
+ * Vercel y redesplegar) — pedido de Fernando, 2026-10-17.
+ */
+export async function actualizarModoConstruccion(
+  datos: ConfiguracionConstruccion
+): Promise<ResultadoAccion> {
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) {
+    return { success: false, error: authError };
+  }
+
+  const { error } = await supabase
+    .from("torneo_config")
+    .update({
+      modo_construccion_activo: datos.activo,
+      modo_construccion_fecha_meta: datos.fechaMetaIso,
+    })
+    .eq("id", 1);
+
+  if (error) {
+    return { success: false, error: `No se pudo actualizar el modo construcción: ${error.message}` };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/construccion");
+  revalidatePath("/en-construccion");
+  return { success: true };
+}
