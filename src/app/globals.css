@@ -47,3 +47,35 @@ h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
   letter-spacing: 0.01em;
 }
+
+/* Deriva lenta de los "blobs" de fondo (ver `.animate-blob-drift*`) — por
+   ahora solo los usa /en-construccion, pero quedan como utilidad genérica
+   por si otra pantalla oscura los quiere reusar más adelante. Nada de JS:
+   es pura animación CSS (GPU, liviana), y se desactiva si el visitante
+   tiene activado "reducir movimiento". */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, -6%) scale(1.08); }
+  66% { transform: translate(-3%, 4%) scale(0.95); }
+}
+
+@keyframes blob-drift-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-5%, 5%) scale(1.05); }
+  66% { transform: translate(4%, -4%) scale(0.97); }
+}
+
+.animate-blob-drift {
+  animation: blob-drift 18s ease-in-out infinite;
+}
+
+.animate-blob-drift-reverse {
+  animation: blob-drift-reverse 22s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-drift,
+  .animate-blob-drift-reverse {
+    animation: none;
+  }
+}

@@ -74,6 +74,22 @@ function IconOverlay({ icons }: { icons: IconHotspot[] }) {
  * hace falta (2026-10-17, a pedido de Fernando: agregar un contador a la
  * página de construcción).
  */
+function FondoAnimado() {
+  // Tres "blobs" borrosos en los colores de marca, en deriva lenta
+  // (`globals.css`) — decorativo puro, por eso `aria-hidden` +
+  // `pointer-events-none`.
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute -left-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-muneca-purple/30 blur-[100px] animate-blob-drift sm:h-[32rem] sm:w-[32rem]" />
+      <div className="absolute -bottom-28 -right-16 h-[24rem] w-[24rem] rounded-full bg-muneca-yellow/15 blur-[110px] animate-blob-drift-reverse sm:h-[30rem] sm:w-[30rem]" />
+      <div
+        className="absolute left-1/2 top-1/3 h-[18rem] w-[18rem] -translate-x-1/2 rounded-full bg-muneca-purple-dark/30 blur-[90px] animate-blob-drift sm:h-[22rem] sm:w-[22rem]"
+        style={{ animationDelay: "-9s" }}
+      />
+    </div>
+  );
+}
+
 export default async function EnConstruccionPage() {
   const supabase = await createClient();
   const { data: config } = await supabase
@@ -83,32 +99,36 @@ export default async function EnConstruccionPage() {
     .single();
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-muneca-black px-4 py-10 sm:py-14">
-      <span className="relative inline-block w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:hidden">
-        <Image
-          src="/brand/en-construccion-mobile.jpg"
-          alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
-          width={941}
-          height={1672}
-          priority
-          className="h-auto w-full"
-        />
-        <IconOverlay icons={MOBILE_ICONS} />
-      </span>
+    <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 overflow-hidden bg-muneca-black px-4 py-10 sm:py-14">
+      <FondoAnimado />
 
-      <span className="relative hidden w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:inline-block">
-        <Image
-          src="/brand/en-construccion-desktop.jpg"
-          alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
-          width={1672}
-          height={941}
-          priority
-          className="h-auto w-full"
-        />
-        <IconOverlay icons={DESKTOP_ICONS} />
-      </span>
+      <div className="relative z-10 flex w-full flex-col items-center gap-8">
+        <span className="relative inline-block w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:hidden">
+          <Image
+            src="/brand/en-construccion-mobile.jpg"
+            alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
+            width={941}
+            height={1672}
+            priority
+            className="h-auto w-full"
+          />
+          <IconOverlay icons={MOBILE_ICONS} />
+        </span>
 
-      <Countdown fechaMetaIso={config?.modo_construccion_fecha_meta ?? null} />
+        <span className="relative hidden w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:inline-block">
+          <Image
+            src="/brand/en-construccion-desktop.jpg"
+            alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
+            width={1672}
+            height={941}
+            priority
+            className="h-auto w-full"
+          />
+          <IconOverlay icons={DESKTOP_ICONS} />
+        </span>
+
+        <Countdown fechaMetaIso={config?.modo_construccion_fecha_meta ?? null} />
+      </div>
     </main>
   );
 }
