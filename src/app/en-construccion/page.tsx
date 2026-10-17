@@ -17,14 +17,11 @@ const SOCIAL_LINKS = [
 ];
 
 function FondoAnimado() {
-  // v4 (2026-10-17, Fernando trajo sus propias 4 piezas ya recortadas:
-  // foto de estadio con humo/conos, letrero "ESTAMOS EN CONSTRUCCIÓN",
-  // mascota y el set de íconos de redes — montamos todo eso acá en vez
-  // de las versiones anteriores hechas solo con CSS).
-  //
-  // Fondo: la foto trae el humo y las luces moradas ya "horneadas" en la
-  // imagen; el zoom lento ("Ken Burns") y las dos nubes de humo extra en
-  // CSS (`.animate-smoke-drift`) le dan el movimiento real que pidió
+  // v5 (2026-10-17): Fernando reemplazó la foto de fondo por una nueva
+  // versión que ya trae la mascota "horneada" directamente en la imagen
+  // (antes era un cutout flotante aparte, ver abajo). El zoom lento
+  // ("Ken Burns") y las dos nubes de humo extra en CSS
+  // (`.animate-smoke-drift`) le dan el movimiento real que pidió
   // ("quiero algo más animado"), sin tapar la foto con un velo plano.
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -60,12 +57,17 @@ function FondoAnimado() {
  *
  * v4 (2026-10-17) — Fernando trajo su propio set de piezas gráficas
  * (generadas por él) para esta pantalla: foto de estadio con humo y
- * conos de obra, el letrero "ESTAMOS EN CONSTRUCCIÓN", la mascota y el
- * set de íconos de redes con su propio estilo (círculo + splash morado/
+ * conos de obra, el letrero "ESTAMOS EN CONSTRUCCIÓN" y el set de
+ * íconos de redes con su propio estilo (círculo + splash morado/
  * amarillo). Los íconos de redes se recortaron en 4 piezas individuales
  * (`public/brand/icono-*.png`) para que cada uno siga siendo un link real
  * y clickeable, en vez de pegar la composición completa como una sola
  * imagen no interactiva.
+ *
+ * v5 (2026-10-17) — la mascota ya no es un cutout flotante aparte:
+ * Fernando la "horneó" directamente en la foto de fondo
+ * (`public/brand/fondo-construccion.jpg`), así que se quitó el `<Image>`
+ * suelto que la mostraba al lado del bloque de texto en desktop.
  *
  * El `<h1>` sigue siendo texto real (lo visual es el letrero de Fernando,
  * puesto como su `alt`) para no perder accesibilidad/SEO del título de la
@@ -83,7 +85,7 @@ export default async function EnConstruccionPage() {
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-muneca-black text-muneca-white">
       <FondoAnimado />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center gap-10 px-4 py-14 sm:px-6 lg:flex-row lg:items-center lg:gap-10 lg:py-20">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center gap-10 px-4 py-14 sm:px-6 lg:flex-row lg:items-center lg:py-20">
         <div className="flex w-full max-w-xl flex-col items-center text-center lg:items-start lg:text-left">
           <Image
             src="/brand/logo-horizontal.png"
@@ -141,17 +143,6 @@ export default async function EnConstruccionPage() {
           />
         </div>
 
-        <div className="relative hidden w-full flex-1 items-end justify-center lg:flex lg:h-[34rem]">
-          <Image
-            src="/brand/mascota-construccion.png"
-            alt=""
-            aria-hidden="true"
-            width={691}
-            height={941}
-            priority
-            className="relative z-10 h-full w-auto max-w-none object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
-          />
-        </div>
       </div>
     </main>
   );
