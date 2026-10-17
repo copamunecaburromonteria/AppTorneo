@@ -21,6 +21,7 @@ export default function PagosTarjetasPage() {
           <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
           <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="bg-dot-grid absolute inset-0 opacity-[0.12]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_15%_0%,rgba(123,31,162,0.35),transparent)]" />
           </div>
           <div className="relative mx-auto max-w-2xl px-4 sm:px-6">

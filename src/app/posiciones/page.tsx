@@ -140,8 +140,9 @@ export default async function PosicionesPage() {
           <ParallaxSectionBackground src="/brand/hero-stadium.jpg" priority />
           <div aria-hidden className="absolute inset-0 bg-muneca-black/75" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="bg-dot-grid absolute inset-0 opacity-[0.12]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgba(123,31,162,0.35),transparent)]" />
-            <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl" />
+            <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-muneca-purple/30 blur-3xl animate-blob-drift" />
           </div>
           <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
             <Breadcrumbs items={breadcrumbs} tone="light" />
