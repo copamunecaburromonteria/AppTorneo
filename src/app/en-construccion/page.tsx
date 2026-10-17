@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { InstagramLogo, FacebookLogo, TiktokLogo, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { Countdown } from "@/components/en-construccion/countdown";
 
@@ -9,87 +10,47 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const FACEBOOK_URL = "https://www.facebook.com/copamunecaburromonteria";
-const INSTAGRAM_URL = "https://www.instagram.com/copamunecaburromonteria";
-const TIKTOK_URL = "https://www.tiktok.com/@copamunecaburromonteria";
-const YOUTUBE_URL = "https://www.youtube.com/@copamunecaburromonteria";
-
-type IconHotspot = {
-  label: string;
-  href: string;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-};
-
-// Coordenadas medidas sobre el diseño original (en % del tamaño de la
-// imagen), para que los enlaces inviertan exactamente sobre cada ícono sin
-// importar a qué tamaño se termine mostrando la imagen en pantalla.
-const DESKTOP_ICONS: IconHotspot[] = [
-  { label: "Facebook", href: FACEBOOK_URL, left: 39.92, top: 74.81, width: 4.43, height: 7.44 },
-  { label: "Instagram", href: INSTAGRAM_URL, left: 45.22, top: 74.81, width: 4.43, height: 7.44 },
-  { label: "TikTok", href: TIKTOK_URL, left: 50.42, top: 74.81, width: 4.43, height: 7.44 },
-  { label: "YouTube", href: YOUTUBE_URL, left: 55.53, top: 74.81, width: 4.43, height: 7.44 },
+const SOCIAL_LINKS = [
+  { href: "https://www.instagram.com/copamunecaburromonteria", label: "Instagram", Icon: InstagramLogo },
+  { href: "https://www.facebook.com/copamunecaburromonteria", label: "Facebook", Icon: FacebookLogo },
+  { href: "https://www.tiktok.com/@copamunecaburromonteria", label: "TikTok", Icon: TiktokLogo },
+  { href: "https://www.youtube.com/@copamunecaburromonteria", label: "YouTube", Icon: YoutubeLogo },
 ];
 
-const MOBILE_ICONS: IconHotspot[] = [
-  { label: "Facebook", href: FACEBOOK_URL, left: 28.37, top: 72.19, width: 8.5, height: 4.78 },
-  { label: "Instagram", href: INSTAGRAM_URL, left: 40.01, top: 72.19, width: 8.5, height: 4.78 },
-  { label: "TikTok", href: TIKTOK_URL, left: 51.81, top: 72.19, width: 8.5, height: 4.78 },
-  { label: "YouTube", href: YOUTUBE_URL, left: 63.44, top: 72.19, width: 8.5, height: 4.78 },
-];
-
-function IconOverlay({ icons }: { icons: IconHotspot[] }) {
-  return (
-    <>
-      {icons.map((icon) => (
-        <a
-          key={icon.label}
-          href={icon.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={icon.label}
-          className="absolute rounded-full outline-none focus-visible:ring-2 focus-visible:ring-muneca-yellow"
-          style={{
-            left: `${icon.left}%`,
-            top: `${icon.top}%`,
-            width: `${icon.width}%`,
-            height: `${icon.height}%`,
-          }}
-        />
-      ))}
-    </>
-  );
-}
-
-/**
- * Página pública "en construcción" (ver `src/middleware.ts`). El arte
- * (desktop/mobile, `public/brand/en-construccion-*.jpg`) queda intacto tal
- * cual se diseñó — el contador se agregó como un bloque aparte debajo de la
- * imagen en vez de superponerlo sobre los píxeles, porque el diseño
- * original no tiene un espacio reservado para esto y superponerlo a ciegas
- * quedaba frágil/apretado. El layout pasó de "una sola pantalla, sin
- * scroll" a una tarjeta centrada + bloque de contador debajo, con scroll si
- * hace falta (2026-10-17, a pedido de Fernando: agregar un contador a la
- * página de construcción).
- */
 function FondoAnimado() {
-  // Tres "blobs" borrosos en los colores de marca, en deriva lenta
-  // (`globals.css`) — decorativo puro, por eso `aria-hidden` +
-  // `pointer-events-none`.
+  // Grilla de puntos + tres "blobs" borrosos en los colores de marca, en
+  // deriva lenta (ver `globals.css`) — decorativo puro, por eso
+  // `aria-hidden` + `pointer-events-none`.
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -left-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-muneca-purple/30 blur-[100px] animate-blob-drift sm:h-[32rem] sm:w-[32rem]" />
-      <div className="absolute -bottom-28 -right-16 h-[24rem] w-[24rem] rounded-full bg-muneca-yellow/15 blur-[110px] animate-blob-drift-reverse sm:h-[30rem] sm:w-[30rem]" />
+      <div className="bg-dot-grid absolute inset-0 opacity-40" />
+      <div className="absolute -left-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-muneca-purple/35 blur-[100px] animate-blob-drift sm:h-[34rem] sm:w-[34rem]" />
+      <div className="absolute -bottom-32 -right-16 h-[24rem] w-[24rem] rounded-full bg-muneca-yellow/15 blur-[110px] animate-blob-drift-reverse sm:h-[32rem] sm:w-[32rem]" />
       <div
-        className="absolute left-1/2 top-1/3 h-[18rem] w-[18rem] -translate-x-1/2 rounded-full bg-muneca-purple-dark/30 blur-[90px] animate-blob-drift sm:h-[22rem] sm:w-[22rem]"
+        className="absolute left-1/2 top-1/3 h-[18rem] w-[18rem] -translate-x-1/2 rounded-full bg-muneca-purple-dark/30 blur-[90px] animate-blob-drift sm:h-[24rem] sm:w-[24rem]"
         style={{ animationDelay: "-9s" }}
       />
+      {/* Velo para que el texto de la izquierda siempre tenga contraste,
+          sin importar qué tan cerca ande un blob. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-muneca-black via-muneca-black/40 to-muneca-black/10" />
     </div>
   );
 }
 
+/**
+ * Página pública "en construcción" (ver `src/middleware.ts`). Rediseñada
+ * 2026-10-17 a pedido de Fernando, inspirada en el "coming soon" de
+ * hakunnadigital.com pero con el branding de la Copa: layout dinámico
+ * (logo + titular + contador + redes a la izquierda, mascota flotando
+ * sobre un fondo animado a la derecha) en vez del arte estático anterior
+ * (`en-construccion-desktop.jpg` / `-mobile.jpg`, que quedan en
+ * `public/brand/` sin usarse, por si hicieran falta más adelante).
+ *
+ * El titular y el dato "24 equipos · Categoría Libre · Montería" reusan
+ * exactamente el mismo texto ya establecido en el hero del home
+ * (`src/components/home/hero.tsx`) — nada de eslóganes nuevos inventados
+ * para esta pantalla.
+ */
 export default async function EnConstruccionPage() {
   const supabase = await createClient();
   const { data: config } = await supabase
@@ -99,35 +60,70 @@ export default async function EnConstruccionPage() {
     .single();
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 overflow-hidden bg-muneca-black px-4 py-10 sm:py-14">
+    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-muneca-black text-muneca-white">
       <FondoAnimado />
 
-      <div className="relative z-10 flex w-full flex-col items-center gap-8">
-        <span className="relative inline-block w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:hidden">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center gap-12 px-4 py-14 sm:px-6 lg:flex-row lg:items-center lg:gap-10 lg:py-20">
+        <div className="flex w-full max-w-xl flex-col items-center text-center lg:items-start lg:text-left">
           <Image
-            src="/brand/en-construccion-mobile.jpg"
-            alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
-            width={941}
-            height={1672}
+            src="/brand/logo-horizontal.png"
+            alt="Copa Muñeca e'Burro — Montería"
+            width={1983}
+            height={793}
             priority
-            className="h-auto w-full"
+            className="h-auto w-56 object-contain sm:w-64"
           />
-          <IconOverlay icons={MOBILE_ICONS} />
-        </span>
 
-        <span className="relative hidden w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl md:inline-block">
+          <p className="mt-7 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-muneca-yellow">
+            <span className="h-px w-6 bg-muneca-yellow" aria-hidden="true" />
+            Torneo en construcción
+          </p>
+
+          <h1 className="font-display mt-3 text-4xl leading-[1.05] text-white sm:text-5xl lg:text-6xl">
+            Estamos armando
+            <br />
+            <span className="text-muneca-yellow">el parche más grande</span>
+          </h1>
+
+          <p className="mt-5 max-w-md text-lg text-white/80">
+            El torneo donde vienes a competir, no a jugar tres partidos y empacar.
+          </p>
+
+          <div className="mt-9">
+            <Countdown fechaMetaIso={config?.modo_construccion_fecha_meta ?? null} />
+          </div>
+
+          <p className="mt-8 text-sm uppercase tracking-[0.2em] text-donkey-gray">
+            24 equipos · Categoría Libre · Montería
+          </p>
+
+          <div className="mt-6 flex items-center gap-3">
+            {SOCIAL_LINKS.map(({ href, label, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition-colors hover:border-muneca-yellow hover:text-muneca-yellow"
+              >
+                <Icon size={18} weight="regular" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative hidden w-full flex-1 items-end justify-center lg:flex lg:h-[34rem]">
           <Image
-            src="/brand/en-construccion-desktop.jpg"
-            alt="Copa Muñeca e'Burro — Estamos en construcción. Algo bien bacano se está cocinando para el fútbol de nuestra tierra. ¡Espéralo, vale!"
-            width={1672}
-            height={941}
+            src="/brand/mascota-cutout.png"
+            alt=""
+            aria-hidden="true"
+            width={1024}
+            height={1536}
             priority
-            className="h-auto w-full"
+            className="relative z-10 h-full w-auto max-w-none object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
           />
-          <IconOverlay icons={DESKTOP_ICONS} />
-        </span>
-
-        <Countdown fechaMetaIso={config?.modo_construccion_fecha_meta ?? null} />
+        </div>
       </div>
     </main>
   );

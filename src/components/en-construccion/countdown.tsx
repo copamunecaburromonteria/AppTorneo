@@ -63,7 +63,7 @@ export function Countdown({ fechaMetaIso }: { fechaMetaIso: string | null }) {
 
   if (!fechaMetaMs) {
     return (
-      <p className="text-center text-sm font-semibold uppercase tracking-wide text-white/60">
+      <p className="text-center text-sm font-semibold uppercase tracking-wide text-white/60 sm:text-left">
         Muy pronto anunciamos la fecha. ¡No te lo pierdas!
       </p>
     );
@@ -78,20 +78,20 @@ export function Countdown({ fechaMetaIso }: { fechaMetaIso: string | null }) {
 
   if (cumplida) {
     return (
-      <p className="text-center font-display text-xl uppercase tracking-wide text-muneca-yellow">
+      <p className="text-center font-display text-xl uppercase tracking-wide text-muneca-yellow sm:text-left">
         ¡Ya casi! Estamos en los últimos ajustes.
       </p>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 sm:items-start">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-muneca-yellow">Arrancamos en</p>
-      <div className="flex gap-2 sm:gap-3">
+      <div className="flex gap-2.5 sm:gap-3">
         {SEGMENTOS.map(({ clave, label }) => (
           <div
             key={clave}
-            className="flex w-16 flex-col items-center rounded-xl border border-white/10 bg-white/5 py-3 sm:w-20"
+            className="flex w-16 flex-col items-center rounded-2xl border border-muneca-yellow/20 bg-muneca-black/60 py-3 shadow-[0_0_24px_-6px_rgba(255,217,0,0.25)] backdrop-blur-sm sm:w-[4.75rem] sm:py-4"
           >
             <span className="font-display text-3xl tabular-nums text-white sm:text-4xl">
               {restante != null ? String(restante[clave]).padStart(2, "0") : "—"}

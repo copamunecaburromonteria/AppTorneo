@@ -79,3 +79,24 @@ h1, h2, h3, h4, .font-display {
     animation: none;
   }
 }
+
+/* Grilla de puntos sutil (look "tech/deportivo") para el fondo de
+   /en-construccion — un patrón repetido vía radial-gradient, sin SVG ni
+   imagen, con un paneo lentísimo para que se sienta viva sin llamar la
+   atención (regla de marca: "texturas deportivas muy discretas"). */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 28px 28px;
+  animation: dot-grid-pan 40s linear infinite;
+}
+
+@keyframes dot-grid-pan {
+  from { background-position: 0 0; }
+  to { background-position: 280px 280px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-dot-grid {
+    animation: none;
+  }
+}
