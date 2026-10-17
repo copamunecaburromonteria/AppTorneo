@@ -18,32 +18,42 @@ const SOCIAL_LINKS = [
 ];
 
 function FondoAnimado() {
-  // Fondo "color mesh": grilla de puntos + blobs grandes y saturados en
-  // los colores de marca, en deriva lenta (ver `globals.css`).
+  // Fondo con la foto del estadio (mismo asset — `hero-stadium.jpg` — que
+  // ya usan los encabezados de Equipos, Partidos, Posiciones, etc., para
+  // que /en-construccion se sienta parte de la misma plataforma) con un
+  // "Ken Burns" lentísimo de zoom, más la grilla de puntos y los blobs
+  // morado/amarillo encima para que el color de marca siga siendo
+  // protagonista.
   //
-  // v2 (2026-10-17, feedback de Fernando viendo la página ya publicada:
-  // "no veo fondo, no veo nada, solo la imagen, quiero animación de
-  // fondo") — los blobs de la v1 eran chicos y muy difuminados, casi
-  // invisibles en una pantalla grande. Ahora son más grandes, más
-  // saturados, y el velo oscuro ya no tapa toda la sección: solo oscurece
-  // detrás del bloque de texto (para que siga siendo legible), dejando
-  // que el resto de la pantalla —donde están los blobs y la mascota—
-  // se vea el color.
+  // v3 (2026-10-17, feedback de Fernando: "no me gusta ese fondo, quiero
+  // algo más animado o definitivamente montemos el fondo del estadio") —
+  // la v2 (solo color, sin foto) no le gustó; esta versión junta las dos
+  // cosas que pidió: la foto del estadio + más movimiento (zoom lento de
+  // la foto + blobs grandes en deriva), en vez de elegir entre una u
+  // otra.
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="bg-dot-grid absolute inset-0 opacity-60" />
-      <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-muneca-purple/55 blur-[90px] animate-blob-drift sm:h-[46rem] sm:w-[46rem]" />
-      <div className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-muneca-yellow/25 blur-[100px] animate-blob-drift-reverse sm:h-[40rem] sm:w-[40rem]" />
+      <Image
+        src="/brand/hero-stadium.jpg"
+        alt=""
+        aria-hidden="true"
+        fill
+        priority
+        sizes="100vw"
+        className="animate-photo-kenburns object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-muneca-black/70" />
+      <div className="bg-dot-grid absolute inset-0 opacity-50" />
+      <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-muneca-purple/50 blur-[90px] animate-blob-drift sm:h-[46rem] sm:w-[46rem]" />
+      <div className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-muneca-yellow/20 blur-[100px] animate-blob-drift-reverse sm:h-[40rem] sm:w-[40rem]" />
       <div
-        className="absolute right-1/4 top-0 h-[24rem] w-[24rem] rounded-full bg-muneca-purple-dark/45 blur-[80px] animate-blob-drift sm:h-[30rem] sm:w-[30rem]"
+        className="absolute right-1/4 top-0 h-[24rem] w-[24rem] rounded-full bg-muneca-purple-dark/40 blur-[80px] animate-blob-drift sm:h-[30rem] sm:w-[30rem]"
         style={{ animationDelay: "-9s" }}
       />
       {/* Foco oscuro solo detrás del bloque de texto — centrado en mobile
-          (donde todo va apilado), recostado a la izquierda en desktop
-          (donde el texto vive en la columna izquierda y la mascota +
-          blobs respiran a la derecha). */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_38%,rgba(21,21,21,0.85),rgba(21,21,21,0.35)_55%,transparent_80%)] lg:hidden" />
-      <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_48%_85%_at_20%_48%,rgba(21,21,21,0.88),rgba(21,21,21,0.4)_55%,transparent_80%)] lg:block" />
+          (donde todo va apilado), recostado a la izquierda en desktop. */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_38%,rgba(21,21,21,0.7),rgba(21,21,21,0.25)_55%,transparent_80%)] lg:hidden" />
+      <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_48%_85%_at_20%_48%,rgba(21,21,21,0.75),rgba(21,21,21,0.3)_55%,transparent_80%)] lg:block" />
     </div>
   );
 }

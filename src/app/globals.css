@@ -100,3 +100,21 @@ h1, h2, h3, h4, .font-display {
     animation: none;
   }
 }
+
+/* Zoom lentísimo ("Ken Burns") para la foto de fondo de /en-construccion
+   — esa pantalla no tiene scroll, así que no puede usar el parallax por
+   scroll de `ParallaxSectionBackground`; esto le da movimiento propio. */
+.animate-photo-kenburns {
+  animation: photo-kenburns 30s ease-in-out infinite alternate;
+}
+
+@keyframes photo-kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-photo-kenburns {
+    animation: none;
+  }
+}
