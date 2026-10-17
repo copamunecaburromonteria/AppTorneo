@@ -18,21 +18,32 @@ const SOCIAL_LINKS = [
 ];
 
 function FondoAnimado() {
-  // Grilla de puntos + tres "blobs" borrosos en los colores de marca, en
-  // deriva lenta (ver `globals.css`) — decorativo puro, por eso
-  // `aria-hidden` + `pointer-events-none`.
+  // Fondo "color mesh": grilla de puntos + blobs grandes y saturados en
+  // los colores de marca, en deriva lenta (ver `globals.css`).
+  //
+  // v2 (2026-10-17, feedback de Fernando viendo la página ya publicada:
+  // "no veo fondo, no veo nada, solo la imagen, quiero animación de
+  // fondo") — los blobs de la v1 eran chicos y muy difuminados, casi
+  // invisibles en una pantalla grande. Ahora son más grandes, más
+  // saturados, y el velo oscuro ya no tapa toda la sección: solo oscurece
+  // detrás del bloque de texto (para que siga siendo legible), dejando
+  // que el resto de la pantalla —donde están los blobs y la mascota—
+  // se vea el color.
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="bg-dot-grid absolute inset-0 opacity-40" />
-      <div className="absolute -left-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-muneca-purple/35 blur-[100px] animate-blob-drift sm:h-[34rem] sm:w-[34rem]" />
-      <div className="absolute -bottom-32 -right-16 h-[24rem] w-[24rem] rounded-full bg-muneca-yellow/15 blur-[110px] animate-blob-drift-reverse sm:h-[32rem] sm:w-[32rem]" />
+      <div className="bg-dot-grid absolute inset-0 opacity-60" />
+      <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-muneca-purple/55 blur-[90px] animate-blob-drift sm:h-[46rem] sm:w-[46rem]" />
+      <div className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-muneca-yellow/25 blur-[100px] animate-blob-drift-reverse sm:h-[40rem] sm:w-[40rem]" />
       <div
-        className="absolute left-1/2 top-1/3 h-[18rem] w-[18rem] -translate-x-1/2 rounded-full bg-muneca-purple-dark/30 blur-[90px] animate-blob-drift sm:h-[24rem] sm:w-[24rem]"
+        className="absolute right-1/4 top-0 h-[24rem] w-[24rem] rounded-full bg-muneca-purple-dark/45 blur-[80px] animate-blob-drift sm:h-[30rem] sm:w-[30rem]"
         style={{ animationDelay: "-9s" }}
       />
-      {/* Velo para que el texto de la izquierda siempre tenga contraste,
-          sin importar qué tan cerca ande un blob. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-muneca-black via-muneca-black/40 to-muneca-black/10" />
+      {/* Foco oscuro solo detrás del bloque de texto — centrado en mobile
+          (donde todo va apilado), recostado a la izquierda en desktop
+          (donde el texto vive en la columna izquierda y la mascota +
+          blobs respiran a la derecha). */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_38%,rgba(21,21,21,0.85),rgba(21,21,21,0.35)_55%,transparent_80%)] lg:hidden" />
+      <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_48%_85%_at_20%_48%,rgba(21,21,21,0.88),rgba(21,21,21,0.4)_55%,transparent_80%)] lg:block" />
     </div>
   );
 }

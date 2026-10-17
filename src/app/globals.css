@@ -85,7 +85,7 @@ h1, h2, h3, h4, .font-display {
    imagen, con un paneo lentísimo para que se sienta viva sin llamar la
    atención (regla de marca: "texturas deportivas muy discretas"). */
 .bg-dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px);
   background-size: 28px 28px;
   animation: dot-grid-pan 40s linear infinite;
 }
